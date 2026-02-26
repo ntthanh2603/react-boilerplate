@@ -7,7 +7,7 @@ config();
 
 const getInfiniteOverrides = () => {
   const operations: Record<string, any> = {};
-  const inputPath = path.resolve(__dirname, "./open-api.json");
+  const inputPath = path.resolve(process.cwd(), "./open-api.json");
 
   const fileContent = fs.readFileSync(inputPath, "utf-8");
   const doc = JSON.parse(fileContent);
@@ -63,7 +63,7 @@ export default defineConfig({
     },
     input: {
       validation: false,
-      target: "../.open-api/open-api.json",
+      target: "./open-api.json",
     },
   },
 });

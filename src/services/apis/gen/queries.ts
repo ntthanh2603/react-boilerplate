@@ -10,9 +10,14 @@ import {
   useQuery
 } from '@tanstack/react-query';
 import type {
+  DataTag,
+  DefinedInitialDataOptions,
+  DefinedUseQueryResult,
   MutationFunction,
+  QueryClient,
   QueryFunction,
   QueryKey,
+  UndefinedInitialDataOptions,
   UseMutationOptions,
   UseMutationResult,
   UseQueryOptions,
@@ -33,13 +38,6 @@ export type CreateFirstAdminDto = {
 
 export type GetMetadataDto = {
   isInit: boolean;
-  /** System name */
-  name: string;
-  /**
-   * Path to system logo
-   * @nullable
-   */
-  logoPath: string | null;
 };
 
 type AwaitedInput<T> = PromiseLike<T> | T;
@@ -73,7 +71,7 @@ export const getRootControllerGetHealthQueryKey = () => {
     }
 
     
-export const getRootControllerGetHealthQueryOptions = <TData = Awaited<ReturnType<typeof rootControllerGetHealth>>, TError = unknown>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof rootControllerGetHealth>>, TError, TData>, request?: SecondParameter<typeof orvalClient>}
+export const getRootControllerGetHealthQueryOptions = <TData = Awaited<ReturnType<typeof rootControllerGetHealth>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof rootControllerGetHealth>>, TError, TData>>, request?: SecondParameter<typeof orvalClient>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -88,22 +86,46 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof rootControllerGetHealth>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof rootControllerGetHealth>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type RootControllerGetHealthQueryResult = NonNullable<Awaited<ReturnType<typeof rootControllerGetHealth>>>
 export type RootControllerGetHealthQueryError = unknown
 
 
+export function useRootControllerGetHealth<TData = Awaited<ReturnType<typeof rootControllerGetHealth>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof rootControllerGetHealth>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof rootControllerGetHealth>>,
+          TError,
+          Awaited<ReturnType<typeof rootControllerGetHealth>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof orvalClient>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useRootControllerGetHealth<TData = Awaited<ReturnType<typeof rootControllerGetHealth>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof rootControllerGetHealth>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof rootControllerGetHealth>>,
+          TError,
+          Awaited<ReturnType<typeof rootControllerGetHealth>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof orvalClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useRootControllerGetHealth<TData = Awaited<ReturnType<typeof rootControllerGetHealth>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof rootControllerGetHealth>>, TError, TData>>, request?: SecondParameter<typeof orvalClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useRootControllerGetHealth<TData = Awaited<ReturnType<typeof rootControllerGetHealth>>, TError = unknown>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof rootControllerGetHealth>>, TError, TData>, request?: SecondParameter<typeof orvalClient>}
-  
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof rootControllerGetHealth>>, TError, TData>>, request?: SecondParameter<typeof orvalClient>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getRootControllerGetHealthQueryOptions(options)
 
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   query.queryKey = queryOptions.queryKey ;
 
@@ -167,7 +189,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  */
 export const useRootControllerCreateFirstAdmin = <TError = unknown,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof rootControllerCreateFirstAdmin>>, TError,{data: CreateFirstAdminDto}, TContext>, request?: SecondParameter<typeof orvalClient>}
- ): UseMutationResult<
+ , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof rootControllerCreateFirstAdmin>>,
         TError,
         {data: CreateFirstAdminDto},
@@ -176,7 +198,7 @@ export const useRootControllerCreateFirstAdmin = <TError = unknown,
 
       const mutationOptions = getRootControllerCreateFirstAdminMutationOptions(options);
 
-      return useMutation(mutationOptions);
+      return useMutation(mutationOptions, queryClient);
     }
     
 /**
@@ -205,7 +227,7 @@ export const getRootControllerGetMetadataQueryKey = () => {
     }
 
     
-export const getRootControllerGetMetadataQueryOptions = <TData = Awaited<ReturnType<typeof rootControllerGetMetadata>>, TError = unknown>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof rootControllerGetMetadata>>, TError, TData>, request?: SecondParameter<typeof orvalClient>}
+export const getRootControllerGetMetadataQueryOptions = <TData = Awaited<ReturnType<typeof rootControllerGetMetadata>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof rootControllerGetMetadata>>, TError, TData>>, request?: SecondParameter<typeof orvalClient>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -220,25 +242,49 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof rootControllerGetMetadata>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof rootControllerGetMetadata>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type RootControllerGetMetadataQueryResult = NonNullable<Awaited<ReturnType<typeof rootControllerGetMetadata>>>
 export type RootControllerGetMetadataQueryError = unknown
 
 
+export function useRootControllerGetMetadata<TData = Awaited<ReturnType<typeof rootControllerGetMetadata>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof rootControllerGetMetadata>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof rootControllerGetMetadata>>,
+          TError,
+          Awaited<ReturnType<typeof rootControllerGetMetadata>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof orvalClient>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useRootControllerGetMetadata<TData = Awaited<ReturnType<typeof rootControllerGetMetadata>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof rootControllerGetMetadata>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof rootControllerGetMetadata>>,
+          TError,
+          Awaited<ReturnType<typeof rootControllerGetMetadata>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof orvalClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useRootControllerGetMetadata<TData = Awaited<ReturnType<typeof rootControllerGetMetadata>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof rootControllerGetMetadata>>, TError, TData>>, request?: SecondParameter<typeof orvalClient>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get system metadata.
  */
 
 export function useRootControllerGetMetadata<TData = Awaited<ReturnType<typeof rootControllerGetMetadata>>, TError = unknown>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof rootControllerGetMetadata>>, TError, TData>, request?: SecondParameter<typeof orvalClient>}
-  
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof rootControllerGetMetadata>>, TError, TData>>, request?: SecondParameter<typeof orvalClient>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getRootControllerGetMetadataQueryOptions(options)
 
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   query.queryKey = queryOptions.queryKey ;
 
