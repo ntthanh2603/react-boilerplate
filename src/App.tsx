@@ -1,58 +1,79 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Toaster } from "@/components/ui/sonner";
+import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { persistQueryClient } from "@tanstack/react-query-persist-client";
+import { RouterProvider } from "react-router-dom";
+import { ThemeProvider } from "./components/ui/theme-provider";
+import { router } from "./routers";
+import React from "react";
+import {
+  getRootControllerGetMetadataQueryKey,
+  useRootControllerGetMetadata,
+} from "./services/apis/gen/queries";
+
+// Hook to update document title based on metadata
+function useMetadataTitle() {
+  const { data: metadata } = useRootControllerGetMetadata({
+    query: {
+      queryKey: getRootControllerGetMetadataQueryKey(),
+    },
+  });
+
+  React.useEffect(() => {
+    if (
+      metadata &&
+      typeof metadata === "object" &&
+      "name" in metadata &&
+      typeof (metadata as Record<string, unknown>).name === "string"
+    ) {
+      document.title = (metadata as Record<string, unknown>).name as string;
+    }
+  }, [metadata]);
+}
+
+// MetadataProvider component
+function MetadataProvider({ children }: { children: React.ReactNode }) {
+  useMetadataTitle();
+
+  return <>{children}</>;
+}
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 30, // 30 seconds
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: true,
+      refetchInterval: false,
+      refetchIntervalInBackground: false,
+      retry: 1,
+    },
+  },
+});
+
+const localStoragePersister = createAsyncStoragePersister({
+  storage: window.localStorage,
+  key: "rq-persist",
+});
+
+persistQueryClient({
+  queryClient,
+  persister: localStoragePersister,
+  maxAge: 1000 * 60 * 24,
+});
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
-    <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-4">
-      <div className="max-w-md w-full space-y-4">
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">
-            React + Vite + Shadcn
-          </h1>
-          <p className="text-muted-foreground">
-            A clean base project with Tailwind CSS v4
-          </p>
-        </div>
-
-        <div className="p-6 border rounded-xl bg-card shadow-sm space-y-4">
-          <div className="flex flex-col space-y-1.5">
-            <h3 className="font-semibold leading-none tracking-tight">
-              Counter Stage
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              Try out the shadcn button and state.
-            </p>
+    <QueryClientProvider client={queryClient}>
+      <MetadataProvider>
+        <ThemeProvider defaultTheme="light" storageKey="theme">
+          <div className="min-h-screen bg-background text-foreground antialiased font-sans">
+            <RouterProvider router={router} />
+            <Toaster position="bottom-center" />
           </div>
-
-          <div className="flex items-center gap-4">
-            <Button onClick={() => setCount((c) => c + 1)}>
-              Count is {count}
-            </Button>
-            <Button variant="outline" onClick={() => setCount(0)}>
-              Reset
-            </Button>
-          </div>
-
-          <div className="space-y-2 pt-4 border-t">
-            <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-              Sample Input
-            </label>
-            <Input placeholder="Type something..." />
-          </div>
-        </div>
-
-        <p className="text-center text-sm text-muted-foreground">
-          Edit{" "}
-          <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold">
-            src/App.tsx
-          </code>{" "}
-          to get started.
-        </p>
-      </div>
-    </div>
+        </ThemeProvider>
+      </MetadataProvider>
+    </QueryClientProvider>
   );
 }
 
