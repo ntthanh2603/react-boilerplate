@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 
 import logo from "@/assets/logo.png";
-import { authClient } from "@/utils/authClient";
+import { authClient } from "@/utils/auth-client";
 import { NavMain } from "@/components/nav-main";
 import { NavProjects } from "@/components/nav-projects";
 import { NavUser } from "@/components/nav-user";

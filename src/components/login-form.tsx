@@ -2,7 +2,7 @@ import { useState } from "react";
 import { GalleryVerticalEnd } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import { authClient } from "@/utils/authClient";
+import { authClient } from "@/utils/auth-client";
 import { getSafeRedirectUrl } from "@/utils/safe-redirect";
 
 import { cn } from "@/lib/utils";

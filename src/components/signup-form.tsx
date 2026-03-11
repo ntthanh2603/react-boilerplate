@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { GalleryVerticalEnd, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { authClient } from "@/utils/authClient";
+import { authClient } from "@/utils/auth-client";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";

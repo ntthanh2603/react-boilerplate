@@ -1,4 +1,4 @@
-import { authClient } from "@/utils/authClient";
+import { authClient } from "@/utils/auth-client";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 
