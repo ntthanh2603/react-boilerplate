@@ -1,4 +1,10 @@
-import { createBrowserRouter, Outlet } from "react-router-dom";
+import { useEffect } from "react";
+import {
+  createBrowserRouter,
+  Outlet,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import GuestRoute from "./GuestRoute";
 import NotFound from "./NotFound";
 import ProtectedRoute from "./ProtectedRoute";
@@ -9,11 +15,20 @@ import ForgotPassword from "@/pages/forgot-password/forgot-password";
 import InitAdmin from "@/pages/init-admin/init-admin";
 import Dashboard from "@/pages/dashboard/dashboard";
 
-const Root = () => (
-  <div className="min-h-screen w-full">
-    <Outlet />
-  </div>
-);
+const Root = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Other global effects can go here
+  }, [location, navigate]);
+
+  return (
+    <div className="min-h-screen w-full">
+      <Outlet />
+    </div>
+  );
+};
 
 export const router = createBrowserRouter([
   {

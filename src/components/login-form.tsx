@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { GalleryVerticalEnd } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
@@ -19,6 +19,8 @@ export function LoginForm({
   const [isLoading, setIsLoading] = useState(false);
   const [isSocialLoading, setIsSocialLoading] = useState<"google" | "facebook" | null>(null);
   const [error, setError] = useState("");
+  const [twoFactorStep, setTwoFactorStep] = useState(false);
+  const [otp, setOtp] = useState("");
   const navigate = useNavigate();
 
   const handleSocialLogin = async (provider: "google" | "facebook") => {
@@ -27,7 +29,11 @@ export function LoginForm({
     try {
       const res = await authClient.signIn.social({ provider });
       if (res.error) {
-        setError(res.error.message || `Could not sign in with ${provider}.`);
+        if (res.error.status === 403 && res.error.message?.includes("two_factor")) {
+          setTwoFactorStep(true);
+        } else {
+          setError(res.error.message || `Could not sign in with ${provider}.`);
+        }
       }
     } catch {
       setError(`Something went wrong linking with ${provider}.`);
@@ -42,12 +48,30 @@ export function LoginForm({
     setError("");
 
     try {
-      const res = await authClient.signIn.email({ email, password });
-      if (res.error) {
-        setError(res.error.message || "Invalid email or password.");
-      } else {
+      if (twoFactorStep) {
+        const res = await authClient.twoFactor.verifyOtp({
+          code: otp
+        });
+        if (res.error) {
+           setError(res.error.message || "Invalid 2FA code.");
+           return;
+        }
         const params = new URLSearchParams(window.location.search);
         navigate(getSafeRedirectUrl(params.get("redirect")), { replace: true });
+        return;
+      }
+
+      const res = await authClient.signIn.email({ email, password });
+      if (res.error) {
+        if (res.error.status === 403 && res.error.message?.includes("two_factor")) {
+          setTwoFactorStep(true);
+        } else {
+          setError(res.error.message || "Invalid email or password.");
+        }
+      } else {
+        const params = new URLSearchParams(window.location.search);
+        const redirect = getSafeRedirectUrl(params.get("redirect"));
+        window.location.href = redirect;
       }
     } catch {
       setError("Something went wrong. Please try again.");
@@ -79,6 +103,8 @@ export function LoginForm({
             </div>
           </div>
           <div className="flex flex-col gap-6">
+            {!twoFactorStep ? (
+              <>
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -103,12 +129,39 @@ export function LoginForm({
               <Input
                 id="password"
                 type="password"
+                autoComplete="current-password"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
             </div>
+              </>
+            ) : (
+              <div className="grid gap-2 animate-in fade-in slide-in-from-top-2">
+                <Label htmlFor="otp">2FA Verification Code</Label>
+                <Input
+                  id="otp"
+                  type="text"
+                  placeholder="Enter 6-digit code"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  maxLength={6}
+                  required
+                  autoFocus
+                />
+                <p className="text-xs text-muted-foreground">
+                  Enter the code sent to your email or from your authenticator app.
+                </p>
+                <button 
+                  type="button"
+                  className="px-0 py-0 h-auto w-fit text-xs text-primary underline" 
+                  onClick={() => setTwoFactorStep(false)}
+                >
+                  Back to login
+                </button>
+              </div>
+            )}
 
             {error && (
               <p className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md px-3 py-2">

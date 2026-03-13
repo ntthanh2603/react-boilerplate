@@ -60,9 +60,11 @@ export default function InitAdminPage() {
           setSuccess(true);
           setTimeout(() => navigate("/login"), 2000);
         },
-        onError: (err: any) => {
+        onError: (err: unknown) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const errorResponse = (err as any)?.response?.data;
           setError(
-            err?.response?.data?.message ||
+            errorResponse?.message ||
               "Failed to create admin. Please try again.",
           );
         },

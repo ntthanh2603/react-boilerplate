@@ -1,11 +1,24 @@
 import { createAuthClient } from "better-auth/react";
-import { jwtClient } from "better-auth/client/plugins";
+import {
+  jwtClient,
+  twoFactorClient,
+  multiSessionClient,
+  inferAdditionalFields,
+} from "better-auth/client/plugins";
 
 export const authClient = createAuthClient({
   baseURL: window.location.origin,
   plugins: [
-    jwtClient()
-  ]
+    jwtClient(),
+    twoFactorClient(),
+    multiSessionClient(),
+    inferAdditionalFields({
+      user: {
+        role: { type: "string", required: false },
+        twoFactorEnabled: { type: "boolean", required: false },
+      },
+    }),
+  ],
 });
 
 export const { useSession } = authClient;

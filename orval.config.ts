@@ -6,12 +6,13 @@ import * as path from "path";
 config();
 
 const getInfiniteOverrides = () => {
-  const operations: Record<string, any> = {};
+  const operations: Record<string, unknown> = {};
   const inputPath = path.resolve(process.cwd(), "./open-api.json");
 
   const fileContent = fs.readFileSync(inputPath, "utf-8");
   const doc = JSON.parse(fileContent);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Object.values(doc.paths || {}).forEach((pathItem: any) => {
     ["get", "post", "put", "patch", "delete"].forEach((method) => {
       if (pathItem[method]) {
@@ -25,7 +26,7 @@ const getInfiniteOverrides = () => {
           ...(operation.parameters || []),
         ];
 
-        const hasPageParam = allParams.some((p: any) => p.name === "page");
+        const hasPageParam = allParams.some((p: { name?: string }) => p.name === "page");
 
         if (hasPageParam) {
           operations[operationId] = {
