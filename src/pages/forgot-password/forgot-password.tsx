@@ -18,10 +18,12 @@ export default function ForgotPasswordPage() {
     setError("");
 
     try {
-      await fetch("/api/auth/forget-password", {
+      const baseUrl = import.meta.env.VITE_API_URL || "";
+      await fetch(`${baseUrl}/api/auth/forget-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, redirectTo: "/reset-password" }),
+        credentials: "include",
       });
       // Always show success to prevent email enumeration
       setSent(true);

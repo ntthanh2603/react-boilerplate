@@ -27,7 +27,10 @@ export function LoginForm({
     setIsSocialLoading(provider);
     setError("");
     try {
-      const res = await authClient.signIn.social({ provider });
+      const res = await authClient.signIn.social({ 
+        provider,
+        callbackURL: window.location.origin 
+      });
       if (res.error) {
         if (res.error.status === 403 && res.error.message?.includes("two_factor")) {
           setTwoFactorStep(true);
