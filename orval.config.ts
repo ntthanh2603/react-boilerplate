@@ -7,7 +7,10 @@ config();
 
 const getInfiniteOverrides = () => {
   const operations: Record<string, unknown> = {};
-  const inputPath = path.resolve(process.cwd(), "./open-api.json");
+  const inputPath = path.resolve(
+    process.cwd(),
+    "../tmt-ilupet-api/open-api.json",
+  );
 
   const fileContent = fs.readFileSync(inputPath, "utf-8");
   const doc = JSON.parse(fileContent);
@@ -26,7 +29,9 @@ const getInfiniteOverrides = () => {
           ...(operation.parameters || []),
         ];
 
-        const hasPageParam = allParams.some((p: { name?: string }) => p.name === "page");
+        const hasPageParam = allParams.some(
+          (p: { name?: string }) => p.name === "page",
+        );
 
         if (hasPageParam) {
           operations[operationId] = {
@@ -64,7 +69,7 @@ export default defineConfig({
     },
     input: {
       validation: false,
-      target: "./open-api.json",
+      target: "../tmt-ilupet-api/open-api.json",
     },
   },
 });

@@ -12,8 +12,8 @@ import AppLayout from "@/components/app-layout";
 import Login from "@/pages/login/login";
 import Register from "@/pages/register/register";
 import ForgotPassword from "@/pages/forgot-password/forgot-password";
-import InitAdmin from "@/pages/init-admin/init-admin";
 import Dashboard from "@/pages/dashboard/dashboard";
+import VerifyOtp from "@/pages/verify-otp/verify-otp";
 
 const Root = () => {
   const location = useLocation();
@@ -35,11 +35,6 @@ export const router = createBrowserRouter([
     path: "/",
     element: <Root />,
     children: [
-      // Public: Init admin
-      {
-        path: "init-admin",
-        element: <InitAdmin />,
-      },
       // Guest-only: auth pages
       {
         path: "login",
@@ -54,6 +49,14 @@ export const router = createBrowserRouter([
         element: (
           <GuestRoute>
             <Register />
+          </GuestRoute>
+        ),
+      },
+      {
+        path: "verify-otp",
+        element: (
+          <GuestRoute>
+            <VerifyOtp />
           </GuestRoute>
         ),
       },

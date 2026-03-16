@@ -4,6 +4,7 @@ import {
   twoFactorClient,
   multiSessionClient,
   inferAdditionalFields,
+  emailOTPClient,
 } from "better-auth/client/plugins";
 
 export const authClient = createAuthClient({
@@ -12,6 +13,7 @@ export const authClient = createAuthClient({
     jwtClient(),
     twoFactorClient(),
     multiSessionClient(),
+    emailOTPClient(),
     inferAdditionalFields({
       user: {
         role: { type: "string", required: false },

@@ -8,8 +8,7 @@ export default function RegisterRoute({
 }) {
   const { data, isFetched } = useRootControllerGetMetadata();
   const location = useLocation();
-  const currentPath =
-    location.pathname == "/init-admin" ? "/" : location.pathname;
+  const currentPath = location.pathname;
 
   if (!isFetched) return <></>;
 

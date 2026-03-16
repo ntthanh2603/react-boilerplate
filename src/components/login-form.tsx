@@ -85,149 +85,165 @@ export function LoginForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <form onSubmit={handleSubmit}>
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-col items-center gap-2">
-            <a
-              href="#"
-              className="flex flex-col items-center gap-2 font-medium"
-            >
-              <div className="flex h-8 w-8 items-center justify-center rounded-md">
-                <GalleryVerticalEnd className="size-6" />
-              </div>
-              <span className="sr-only">React Base</span>
-            </a>
-            <h1 className="text-xl font-bold">Welcome to React Base</h1>
-            <div className="text-center text-sm">
-              Don&apos;t have an account?{" "}
-              <Link to="/register" className="underline underline-offset-4">
-                Sign up
-              </Link>
+      <form onSubmit={handleSubmit} className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="flex flex-col gap-8">
+          <div className="flex flex-col items-center gap-3">
+             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-inner">
+               <GalleryVerticalEnd className="size-7" />
+            </div>
+            <div className="space-y-1 text-center">
+              <h1 className="text-3xl font-bold tracking-tight text-gradient">
+                Welcome back
+              </h1>
+              <p className="text-sm text-balance text-muted-foreground">
+                Enter your credentials to access your account.
+              </p>
             </div>
           </div>
-          <div className="flex flex-col gap-6">
+
+          <div className="flex flex-col gap-5">
             {!twoFactorStep ? (
               <>
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                <Link
-                  to="/forgot-password"
-                  className="text-xs underline underline-offset-4 text-muted-foreground hover:text-primary"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-              <Input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="email" className="text-sm font-semibold ml-1">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="m@example.com"
+                    className="h-11 bg-background/50 border-primary/20 focus-visible:ring-primary focus-visible:border-primary transition-all"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <div className="flex items-center justify-between ml-1">
+                    <Label htmlFor="password" className="text-sm font-semibold">Password</Label>
+                    <Link
+                      to="/forgot-password"
+                      className="text-xs font-medium text-primary hover:underline underline-offset-4 transition-colors"
+                    >
+                      Forgot password?
+                    </Link>
+                  </div>
+                  <Input
+                    id="password"
+                    type="password"
+                    autoComplete="current-password"
+                    placeholder="••••••••"
+                    className="h-11 bg-background/50 border-primary/20 focus-visible:ring-primary focus-visible:border-primary transition-all"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
               </>
             ) : (
-              <div className="grid gap-2 animate-in fade-in slide-in-from-top-2">
-                <Label htmlFor="otp">2FA Verification Code</Label>
+              <div className="grid gap-4 animate-in fade-in zoom-in-95 duration-300">
+                <div className="space-y-2 text-center">
+                  <Label htmlFor="otp" className="text-base font-bold text-gradient">2FA Verification</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Enter the 6-digit code from your app or email.
+                  </p>
+                </div>
                 <Input
                   id="otp"
                   type="text"
-                  placeholder="Enter 6-digit code"
+                  placeholder="000000"
+                  className="h-14 text-center text-3xl tracking-[0.3em] font-mono font-bold bg-background/50 border-primary/20 focus-visible:ring-primary focus-visible:border-primary"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
                   maxLength={6}
                   required
                   autoFocus
                 />
-                <p className="text-xs text-muted-foreground">
-                  Enter the code sent to your email or from your authenticator app.
-                </p>
-                <button 
+                <Button 
                   type="button"
-                  className="px-0 py-0 h-auto w-fit text-xs text-primary underline" 
+                  variant="ghost"
+                  className="text-xs font-semibold text-muted-foreground hover:text-primary transition-colors" 
                   onClick={() => setTwoFactorStep(false)}
                 >
-                  Back to login
-                </button>
+                  ← Use another method
+                </Button>
               </div>
             )}
 
             {error && (
-              <p className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md px-3 py-2">
+              <p className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-lg px-4 py-2 text-center animate-in zoom-in-95">
                 {error}
               </p>
             )}
 
-            <Button type="submit" className="w-full" disabled={isLoading || isSocialLoading !== null}>
+            <Button 
+              type="submit" 
+              className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all active:scale-[0.98] font-bold text-base" 
+              disabled={isLoading || isSocialLoading !== null}
+            >
               {isLoading && <Loader2 className="animate-spin mr-2 h-4 w-4" />}
-              Login
+              {twoFactorStep ? "Verify & Login" : "Login"}
             </Button>
             
-            <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
-              <span className="relative z-10 bg-background px-2 text-muted-foreground">
-                Or continue with
-              </span>
-            </div>
-            <div className="flex gap-4">
-              <Button
-                variant="outline"
-                className="w-full"
-                type="button"
-                disabled={isLoading || isSocialLoading !== null}
-                onClick={() => handleSocialLogin("google")}
-              >
-                {isSocialLoading === "google" ? (
-                  <Loader2 className="animate-spin mr-2 h-4 w-4" />
-                ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="mr-2 h-4 w-4">
-                    <path
-                      d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
-                      fill="currentColor"
-                    />
-                  </svg>
-                )}
-                Google
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full"
-                type="button"
-                disabled={isLoading || isSocialLoading !== null}
-                onClick={() => handleSocialLogin("facebook")}
-              >
-                {isSocialLoading === "facebook" ? (
-                  <Loader2 className="animate-spin mr-2 h-4 w-4" />
-                ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="mr-2 h-4 w-4">
-                    <path
-                      d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-1.125 0-2.072.162-2.548.81-.476.649-.691 1.637-.691 3.167v2.003h3.585l-.337 3.667h-3.248v7.98h-3.842z"
-                      fill="currentColor"
-                    />
-                  </svg>
-                )}
-                Facebook
-              </Button>
+            {!twoFactorStep && (
+              <>
+                <div className="relative flex items-center gap-4 py-2">
+                  <div className="h-px flex-1 bg-border" />
+                  <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold bg-background px-2">
+                    Or login with
+                  </span>
+                  <div className="h-px flex-1 bg-border" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <Button
+                    variant="outline"
+                    className="h-11 bg-background/50 border-primary/20 hover:bg-white/5 hover:border-gray-400/40 transition-all"
+                    type="button"
+                    disabled={isLoading || isSocialLoading !== null}
+                    onClick={() => handleSocialLogin("google")}
+                  >
+                    {isSocialLoading === "google" ? (
+                      <Loader2 className="animate-spin h-4 w-4" />
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className="mr-2 h-4 w-4">
+                        <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z" />
+                        <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z" />
+                        <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z" />
+                        <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z" />
+                      </svg>
+                    )}
+                    Google
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="h-11 bg-background/50 border-primary/20 hover:bg-blue-600/5 hover:border-blue-600/40 transition-all"
+                    type="button"
+                    disabled={isLoading || isSocialLoading !== null}
+                    onClick={() => handleSocialLogin("facebook")}
+                  >
+                    {isSocialLoading === "facebook" ? (
+                      <Loader2 className="animate-spin h-4 w-4" />
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className="mr-2 h-4 w-4">
+                        <path fill="#3F51B5" d="M42,37c0,2.762-2.238,5-5,5H11c-2.761,0-5-2.238-5-5V11c0-2.761,2.239-5,5-5h26c2.762,0,5,2.239,5,5V37z" />
+                        <path fill="#FFF" d="M34.368,25H31v13h-5V25h-3v-4h3v-2.41c0-3.088,1.807-4.782,4.459-4.782c1.271,0,2.363,0.094,2.682,0.137v3.11h-1.841c-1.497,0-1.788,0.711-1.788,1.755V21h3.587L34.368,25z" />
+                      </svg>
+                    )}
+                    Facebook
+                  </Button>
+                </div>
+              </>
+            )}
+
+            <div className="text-center text-sm">
+              Don't have an account?{" "}
+              <Link to="/register" className="font-bold text-primary hover:underline underline-offset-4">
+                Sign up
+              </Link>
             </div>
           </div>
         </div>
       </form>
-      <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary  ">
-        By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
-        and <a href="#">Privacy Policy</a>.
+      <div className="text-balance text-center text-[10px] text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary transition-colors">
+        By clicking login, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
       </div>
     </div>
   );

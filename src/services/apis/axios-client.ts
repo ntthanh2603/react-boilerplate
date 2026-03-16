@@ -2,7 +2,7 @@ import Axios, { AxiosError, type AxiosRequestConfig } from "axios";
 import Qs from "qs";
 
 export const axiosInstance = Axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000",
+  baseURL: process.env.VITE_API_URL || "http://localhost:3000",
   paramsSerializer: (params) => Qs.stringify(params, { arrayFormat: "repeat" }),
   withCredentials: true,
 });
