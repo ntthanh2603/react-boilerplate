@@ -6,11 +6,9 @@ import * as path from "path";
 config();
 
 const getInfiniteOverrides = () => {
-  const operations: Record<string, unknown> = {};
-  const inputPath = path.resolve(
-    process.cwd(),
-    "../tmt-ilupet-api/open-api.json",
-  );
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const operations: Record<string, any> = {};
+  const inputPath = path.resolve(process.cwd(), "../tmt-ilupet-api/open-api.json");
 
   const fileContent = fs.readFileSync(inputPath, "utf-8");
   const doc = JSON.parse(fileContent);

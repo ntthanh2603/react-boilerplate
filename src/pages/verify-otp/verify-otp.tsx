@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { authClient } from "@/utils/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, GalleryVerticalEnd } from "lucide-react";
 import { toast } from "sonner";
+import { useUsersControllerVerifyOtp, useUsersControllerResendOtp } from "@/services/apis/gen/queries";
 
 export default function VerifyOtpPage() {
   const [otp, setOtp] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [isResending, setIsResending] = useState(false);
   const [error, setError] = useState("");
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const email = searchParams.get("email") || "";
+
+  const { mutateAsync: verifyOtp, isPending: isLoading } = useUsersControllerVerifyOtp();
+  const { mutateAsync: resendOtp, isPending: isResending } = useUsersControllerResendOtp();
 
   useEffect(() => {
     if (!email) {
@@ -29,45 +30,39 @@ export default function VerifyOtpPage() {
       return;
     }
 
-    setIsLoading(true);
     setError("");
 
     try {
-      const res = await authClient.emailOtp.verifyEmail({
-        email: email.toLowerCase(),
-        otp,
+      await verifyOtp({
+        data: {
+          email: email.toLowerCase(),
+          otp,
+        },
       });
-
-      if (res.error) {
-        setError(res.error.message || "Invalid OTP. Please try again.");
-      } else {
-        toast.success("Email verified successfully! You can now log in.");
-        navigate("/login", { replace: true });
-      }
-    } catch {
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setIsLoading(false);
+      toast.success("Email verified successfully! You can now log in.");
+      navigate("/login", { replace: true });
+    } catch (err: unknown) {
+      setError(
+        (err as { response: { data: { message: string } } }).response?.data
+          ?.message || "Invalid OTP. Please try again.",
+      );
     }
   };
 
   const handleResend = async () => {
-    setIsResending(true);
     setError("");
     try {
-      const res = await authClient.emailOtp.sendVerificationOtp({
-        email: email.toLowerCase(),
-        type: "email-verification",
+      await resendOtp({
+        data: {
+          email: email.toLowerCase(),
+        },
       });
-      if (res.error) {
-        setError(res.error.message || "Could not resend OTP.");
-      } else {
-        toast.success("OTP resent successfully!");
-      }
-    } catch {
-      setError("Failed to resend OTP.");
-    } finally {
-      setIsResending(false);
+      toast.success("OTP resent successfully!");
+    } catch (err: unknown) {
+      setError(
+        (err as { response: { data: { message: string } } }).response?.data
+          ?.message || "Failed to resend OTP.",
+      );
     }
   };
 

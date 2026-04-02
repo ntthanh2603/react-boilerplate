@@ -16,7 +16,6 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     setIsLoading(true);
     setError("");
-
     try {
       const baseUrl = import.meta.env.VITE_API_URL || "";
       await fetch(`${baseUrl}/api/auth/forget-password`, {
@@ -25,9 +24,11 @@ export default function ForgotPasswordPage() {
         body: JSON.stringify({ email, redirectTo: "/reset-password" }),
         credentials: "include",
       });
+      console.log("Success: Reset link requested for", email);
       // Always show success to prevent email enumeration
       setSent(true);
-    } catch {
+    } catch (err) {
+      console.error("Error requesting reset link:", err);
       // Still show success to avoid leaking whether the email exists
       setSent(true);
     } finally {

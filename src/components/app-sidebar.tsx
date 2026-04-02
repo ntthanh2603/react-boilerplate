@@ -14,6 +14,7 @@ import { authClient } from "@/utils/auth-client";
 import { NavMain } from "@/components/nav-main";
 import { NavProjects } from "@/components/nav-projects";
 import { NavUser } from "@/components/nav-user";
+import { useUsersControllerGetMe } from "@/services/apis/gen/queries";
 import {
   Sidebar,
   SidebarContent,
@@ -74,11 +75,12 @@ const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { useSession } = authClient;
   const { data: session } = useSession();
+  const { data: profile } = useUsersControllerGetMe();
 
   const user = {
-    name: session?.user?.name || "User",
-    email: session?.user?.email || "",
-    avatar: "",
+    name: profile?.name || session?.user?.name || "User",
+    email: profile?.email || session?.user?.email || "",
+    avatar: profile?.media?.url || session?.user?.image || "",
   };
 
   return (

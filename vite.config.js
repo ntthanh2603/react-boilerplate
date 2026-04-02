@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => {
         "@": path.resolve(__dirname, "./src"),
       },
     },
-    logLevel: "silent",
+    logLevel: "info",
     server: {
       host: true,
       port: 5173,

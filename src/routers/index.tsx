@@ -14,6 +14,7 @@ import Register from "@/pages/register/register";
 import ForgotPassword from "@/pages/forgot-password/forgot-password";
 import Dashboard from "@/pages/dashboard/dashboard";
 import VerifyOtp from "@/pages/verify-otp/verify-otp";
+import ConfirmRegistration from "@/pages/confirm-registration/confirm-registration";
 
 const Root = () => {
   const location = useLocation();
@@ -57,6 +58,14 @@ export const router = createBrowserRouter([
         element: (
           <GuestRoute>
             <VerifyOtp />
+          </GuestRoute>
+        ),
+      },
+      {
+        path: "confirm-registration",
+        element: (
+          <GuestRoute>
+            <ConfirmRegistration />
           </GuestRoute>
         ),
       },

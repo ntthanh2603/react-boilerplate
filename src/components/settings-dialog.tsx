@@ -25,6 +25,13 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Badge } from "./ui/badge";
+import { Phone, MapPin, IdCard, Cake, CheckCircle2 } from "lucide-react";
+import {
+  useUsersControllerGetMe,
+  useUsersControllerUpdateAvatar,
+  useUsersControllerUpdateMe,
+} from "@/services/apis/gen/queries";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 interface SettingsDialogProps {
   open: boolean;
@@ -32,11 +39,22 @@ interface SettingsDialogProps {
 }
 
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
+  // Better Profile from custom API
   const { data: session, refetch } = authClient.useSession();
+  const { data: profile, refetch: refetchProfile } = useUsersControllerGetMe();
+  const updateAvatarMutation = useUsersControllerUpdateAvatar();
+  const updateProfileMutation = useUsersControllerUpdateMe();
+
   const [activeTab, setActiveTab] = useState("profile");
 
   // Profile State
-  const [name, setName] = useState("");
+  const [profileData, setProfileData] = useState({
+    name: "",
+    phone: "",
+    address: "",
+    cccd: "",
+    dateOfBirth: "",
+  });
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
 
   // Security State (Password)
@@ -68,10 +86,18 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [isLoadingAccounts, setIsLoadingAccounts] = useState(false);
 
   useEffect(() => {
-    if (session?.user) {
-      setName(session.user.name || "");
+    if (profile) {
+      setProfileData({
+        name: profile.name || "",
+        phone: profile.phone || "",
+        address: profile.address || "",
+        cccd: profile.cccd || "",
+        dateOfBirth: profile.dateOfBirth
+          ? new Date(profile.dateOfBirth).toISOString().split("T")[0]
+          : "",
+      });
     }
-  }, [session]);
+  }, [profile]);
 
   const fetchSessions = async () => {
     setIsLoadingSessions(true);
@@ -129,16 +155,48 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const handleUpdateProfile = async () => {
     setIsUpdatingProfile(true);
     try {
-      const { error } = await authClient.updateUser({
-        name: name,
+      const { error: authError } = await authClient.updateUser({
+        name: profileData.name,
       });
-      if (error) toast.error(error.message);
-      else {
-        toast.success("Profile updated successfully");
-        await refetch();
+
+      if (authError) {
+        toast.error(authError.message);
+        return;
       }
+
+      await updateProfileMutation.mutateAsync({
+        data: profileData,
+      });
+
+      toast.success("Profile updated successfully");
+      await refetch();
+      await refetchProfile();
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      toast.error(error.response?.data?.message || "Failed to update profile");
     } finally {
       setIsUpdatingProfile(false);
+    }
+  };
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const promise = updateAvatarMutation.mutateAsync({
+        data: { file },
+      });
+      toast.promise(promise, {
+        loading: "Updating avatar...",
+        success: "Avatar updated successfully",
+        error: "Failed to update avatar",
+      });
+      await promise;
+      await refetchProfile();
+      await refetch();
+    } catch (error) {
+      console.error("Avatar update error:", error);
     }
   };
 
@@ -293,32 +351,197 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
           {/* Content Area */}
           <div className="flex-1 overflow-y-auto p-6">
             {activeTab === "profile" && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-right-2 duration-200">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Profile Information</h3>
-                  <div className="grid gap-2">
-                    <Label htmlFor="name">Full Name</Label>
-                    <Input
-                      id="name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
+              <div className="space-y-8 animate-in fade-in slide-in-from-right-3 duration-300">
+                <div className="relative flex flex-col items-center gap-4 py-6 bg-gradient-to-b from-primary/5 to-transparent rounded-2xl border border-primary/10 shadow-inner">
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <Avatar className="h-28 w-28 border-4 border-background shadow-xl ring-2 ring-primary/20 relative z-10 transition-transform group-hover:scale-105 duration-300">
+                      <AvatarImage
+                        src={profile?.media?.url || session?.user?.image || ""}
+                      />
+                      <AvatarFallback className="text-3xl font-bold bg-primary/5 text-primary">
+                        {profileData.name.slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <Label
+                      htmlFor="avatar-upload"
+                      className="absolute inset-0 z-20 bg-black/50 text-white rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 cursor-pointer scale-90 group-hover:scale-100"
+                    >
+                      <Smartphone className="h-5 w-5 mb-1" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest">
+                        Update
+                      </span>
+                    </Label>
+                    <input
+                      id="avatar-upload"
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleAvatarChange}
                     />
+                    {profile?.isVerifiedKyc && (
+                      <div className="absolute -bottom-1 -right-1 z-30 bg-background rounded-full p-1 shadow-lg ring-1 ring-border">
+                        <CheckCircle2 className="h-6 w-6 text-primary fill-primary/10" />
+                      </div>
+                    )}
                   </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="email">Email Address</Label>
-                    <Input
-                      id="email"
-                      value={session?.user?.email || ""}
-                      disabled
-                      className="bg-muted"
-                    />
+                  <div className="text-center space-y-1">
+                    <h3 className="text-2xl font-black tracking-tight">
+                      {profileData.name}
+                    </h3>
+                    <div className="flex items-center justify-center gap-2">
+                      <p className="text-sm font-medium text-muted-foreground">
+                        {session?.user?.email}
+                      </p>
+                      <div className="h-1 w-1 rounded-full bg-border" />
+                      <Badge
+                        variant="outline"
+                        className="px-2 py-0 h-5 text-[10px] font-bold uppercase tracking-wider bg-background/50"
+                      >
+                        {profile?.role}
+                      </Badge>
+                    </div>
                   </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="flex items-center gap-2 px-1">
+                    <div className="h-4 w-1 bg-primary rounded-full transition-all group-hover:h-6" />
+                    <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                      General Information
+                    </h4>
+                  </div>
+
+                  <div className="grid gap-6 sm:grid-cols-2">
+                    <div className="grid gap-2">
+                      <Label
+                        htmlFor="name"
+                        className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1"
+                      >
+                        Full Name
+                      </Label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50 transition-colors group-focus-within:text-primary" />
+                        <Input
+                          id="name"
+                          value={profileData.name}
+                          onChange={(e) =>
+                            setProfileData({
+                              ...profileData,
+                              name: e.target.value,
+                            })
+                          }
+                          className="pl-10 h-11 bg-muted/20 border-border/50 focus:border-primary/50 focus:ring-primary/20"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label
+                        htmlFor="phone"
+                        className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1"
+                      >
+                        Phone Number
+                      </Label>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
+                        <Input
+                          id="phone"
+                          value={profileData.phone}
+                          onChange={(e) =>
+                            setProfileData({
+                              ...profileData,
+                              phone: e.target.value,
+                            })
+                          }
+                          placeholder="09xx xxx xxx"
+                          className="pl-10 h-11 bg-muted/20 border-border/50"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label
+                        htmlFor="cccd"
+                        className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1"
+                      >
+                        Identity Card (CCCD)
+                      </Label>
+                      <div className="relative">
+                        <IdCard className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
+                        <Input
+                          id="cccd"
+                          value={profileData.cccd}
+                          disabled
+                          className="pl-10 h-11 bg-muted border-border/50 opacity-70"
+                          placeholder="Verified KYC only"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label
+                        htmlFor="dob"
+                        className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1"
+                      >
+                        Date of Birth
+                      </Label>
+                      <div className="relative">
+                        <Cake className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
+                        <Input
+                          id="dob"
+                          type="date"
+                          value={profileData.dateOfBirth}
+                          onChange={(e) =>
+                            setProfileData({
+                              ...profileData,
+                              dateOfBirth: e.target.value,
+                            })
+                          }
+                          className="pl-10 h-11 bg-muted/20 border-border/50"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid gap-2 sm:col-span-2">
+                      <Label
+                        htmlFor="address"
+                        className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1"
+                      >
+                        Address
+                      </Label>
+                      <div className="relative">
+                        <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground/50" />
+                        <Input
+                          id="address"
+                          value={profileData.address}
+                          onChange={(e) =>
+                            setProfileData({
+                              ...profileData,
+                              address: e.target.value,
+                            })
+                          }
+                          placeholder="Enter your detailed residence address"
+                          className="pl-10 h-11 bg-muted/20 border-border/50 text-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-6 border-t border-border/50">
+                  <Button
+                    variant="ghost"
+                    onClick={() => onOpenChange(false)}
+                    className="font-bold"
+                  >
+                    Cancel
+                  </Button>
                   <Button
                     onClick={handleUpdateProfile}
                     disabled={isUpdatingProfile}
+                    className="min-w-[140px] font-bold shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
                   >
-                    {isUpdatingProfile && (
+                    {isUpdatingProfile ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="mr-2 h-4 w-4" />
                     )}
                     Save Changes
                   </Button>
@@ -429,7 +652,23 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
             {activeTab === "sessions" && (
               <div className="space-y-4 animate-in fade-in slide-in-from-right-2 duration-200">
-                <h3 className="text-lg font-medium">Active Sessions</h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-medium">Active Sessions</h3>
+                  {sessions.length > 1 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        sessions
+                          .filter((s) => s.id !== session?.session.id)
+                          .forEach((s) => handleRevokeSession(s.id))
+                      }
+                      className="text-xs"
+                    >
+                      Revoke All Other Sessions
+                    </Button>
+                  )}
+                </div>
                 {isLoadingSessions ? (
                   <div className="flex justify-center py-8">
                     <Loader2 className="animate-spin" />
@@ -439,17 +678,29 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     {sessions.map((s) => (
                       <div
                         key={s.id}
-                        className="flex items-center justify-between p-3 border rounded-lg bg-muted/20"
+                        className={`flex items-center justify-between p-4 border rounded-xl transition-colors ${
+                          s.id === session?.session.id
+                            ? "bg-primary/5 border-primary/20"
+                            : "bg-muted/30 hover:bg-muted/50"
+                        }`}
                       >
                         <div className="flex items-center gap-3">
-                          <Smartphone className="h-5 w-5 text-muted-foreground" />
+                          <div
+                            className={`p-2 rounded-full ${
+                              s.id === session?.session.id
+                                ? "bg-primary/10 text-primary"
+                                : "bg-muted-foreground/10 text-muted-foreground"
+                            }`}
+                          >
+                            <Smartphone className="h-5 w-5" />
+                          </div>
                           <div>
                             <p className="text-sm font-medium">
                               {s.userAgent?.includes("Windows")
                                 ? "Windows Device"
                                 : "Other Device"}
                               {s.id === session?.session.id && (
-                                <span className="ml-2 text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
+                                <span className="ml-2 text-[10px] bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
                                   Current
                                 </span>
                               )}
@@ -462,26 +713,37 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                             </p>
                           </div>
                         </div>
-                        {s.id !== session?.session.id && (
+                        {s.id !== session?.session.id ? (
                           <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => handleRevokeSession(s.id)}
+                            className="h-9 w-9 rounded-full hover:bg-destructive/10 hover:text-destructive"
                           >
-                            <Trash2 className="h-4 w-4 text-destructive" />
+                            <Trash2 className="h-4 w-4" />
                           </Button>
+                        ) : (
+                          <Badge
+                            variant="outline"
+                            className="bg-primary/10 text-primary border-primary/20"
+                          >
+                            <ShieldCheck className="h-3 w-3 mr-1" /> Active
+                          </Badge>
                         )}
                       </div>
                     ))}
-                    <Button
-                      variant="link"
-                      className="text-xs text-destructive hover:no-underline"
-                      onClick={() =>
-                        handleRevokeSession(session?.session.id || "")
-                      }
-                    >
-                      Revoke Current Session
-                    </Button>
+                    <div className="pt-2 mt-2 border-t">
+                      <Button
+                        variant="outline"
+                        className="w-full rounded-xl border-destructive/50 text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                        onClick={() =>
+                          handleRevokeSession(session?.session.id || "")
+                        }
+                      >
+                        <Key className="h-4 w-4 mr-2" />
+                        Revoke Current Session
+                      </Button>
+                    </div>
                   </div>
                 )}
               </div>
