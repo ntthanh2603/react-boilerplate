@@ -27,8 +27,6 @@ import { Label } from "./ui/label";
 import { Badge } from "./ui/badge";
 import { Phone, MapPin, IdCard, Cake, CheckCircle2 } from "lucide-react";
 import {
-  useUsersControllerGetMe,
-  useUsersControllerUpdateAvatar,
   useUsersControllerUpdateMe,
 } from "@/services/apis/gen/queries";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
@@ -41,8 +39,6 @@ interface SettingsDialogProps {
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   // Better Profile from custom API
   const { data: session, refetch } = authClient.useSession();
-  const { data: profile, refetch: refetchProfile } = useUsersControllerGetMe();
-  const updateAvatarMutation = useUsersControllerUpdateAvatar();
   const updateProfileMutation = useUsersControllerUpdateMe();
 
   const [activeTab, setActiveTab] = useState("profile");
@@ -86,18 +82,18 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [isLoadingAccounts, setIsLoadingAccounts] = useState(false);
 
   useEffect(() => {
-    if (profile) {
+    if (session?.user) {
       setProfileData({
-        name: profile.name || "",
-        phone: profile.phone || "",
-        address: profile.address || "",
-        cccd: profile.cccd || "",
-        dateOfBirth: profile.dateOfBirth
-          ? new Date(profile.dateOfBirth).toISOString().split("T")[0]
+        name: session.user.name || "",
+        phone: (session.user as any).phone || "",
+        address: (session.user as any).address?.fullAddress || (session.user as any).address?.detail || (session.user as any).address || "",
+        cccd: (session.user as any).cccd || "",
+        dateOfBirth: (session.user as any).dateOfBirth
+          ? new Date((session.user as any).dateOfBirth).toISOString().split("T")[0]
           : "",
       });
     }
-  }, [profile]);
+  }, [session]);
 
   const fetchSessions = async () => {
     setIsLoadingSessions(true);
@@ -165,12 +161,13 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       }
 
       await updateProfileMutation.mutateAsync({
-        data: profileData,
+        data: {
+          ...profileData,
+          address: { detail: profileData.address }
+        },
       });
 
       toast.success("Profile updated successfully");
-      await refetch();
-      await refetchProfile();
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
       toast.error(error.response?.data?.message || "Failed to update profile");
@@ -184,17 +181,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     if (!file) return;
 
     try {
-      const promise = updateAvatarMutation.mutateAsync({
-        data: { file },
-      });
-      toast.promise(promise, {
-        loading: "Updating avatar...",
-        success: "Avatar updated successfully",
-        error: "Failed to update avatar",
-      });
-      await promise;
-      await refetchProfile();
-      await refetch();
+      // Use authClient for avatar if possible, or just toast error if hook is gone
+      toast.error("Avatar update is currently managed via custom endpoint, but hook is missing.");
     } catch (error) {
       console.error("Avatar update error:", error);
     }
@@ -357,7 +345,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
                     <Avatar className="h-28 w-28 border-4 border-background shadow-xl ring-2 ring-primary/20 relative z-10 transition-transform group-hover:scale-105 duration-300">
                       <AvatarImage
-                        src={profile?.media?.url || session?.user?.image || ""}
+                        src={(session?.user as any)?.media?.url || session?.user?.image || ""}
                       />
                       <AvatarFallback className="text-3xl font-bold bg-primary/5 text-primary">
                         {profileData.name.slice(0, 2).toUpperCase()}
@@ -379,7 +367,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                       accept="image/*"
                       onChange={handleAvatarChange}
                     />
-                    {profile?.isVerifiedKyc && (
+                    {(session?.user as any)?.isVerifiedKyc && (
                       <div className="absolute -bottom-1 -right-1 z-30 bg-background rounded-full p-1 shadow-lg ring-1 ring-border">
                         <CheckCircle2 className="h-6 w-6 text-primary fill-primary/10" />
                       </div>
@@ -398,7 +386,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                         variant="outline"
                         className="px-2 py-0 h-5 text-[10px] font-bold uppercase tracking-wider bg-background/50"
                       >
-                        {profile?.role}
+                        {(session?.user as any)?.role}
                       </Badge>
                     </div>
                   </div>

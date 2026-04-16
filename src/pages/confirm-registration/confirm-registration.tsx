@@ -70,6 +70,7 @@ export default function ConfirmRegistrationPage() {
           data: {
             token,
             password,
+            email: registrationInfo?.email || "",
           },
         });
       } else if (type === "merchant") {
@@ -77,6 +78,7 @@ export default function ConfirmRegistrationPage() {
           data: {
             token,
             password,
+            email: registrationInfo?.email || "",
           },
         });
       } else {

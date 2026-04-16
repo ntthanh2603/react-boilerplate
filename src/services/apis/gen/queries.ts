@@ -26,6 +26,21 @@ import type {
 } from "@tanstack/react-query";
 
 import { orvalClient } from "../axios-client";
+export type AddressItemDto = {
+  id: number;
+  name: string;
+};
+
+export type AddressDto = {
+  province?: AddressItemDto;
+  district?: AddressItemDto;
+  ward?: AddressItemDto;
+  /** Detailed address (e.g., house number, street name) */
+  detail?: string;
+  /** Full formatted address */
+  fullAddress?: string;
+};
+
 /**
  * Status of the user
  */
@@ -53,9 +68,9 @@ export type User = {
   createdAt: string;
   updatedAt: string;
   /** Name of the user */
-  name: string;
+  name?: string;
   /** Phone number of the user */
-  phone: string;
+  phone?: string;
   /** Email of the user */
   email: string;
   /** CCCD of the user */
@@ -63,7 +78,7 @@ export type User = {
   /** Date of birth of the user */
   dateOfBirth: string;
   /** Address of the user */
-  address: string;
+  address: AddressDto;
   /** Is KYC verified */
   isVerifiedKyc: boolean;
   /** Status of the user */
@@ -74,14 +89,18 @@ export type User = {
 export type AppResponseSerialization = { [key: string]: unknown };
 
 export type UpdateProfileDto = {
-  /** Full name */
+  /** Name of the user */
   name?: string;
-  /** Phone number */
+  /** Phone number of the user */
   phone?: string;
-  /** Address */
-  address?: string;
-  /** Date of birth */
+  /** CCCD of the user */
+  cccd?: string;
+  /** Date of birth of the user */
   dateOfBirth?: string;
+  /** Address of the user */
+  address?: AddressDto;
+  /** User avatar image file (JPG, PNG, HEIC) */
+  avatar?: Blob;
 };
 
 export type DefaultMessageResponseDto = {
@@ -91,13 +110,13 @@ export type DefaultMessageResponseDto = {
 export type UserRegisterDto = {
   /** User email */
   email: string;
+  /** User full name */
+  name: string;
   /**
    * User password
    * @minLength 8
    */
   password: string;
-  /** User full name */
-  name: string;
 };
 
 export type UserVerifyOtpDto = {
@@ -114,17 +133,207 @@ export type UserResendOtpDto = {
 
 export type String = { [key: string]: unknown };
 
+export type LocationDto = {
+  longitude: number;
+  latitude: number;
+};
+
+export type Media = {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type MerchantMedia = {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  /** Merchant ID (FK, UUID) */
+  merchantId: string;
+  /** Merchant info */
+  merchant?: Merchant;
+  /** Media ID (FK, UUID) */
+  mediaId: string;
+  /** Media info */
+  media?: Media;
+};
+
 /**
- * Merchant address as JSON
+ * Parent category ID (UUID)
+ */
+export type MasterCategoryParentId = { [key: string]: unknown };
+
+/**
+ * Category type
+ */
+export type MasterCategoryType =
+  (typeof MasterCategoryType)[keyof typeof MasterCategoryType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const MasterCategoryType = {
+  service: "service",
+  product: "product",
+  unclassified: "unclassified",
+} as const;
+
+/**
+ * Status (active / inactive)
+ */
+export type MasterCategoryStatus =
+  (typeof MasterCategoryStatus)[keyof typeof MasterCategoryStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const MasterCategoryStatus = {
+  active: "active",
+  inactive: "inactive",
+} as const;
+
+export type MasterCategory = {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  /** Parent category ID (UUID) */
+  parentId?: MasterCategoryParentId;
+  /** Category type */
+  type: MasterCategoryType;
+  /** Master category name */
+  name: string;
+  /** Master category description */
+  description?: string;
+  /**
+   * Soft delete timestamp
+   * @nullable
+   */
+  deletedAt?: string | null;
+  /** Status (active / inactive) */
+  status: MasterCategoryStatus;
+};
+
+export type MerchantProductMedia = {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  /** Merchant product ID (FK, UUID) */
+  merchantProductId: string;
+  /** Merchant product info */
+  merchantProduct?: MerchantProduct;
+  /** Media ID (FK, UUID) */
+  mediaId?: string;
+  /** Media info */
+  media?: Media;
+};
+
+/**
+ * Structured audit log
+ */
+export type MerchantProductHistoryLogContent = { [key: string]: unknown };
+
+export type MerchantProductHistory = {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  /** ID of the merchant product */
+  merchantProductId: string;
+  /** Structured audit log */
+  logContent: MerchantProductHistoryLogContent;
+};
+
+/**
+ * Target pet species for this product
  * @nullable
  */
-export type MerchantAddress = { [key: string]: unknown } | null;
+export type MerchantProductPetType =
+  | (typeof MerchantProductPetType)[keyof typeof MerchantProductPetType]
+  | null;
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const MerchantProductPetType = {
+  Chó: "Chó",
+  Mèo: "Mèo",
+  Chim: "Chim",
+  Cá: "Cá",
+  Rùa: "Rùa",
+  Chuột: "Chuột",
+  Thỏ: "Thỏ",
+  Sóc: "Sóc",
+  Nhím: "Nhím",
+} as const;
+
+export type MerchantProduct = {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  /** ID of the merchant owning the product */
+  merchantId: string;
+  /** Merchant info */
+  merchant?: Merchant;
+  /** ID of the master category for this product */
+  masterCategoryId?: string;
+  /** Master category info */
+  masterCategory?: MasterCategory;
+  /** Product name */
+  name: string;
+  /**
+   * Product description
+   * @nullable
+   */
+  description?: string | null;
+  /**
+   * Product code
+   * @nullable
+   */
+  code?: string | null;
+  /**
+   * Product price
+   */
+  price?: number;
+  /**
+   * Product stock quantity
+   */
+  stockQty?: number;
+  /**
+   * Has stock quantity
+   */
+  hasStockQty?: boolean;
+  /**
+   * Product sold count
+   */
+  soldCount?: number;
+  /**
+   * Target pet species for this product
+   * @nullable
+   */
+  petType?: MerchantProductPetType;
+  /**
+   * Product status
+   */
+  status?: string;
+  /**
+   * Product delete at
+   * @nullable
+   */
+  deleteAt?: string | null;
+  /** Media ID (FK, UUID) */
+  mediaId?: string;
+  /** Media info */
+  media?: Media;
+  /** Linked media list */
+  merchantProductMedias?: MerchantProductMedia[];
+  /** Product modification histories */
+  merchantProductHistories?: MerchantProductHistory[];
+};
+
+/**
+ * Merchant address as JSON (province, district, ward, detail, coords, fullAddress)
+ * @nullable
+ */
+export type MerchantAddress = AddressDto | null;
 
 /**
  * Geographic location (PostGIS point)
  * @nullable
  */
-export type MerchantLocation = { [key: string]: unknown } | null;
+export type MerchantLocation = LocationDto | null;
 
 /**
  * Merchant status
@@ -140,6 +349,7 @@ export const MerchantStatus = {
   active: "active",
   inactive: "inactive",
   rejected: "rejected",
+  blocked: "blocked",
 } as const;
 
 export type Merchant = {
@@ -152,9 +362,14 @@ export type Merchant = {
    * Associated media ID (FK)
    * @nullable
    */
-  mediaId: number | null;
+  mediaId: string | null;
   /** Unique merchant code */
   code: string;
+  /**
+   * Referral code (from who invited)
+   * @nullable
+   */
+  referralCode: string | null;
   /**
    * Business license URL
    * @nullable
@@ -162,6 +377,11 @@ export type Merchant = {
   businessLicenseUrl: string | null;
   /** Merchant name */
   name: string;
+  /**
+   * Business registration number
+   * @nullable
+   */
+  businessRegistrationNumber: string | null;
   /**
    * Merchant phone number
    * @nullable
@@ -178,7 +398,7 @@ export type Merchant = {
    */
   description: string | null;
   /**
-   * Merchant address as JSON
+   * Merchant address as JSON (province, district, ward, detail, coords, fullAddress)
    * @nullable
    */
   address: MerchantAddress;
@@ -198,11 +418,155 @@ export type Merchant = {
    * @nullable
    */
   status: MerchantStatus;
+  /** Default check-in time for the merchant (HH:MM) */
+  defaultCheckInTime: string;
+  /** Default check-out time for the merchant (HH:MM) */
+  defaultCheckOutTime: string;
   /**
    * Soft delete timestamp
    * @nullable
    */
   deletedAt: string | null;
+  /** Services */
+  services?: MerchantService[];
+  /** Additional shop photos */
+  merchantMedias?: MerchantMedia[];
+  /** Products */
+  merchantProducts?: MerchantProduct[];
+};
+
+export type MerchantServiceMedia = {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  /** Merchant service ID (FK, UUID) */
+  merchantServiceId?: string;
+  /** Merchant service info */
+  merchantService?: MerchantService;
+  /** Media ID (FK, UUID) */
+  mediaId?: string;
+  /** Media info */
+  media?: Media;
+};
+
+/**
+ * Service type: normal (time-based) | stay (room-based)
+ */
+export type MerchantServiceType =
+  (typeof MerchantServiceType)[keyof typeof MerchantServiceType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const MerchantServiceType = {
+  normal: "normal",
+  stay: "stay",
+} as const;
+
+export type MerchantServiceSpeciesPetItem =
+  (typeof MerchantServiceSpeciesPetItem)[keyof typeof MerchantServiceSpeciesPetItem];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const MerchantServiceSpeciesPetItem = {
+  Chó: "Chó",
+  Mèo: "Mèo",
+  Chim: "Chim",
+  Cá: "Cá",
+  Rùa: "Rùa",
+  Chuột: "Chuột",
+  Thỏ: "Thỏ",
+  Sóc: "Sóc",
+  Nhím: "Nhím",
+} as const;
+
+/**
+ * Service status: active | inactive
+ */
+export type MerchantServiceStatus =
+  (typeof MerchantServiceStatus)[keyof typeof MerchantServiceStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const MerchantServiceStatus = {
+  active: "active",
+  inactive: "inactive",
+} as const;
+
+export type MerchantService = {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  /** ID of the merchant owning the service */
+  merchantId: string;
+  /** Merchant info */
+  merchant?: Merchant;
+  /** ID of the master category for this service */
+  masterCategoryId: string;
+  /** Master category info */
+  masterCategory?: MasterCategory;
+  /** Service type: normal (time-based) | stay (room-based) */
+  type: MerchantServiceType;
+  /** Service name */
+  name: string;
+  /** Species this service applies to */
+  speciesPet?: MerchantServiceSpeciesPetItem[];
+  /**
+   * Duration in minutes — only for type=normal
+   * @nullable
+   */
+  durationMinutes?: number | null;
+  /**
+   * Associated media ID (avatar)
+   * @nullable
+   */
+  mediaId: string | null;
+  /**
+   * Total rooms/cages available — only for type=stay
+   * @nullable
+   */
+  totalInventory?: number | null;
+  /**
+   * Max pets a single staff can handle at one slot — null means no limit
+   * @nullable
+   */
+  capacity?: number | null;
+  /** Whether capacity limit is enforced (true = enforce capacity, false = allow overbooking up to capacity) */
+  hasCapacity: boolean;
+  /**
+   * Service fee in VND
+   * @nullable
+   */
+  serviceFee?: number | null;
+  /** Deposit amount in VND */
+  deposit: number;
+  /** Whether a shipping fee applies */
+  isShippingFee: boolean;
+  /**
+   * Shipping fee in VND
+   * @nullable
+   */
+  shippingFee?: number | null;
+  /** Service status: active | inactive */
+  status: MerchantServiceStatus;
+  /**
+   * Service description
+   * @nullable
+   */
+  description?: string | null;
+  /**
+   * Default check-in hour for stay services (HH:MM)
+   * @nullable
+   */
+  checkinHour?: string | null;
+  /**
+   * Default check-out hour for stay services (HH:MM)
+   * @nullable
+   */
+  checkoutHour?: string | null;
+  /** Linked media list */
+  merchantServiceMedias?: MerchantServiceMedia[];
+  /**
+   * Soft delete timestamp
+   * @nullable
+   */
+  deletedAt?: string | null;
 };
 
 export type GetManyMerchantDto = {
@@ -214,80 +578,129 @@ export type GetManyMerchantDto = {
   pageCount: number;
 };
 
-export type LocationDto = {
-  longitude: number;
-  latitude: number;
-};
+/**
+ * Merchant address as JSON (province, district, ward, detail, coords, fullAddress)
+ * @nullable
+ */
+export type CreateMerchantDtoAddress = AddressDto | null;
 
 /**
- * Address JSON
+ * Geographic location (PostGIS point)
+ * @nullable
  */
-export type CreateMerchantDtoAddress = { [key: string]: unknown };
+export type CreateMerchantDtoLocation = LocationDto | null;
 
 export type CreateMerchantDto = {
   /** Unique merchant code */
   code: string;
+  /**
+   * Business license URL
+   * @nullable
+   */
+  businessLicenseUrl: string | null;
   /** Merchant name */
   name: string;
-  /** Business license URL */
-  businessLicenseUrl?: string;
-  /** Merchant phone */
-  phone?: string;
-  /** Merchant email */
-  email: string;
-  /** Owner name (User name) */
-  ownerName?: string;
-  /** Merchant description */
-  description?: string;
-  /** Address JSON */
-  address?: CreateMerchantDtoAddress;
-  /** Geographic location */
-  location?: LocationDto;
+  /**
+   * Business registration number
+   * @nullable
+   */
+  businessRegistrationNumber: string | null;
+  /**
+   * Merchant phone number
+   * @nullable
+   */
+  phone: string | null;
+  /**
+   * Merchant description
+   * @nullable
+   */
+  description: string | null;
+  /**
+   * Merchant address as JSON (province, district, ward, detail, coords, fullAddress)
+   * @nullable
+   */
+  address: CreateMerchantDtoAddress;
+  /**
+   * Geographic location (PostGIS point)
+   * @nullable
+   */
+  location: CreateMerchantDtoLocation;
   /** Bank account number */
   bankAccountNumber: string;
   /** Bank account holder name */
   bankAccountName: string;
   /** Bank code */
   bankCode: string;
+  /** Merchant email */
+  email: string;
+  /** Owner name of the merchant */
+  ownerName: string;
 };
 
 export type VerifyMerchantRegistrationDto = {
   /** Registration token from email */
   token: string;
+  /** Email address (to verify matching) */
+  email: string;
   /** Password to set for the new account */
   password: string;
 };
 
 /**
- * Address JSON
+ * Merchant address as JSON (province, district, ward, detail, coords, fullAddress)
+ * @nullable
  */
-export type UpdateMerchantDtoAddress = { [key: string]: unknown };
+export type UpdateMerchantDtoAddress = AddressDto | null;
+
+/**
+ * Geographic location (PostGIS point)
+ * @nullable
+ */
+export type UpdateMerchantDtoLocation = LocationDto | null;
 
 export type UpdateMerchantDto = {
-  /** Unique merchant code */
-  code?: string;
   /** Merchant name */
   name?: string;
-  /** Business license URL */
-  businessLicenseUrl?: string;
-  /** Merchant phone */
-  phone?: string;
-  /** Merchant email */
-  email?: string;
-  /** Owner name (User name) */
-  ownerName?: string;
-  /** Merchant description */
-  description?: string;
-  /** Address JSON */
+  /**
+   * Merchant phone number
+   * @nullable
+   */
+  phone?: string | null;
+  /**
+   * Merchant description
+   * @nullable
+   */
+  description?: string | null;
+  /**
+   * Merchant address as JSON (province, district, ward, detail, coords, fullAddress)
+   * @nullable
+   */
   address?: UpdateMerchantDtoAddress;
-  /** Geographic location */
-  location?: LocationDto;
+  /**
+   * Geographic location (PostGIS point)
+   * @nullable
+   */
+  location?: UpdateMerchantDtoLocation;
   /** Bank account number */
   bankAccountNumber?: string;
   /** Bank account holder name */
   bankAccountName?: string;
   /** Bank code */
   bankCode?: string;
+  /** Owner name of the merchant */
+  ownerName?: string;
+  /** Open time */
+  defaultCheckInTime?: string;
+  /** Close time */
+  defaultCheckOutTime?: string;
+  /** Avatar image (max 1) */
+  avatar?: Blob;
+  /** Delete avatar */
+  deleteAvatar?: boolean;
+  /** Additional shop photos (max 5) */
+  photos?: Blob[];
+  /** List of MerchantMedia IDs to delete (The ID in merchantMedias array) */
+  deletePhotoIds?: string[];
 };
 
 /**
@@ -302,6 +715,7 @@ export const UpdateMerchantStatusDtoStatus = {
   active: "active",
   inactive: "inactive",
   rejected: "rejected",
+  blocked: "blocked",
 } as const;
 
 export type UpdateMerchantStatusDto = {
@@ -310,10 +724,16 @@ export type UpdateMerchantStatusDto = {
 };
 
 /**
+ * Clinic address (province, district, ward, detail, coords, fullAddress)
+ * @nullable
+ */
+export type ClinicAddress = AddressDto | null;
+
+/**
  * Geographic location (PostGIS point)
  * @nullable
  */
-export type ClinicLocation = { [key: string]: unknown } | null;
+export type ClinicLocation = LocationDto | null;
 
 /**
  * @nullable
@@ -328,6 +748,7 @@ export const ClinicStatus = {
   active: "active",
   inactive: "inactive",
   rejected: "rejected",
+  blocked: "blocked",
 } as const;
 
 export type Clinic = {
@@ -339,6 +760,11 @@ export type Clinic = {
   /** Unique clinic code */
   code: string;
   /**
+   * Referral code
+   * @nullable
+   */
+  referralCode: string | null;
+  /**
    * Business license URL
    * @nullable
    */
@@ -346,10 +772,25 @@ export type Clinic = {
   /** Clinic name */
   name: string;
   /**
+   * open time
+   * @nullable
+   */
+  openTime: string | null;
+  /**
+   * close time
+   * @nullable
+   */
+  closeTime: string | null;
+  /**
+   * Business registration number
+   * @nullable
+   */
+  businessRegistrationNumber: string | null;
+  /**
    * Associated media ID (FK)
    * @nullable
    */
-  mediaId: number | null;
+  mediaId: string | null;
   /**
    * Clinic phone number
    * @nullable
@@ -366,10 +807,10 @@ export type Clinic = {
    */
   description: string | null;
   /**
-   * Clinic address
+   * Clinic address (province, district, ward, detail, coords, fullAddress)
    * @nullable
    */
-  address: string | null;
+  address: ClinicAddress;
   /**
    * Geographic location (PostGIS point)
    * @nullable
@@ -382,6 +823,22 @@ export type Clinic = {
    * @nullable
    */
   deletedAt: string | null;
+  /** Additional shop photos */
+  clinicMedias?: ClinicMedia[];
+};
+
+export type ClinicMedia = {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  /** Clinic ID (FK, UUID) */
+  clinicId: string;
+  /** Clinic info */
+  clinic?: Clinic;
+  /** Media ID (FK, UUID) */
+  mediaId: string;
+  /** Media info */
+  media?: Media;
 };
 
 export type GetManyClinicDto = {
@@ -393,53 +850,133 @@ export type GetManyClinicDto = {
   pageCount: number;
 };
 
+/**
+ * Clinic address (province, district, ward, detail, coords, fullAddress)
+ * @nullable
+ */
+export type CreateClinicDtoAddress = AddressDto | null;
+
+/**
+ * Geographic location (PostGIS point)
+ * @nullable
+ */
+export type CreateClinicDtoLocation = LocationDto | null;
+
 export type CreateClinicDto = {
-  /** Clinic name */
-  name: string;
   /** Unique clinic code */
   code: string;
-  /** Business license URL */
-  businessLicenseUrl?: string;
-  /** Clinic phone */
-  phone?: string;
+  /**
+   * Business license URL
+   * @nullable
+   */
+  businessLicenseUrl: string | null;
+  /** Clinic name */
+  name: string;
+  /**
+   * open time
+   * @nullable
+   */
+  openTime: string | null;
+  /**
+   * close time
+   * @nullable
+   */
+  closeTime: string | null;
+  /**
+   * Business registration number
+   * @nullable
+   */
+  businessRegistrationNumber: string | null;
+  /**
+   * Clinic phone number
+   * @nullable
+   */
+  phone: string | null;
+  /**
+   * Clinic description
+   * @nullable
+   */
+  description: string | null;
+  /**
+   * Clinic address (province, district, ward, detail, coords, fullAddress)
+   * @nullable
+   */
+  address: CreateClinicDtoAddress;
+  /**
+   * Geographic location (PostGIS point)
+   * @nullable
+   */
+  location: CreateClinicDtoLocation;
   /** Clinic email */
   email: string;
-  /** Owner name (User name) */
-  ownerName?: string;
-  /** Clinic description */
-  description?: string;
-  /** Clinic address */
-  address?: string;
-  /** Geographic location */
-  location?: LocationDto;
+  /** Owner name of the clinic */
+  ownerName: string;
 };
 
 export type VerifyClinicRegistrationDto = {
   /** Registration token from email */
   token: string;
+  /** Email address (to verify matching) */
+  email: string;
   /** Password to set for the new account */
   password: string;
 };
 
+/**
+ * Clinic address (province, district, ward, detail, coords, fullAddress)
+ * @nullable
+ */
+export type UpdateClinicDtoAddress = AddressDto | null;
+
+/**
+ * Geographic location (PostGIS point)
+ * @nullable
+ */
+export type UpdateClinicDtoLocation = LocationDto | null;
+
 export type UpdateClinicDto = {
   /** Clinic name */
   name?: string;
-  /** Unique clinic code */
-  code?: string;
-  /** Business license URL */
-  businessLicenseUrl?: string;
-  /** Clinic phone */
-  phone?: string;
-  /** Clinic email */
-  email?: string;
-  /** Owner name (User name) */
+  /**
+   * Open time
+   * @nullable
+   */
+  openTime?: string | null;
+  /**
+   * Close time
+   * @nullable
+   */
+  closeTime?: string | null;
+  /**
+   * Clinic phone number
+   * @nullable
+   */
+  phone?: string | null;
+  /**
+   * Clinic description
+   * @nullable
+   */
+  description?: string | null;
+  /**
+   * Clinic address (province, district, ward, detail, coords, fullAddress)
+   * @nullable
+   */
+  address?: UpdateClinicDtoAddress;
+  /**
+   * Geographic location (PostGIS point)
+   * @nullable
+   */
+  location?: UpdateClinicDtoLocation;
+  /** Owner name of the clinic */
   ownerName?: string;
-  /** Clinic description */
-  description?: string;
-  /** Clinic address */
-  address?: string;
-  /** Geographic location */
-  location?: LocationDto;
+  /** Avatar image (max 1) */
+  avatar?: Blob;
+  /** Delete avatar */
+  deleteAvatar?: boolean;
+  /** Additional shop photos (max 10) */
+  photos?: Blob[];
+  /** List of ClinicMedia IDs to delete (The ID in clinicMedias array) */
+  deletePhotoIds?: string[];
 };
 
 /**
@@ -454,56 +991,12 @@ export const UpdateClinicStatusDtoStatus = {
   active: "active",
   inactive: "inactive",
   rejected: "rejected",
+  blocked: "blocked",
 } as const;
 
 export type UpdateClinicStatusDto = {
   /** New clinic status */
   status: UpdateClinicStatusDtoStatus;
-};
-
-/**
- * Parent category ID (UUID)
- */
-export type MasterCategoryEntityParentId = { [key: string]: unknown };
-
-/**
- * Category type
- */
-export type MasterCategoryEntityType =
-  (typeof MasterCategoryEntityType)[keyof typeof MasterCategoryEntityType];
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const MasterCategoryEntityType = {
-  service: "service",
-  product: "product",
-} as const;
-
-/**
- * Status (active / inactive)
- */
-export type MasterCategoryEntityStatus =
-  (typeof MasterCategoryEntityStatus)[keyof typeof MasterCategoryEntityStatus];
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const MasterCategoryEntityStatus = {
-  active: "active",
-  inactive: "inactive",
-} as const;
-
-export type MasterCategoryEntity = {
-  id: string;
-  createdAt: string;
-  updatedAt: string;
-  /** Parent category ID (UUID) */
-  parentId?: MasterCategoryEntityParentId;
-  /** Category type */
-  type: MasterCategoryEntityType;
-  /** Master category name */
-  name: string;
-  /** Master category description */
-  description?: string;
-  /** Status (active / inactive) */
-  status: MasterCategoryEntityStatus;
 };
 
 /**
@@ -523,6 +1016,7 @@ export type MasterCategoryWithSubCategoriesDtoType =
 export const MasterCategoryWithSubCategoriesDtoType = {
   service: "service",
   product: "product",
+  unclassified: "unclassified",
 } as const;
 
 /**
@@ -549,9 +1043,14 @@ export type MasterCategoryWithSubCategoriesDto = {
   name: string;
   /** Master category description */
   description?: string;
+  /**
+   * Soft delete timestamp
+   * @nullable
+   */
+  deletedAt?: string | null;
   /** Status (active / inactive) */
   status: MasterCategoryWithSubCategoriesDtoStatus;
-  subCategories: MasterCategoryEntity[];
+  subCategories: MasterCategory[];
 };
 
 export type GetManyMasterCategoryWithSubCategoriesDtoDto = {
@@ -564,7 +1063,12 @@ export type GetManyMasterCategoryWithSubCategoriesDtoDto = {
 };
 
 /**
- * Master category type
+ * Parent category ID (UUID)
+ */
+export type CreateMasterCategoryDtoParentId = { [key: string]: unknown };
+
+/**
+ * Category type
  */
 export type CreateMasterCategoryDtoType =
   (typeof CreateMasterCategoryDtoType)[keyof typeof CreateMasterCategoryDtoType];
@@ -573,26 +1077,41 @@ export type CreateMasterCategoryDtoType =
 export const CreateMasterCategoryDtoType = {
   service: "service",
   product: "product",
+  unclassified: "unclassified",
 } as const;
+
+/**
+ * Status (active / inactive)
+ */
+export type CreateMasterCategoryDtoStatus =
+  (typeof CreateMasterCategoryDtoStatus)[keyof typeof CreateMasterCategoryDtoStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const CreateMasterCategoryDtoStatus = {
+  active: "active",
+  inactive: "inactive",
+} as const;
+
+export type CreateMasterCategoryDto = {
+  /** Parent category ID (UUID) */
+  parentId?: CreateMasterCategoryDtoParentId;
+  /** Category type */
+  type: CreateMasterCategoryDtoType;
+  /** Master category name */
+  name: string;
+  /** Master category description */
+  description?: string;
+  /** Status (active / inactive) */
+  status: CreateMasterCategoryDtoStatus;
+};
 
 /**
  * Parent category ID (UUID)
  */
-export type CreateMasterCategoryDtoParentId = { [key: string]: unknown };
-
-export type CreateMasterCategoryDto = {
-  /** Master category type */
-  type: CreateMasterCategoryDtoType;
-  /** Master category name */
-  name: string;
-  /** Description */
-  description?: string;
-  /** Parent category ID (UUID) */
-  parentId?: CreateMasterCategoryDtoParentId;
-};
+export type UpdateMasterCategoryDtoParentId = { [key: string]: unknown };
 
 /**
- * Master category type
+ * Category type
  */
 export type UpdateMasterCategoryDtoType =
   (typeof UpdateMasterCategoryDtoType)[keyof typeof UpdateMasterCategoryDtoType];
@@ -601,22 +1120,32 @@ export type UpdateMasterCategoryDtoType =
 export const UpdateMasterCategoryDtoType = {
   service: "service",
   product: "product",
+  unclassified: "unclassified",
 } as const;
 
 /**
- * Parent category ID (UUID)
+ * Status (active / inactive)
  */
-export type UpdateMasterCategoryDtoParentId = { [key: string]: unknown };
+export type UpdateMasterCategoryDtoStatus =
+  (typeof UpdateMasterCategoryDtoStatus)[keyof typeof UpdateMasterCategoryDtoStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const UpdateMasterCategoryDtoStatus = {
+  active: "active",
+  inactive: "inactive",
+} as const;
 
 export type UpdateMasterCategoryDto = {
-  /** Master category type */
+  /** Parent category ID (UUID) */
+  parentId?: UpdateMasterCategoryDtoParentId;
+  /** Category type */
   type?: UpdateMasterCategoryDtoType;
   /** Master category name */
   name?: string;
-  /** Description */
+  /** Master category description */
   description?: string;
-  /** Parent category ID (UUID) */
-  parentId?: UpdateMasterCategoryDtoParentId;
+  /** Status (active / inactive) */
+  status?: UpdateMasterCategoryDtoStatus;
 };
 
 /**
@@ -636,11 +1165,32 @@ export type UpdateMasterCategoryStatusDto = {
   status: UpdateMasterCategoryStatusDtoStatus;
 };
 
-export type MerchantServiceEntitySpeciesPetItem =
-  (typeof MerchantServiceEntitySpeciesPetItem)[keyof typeof MerchantServiceEntitySpeciesPetItem];
+export type GetManyMerchantServiceDto = {
+  data: MerchantService[];
+  total: number;
+  page: number;
+  limit: number;
+  hasNextPage: boolean;
+  pageCount: number;
+};
+
+/**
+ * Service type: normal (time-based) | stay (room-based)
+ */
+export type CreateMerchantServiceDtoType =
+  (typeof CreateMerchantServiceDtoType)[keyof typeof CreateMerchantServiceDtoType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const MerchantServiceEntitySpeciesPetItem = {
+export const CreateMerchantServiceDtoType = {
+  normal: "normal",
+  stay: "stay",
+} as const;
+
+export type CreateMerchantServiceDtoSpeciesPetItem =
+  (typeof CreateMerchantServiceDtoSpeciesPetItem)[keyof typeof CreateMerchantServiceDtoSpeciesPetItem];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const CreateMerchantServiceDtoSpeciesPetItem = {
   Chó: "Chó",
   Mèo: "Mèo",
   Chim: "Chim",
@@ -653,83 +1203,638 @@ export const MerchantServiceEntitySpeciesPetItem = {
 } as const;
 
 /**
- * Service status
+ * Service status: active | inactive
  */
-export type MerchantServiceEntityStatus =
-  (typeof MerchantServiceEntityStatus)[keyof typeof MerchantServiceEntityStatus];
+export type CreateMerchantServiceDtoStatus =
+  (typeof CreateMerchantServiceDtoStatus)[keyof typeof CreateMerchantServiceDtoStatus];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const MerchantServiceEntityStatus = {
+export const CreateMerchantServiceDtoStatus = {
   active: "active",
   inactive: "inactive",
 } as const;
 
-export type MerchantServiceEntity = {
-  id: string;
-  createdAt: string;
-  updatedAt: string;
-  /** ID of the merchant owning the service */
-  merchantId: string;
-  /** Merchant info */
-  merchant?: Merchant;
+export type CreateMerchantServiceDto = {
   /** ID of the master category for this service */
   masterCategoryId: string;
-  /** Master category info */
-  masterCategory?: MasterCategoryEntity;
+  /** Service type: normal (time-based) | stay (room-based) */
+  type: CreateMerchantServiceDtoType;
   /** Service name */
   name: string;
-  /** Species pet list */
-  speciesPet?: MerchantServiceEntitySpeciesPetItem[];
-  /** Service fee in VND */
-  serviceFee?: number;
-  /** Whether the service includes a shipping fee */
-  isShippingFee?: boolean;
-  /** Shipping fee in VND */
-  shippingFee?: number;
-  /** Service duration in minutes */
-  durationMinutes?: number;
-  /** Deposit amount in VND */
-  deposit?: number;
-  /** Service status */
-  status?: MerchantServiceEntityStatus;
-  /** Service description */
-  description?: string;
-  /** Linked media list */
-  merchantServiceMedias?: MerchantServiceMediaEntity[];
+  /** Species this service applies to */
+  speciesPet?: CreateMerchantServiceDtoSpeciesPetItem[];
   /**
-   * Soft delete timestamp
+   * Duration in minutes — only for type=normal
    * @nullable
    */
-  deletedAt: string | null;
+  durationMinutes?: number | null;
+  /**
+   * Max pets a single staff can handle at one slot — null means no limit
+   * @nullable
+   */
+  capacity?: number | null;
+  /** Whether capacity limit is enforced (true = enforce capacity, false = allow overbooking up to capacity) */
+  hasCapacity: boolean;
+  /**
+   * Service fee in VND
+   * @nullable
+   */
+  serviceFee?: number | null;
+  /** Deposit amount in VND */
+  deposit: number;
+  /** Whether a shipping fee applies */
+  isShippingFee: boolean;
+  /**
+   * Shipping fee in VND
+   * @nullable
+   */
+  shippingFee?: number | null;
+  /** Service status: active | inactive */
+  status: CreateMerchantServiceDtoStatus;
+  /**
+   * Service description
+   * @nullable
+   */
+  description?: string | null;
+  /** Avatar image (max 1) */
+  avatar?: Blob;
+  /** Service images (max 5) */
+  photos?: Blob[];
 };
 
-export type Media = {
-  id: string;
-  createdAt: string;
-  updatedAt: string;
+/**
+ * Service type: normal (time-based) | stay (room-based)
+ */
+export type UpdateMerchantServiceDtoType =
+  (typeof UpdateMerchantServiceDtoType)[keyof typeof UpdateMerchantServiceDtoType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const UpdateMerchantServiceDtoType = {
+  normal: "normal",
+  stay: "stay",
+} as const;
+
+export type UpdateMerchantServiceDtoSpeciesPetItem =
+  (typeof UpdateMerchantServiceDtoSpeciesPetItem)[keyof typeof UpdateMerchantServiceDtoSpeciesPetItem];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const UpdateMerchantServiceDtoSpeciesPetItem = {
+  Chó: "Chó",
+  Mèo: "Mèo",
+  Chim: "Chim",
+  Cá: "Cá",
+  Rùa: "Rùa",
+  Chuột: "Chuột",
+  Thỏ: "Thỏ",
+  Sóc: "Sóc",
+  Nhím: "Nhím",
+} as const;
+
+/**
+ * Service status: active | inactive
+ */
+export type UpdateMerchantServiceDtoStatus =
+  (typeof UpdateMerchantServiceDtoStatus)[keyof typeof UpdateMerchantServiceDtoStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const UpdateMerchantServiceDtoStatus = {
+  active: "active",
+  inactive: "inactive",
+} as const;
+
+export type UpdateMerchantServiceDto = {
+  /** ID of the master category for this service */
+  masterCategoryId?: string;
+  /** Service type: normal (time-based) | stay (room-based) */
+  type?: UpdateMerchantServiceDtoType;
+  /** Service name */
+  name?: string;
+  /** Species this service applies to */
+  speciesPet?: UpdateMerchantServiceDtoSpeciesPetItem[];
+  /**
+   * Duration in minutes — only for type=normal
+   * @nullable
+   */
+  durationMinutes?: number | null;
+  /**
+   * Max pets a single staff can handle at one slot — null means no limit
+   * @nullable
+   */
+  capacity?: number | null;
+  /** Whether capacity limit is enforced (true = enforce capacity, false = allow overbooking up to capacity) */
+  hasCapacity?: boolean;
+  /**
+   * Service fee in VND
+   * @nullable
+   */
+  serviceFee?: number | null;
+  /** Deposit amount in VND */
+  deposit?: number;
+  /** Whether a shipping fee applies */
+  isShippingFee?: boolean;
+  /**
+   * Shipping fee in VND
+   * @nullable
+   */
+  shippingFee?: number | null;
+  /** Service status: active | inactive */
+  status?: UpdateMerchantServiceDtoStatus;
+  /**
+   * Service description
+   * @nullable
+   */
+  description?: string | null;
+  /** Avatar image (max 1) */
+  avatar?: Blob;
+  /** Additional service photos (max 5) */
+  photos?: Blob[];
+  /** Delete avatar */
+  deleteAvatar?: boolean;
+  /** List of MerchantServiceMedia IDs to delete (The ID in merchantServiceMedias array) */
+  deletePhotoIds?: string[];
 };
 
-export type MerchantServiceMediaEntity = {
-  id: string;
-  createdAt: string;
-  updatedAt: string;
-  /** Merchant service ID (FK, UUID) */
-  merchantServiceId: string;
-  /** Merchant service info */
-  merchantService?: MerchantServiceEntity;
-  /** Media ID (FK, UUID) */
-  mediaId: string;
-  /** Media info */
-  media?: Media;
+export type UpdateMerchantServiceStatusDtoStatus =
+  (typeof UpdateMerchantServiceStatusDtoStatus)[keyof typeof UpdateMerchantServiceStatusDtoStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const UpdateMerchantServiceStatusDtoStatus = {
+  active: "active",
+  inactive: "inactive",
+} as const;
+
+export type UpdateMerchantServiceStatusDto = {
+  status: UpdateMerchantServiceStatusDtoStatus;
 };
 
-export type GetManyMerchantServiceEntityDto = {
-  data: MerchantServiceEntity[];
+export type CreateMerchantProductDto = {
+  /** ID of the master category for this product */
+  masterCategoryId?: string;
+  /** Product name */
+  name: string;
+  /**
+   * Product description
+   * @nullable
+   */
+  description?: string | null;
+  /**
+   * Product code
+   * @nullable
+   */
+  code?: string | null;
+  /**
+   * Product price
+   */
+  price?: number;
+  /**
+   * Product stock quantity
+   */
+  stockQty?: number;
+  /**
+   * Has stock quantity
+   */
+  hasStockQty?: boolean;
+  /** Product avatar image (jpg/png, max 5MB) */
+  avatar?: Blob;
+  /** Gallery photos to upload (max 9 files, jpg/png, max 5MB each) */
+  photos?: Blob[];
+};
+
+export type GetManyMerchantProductDto = {
+  data: MerchantProduct[];
   total: number;
   page: number;
   limit: number;
   hasNextPage: boolean;
   pageCount: number;
+};
+
+/**
+ * New product status
+ */
+export type UpdateMerchantProductDtoStatus =
+  (typeof UpdateMerchantProductDtoStatus)[keyof typeof UpdateMerchantProductDtoStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const UpdateMerchantProductDtoStatus = {
+  active: "active",
+  inactive: "inactive",
+  out_of_stock: "out_of_stock",
+} as const;
+
+export type UpdateMerchantProductDto = {
+  /** ID of the master category for this product */
+  masterCategoryId?: string;
+  /** Product name */
+  name?: string;
+  /**
+   * Product description
+   * @nullable
+   */
+  description?: string | null;
+  /**
+   * Product code
+   * @nullable
+   */
+  code?: string | null;
+  /**
+   * Product price
+   */
+  price?: number;
+  /**
+   * Product stock quantity
+   */
+  stockQty?: number;
+  /**
+   * Has stock quantity
+   */
+  hasStockQty?: boolean;
+  /** New product avatar image (jpg/png, max 5MB). Replaces the existing avatar. */
+  avatar?: Blob;
+  /** Additional product gallery photos (max 9) */
+  photos?: Blob[];
+  /** List of MerchantProductMedia IDs to delete (the ID in merchantProductMedias array) */
+  deletePhotoIds?: string[];
+  /** Set to true to remove the current avatar */
+  deleteAvatar?: boolean;
+  /** New product status */
+  status?: UpdateMerchantProductDtoStatus;
+};
+
+export type MerchantProductCategoryDto = {
+  /** Category ID */
+  id: string;
+  /** Category name */
+  name: string;
+};
+
+/**
+ * Merchant address
+ * @nullable
+ */
+export type MerchantPublicDtoAddress = { [key: string]: unknown } | null;
+
+export type MerchantPublicDto = {
+  /** Merchant ID */
+  id: string;
+  /** Merchant name */
+  name: string;
+  /**
+   * Merchant phone
+   * @nullable
+   */
+  phone?: string | null;
+  /**
+   * Merchant email
+   * @nullable
+   */
+  email?: string | null;
+  /**
+   * Merchant address
+   * @nullable
+   */
+  address?: MerchantPublicDtoAddress;
+  /**
+   * Merchant description
+   * @nullable
+   */
+  description?: string | null;
+};
+
+/**
+ * Product status
+ */
+export type MerchantProductResponseDtoStatus =
+  (typeof MerchantProductResponseDtoStatus)[keyof typeof MerchantProductResponseDtoStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const MerchantProductResponseDtoStatus = {
+  active: "active",
+  inactive: "inactive",
+  out_of_stock: "out_of_stock",
+} as const;
+
+/**
+ * Category summary
+ * @nullable
+ */
+export type MerchantProductResponseDtoMasterCategory =
+  MerchantProductCategoryDto | null;
+
+/**
+ * Target pet species for this product
+ * @nullable
+ */
+export type MerchantProductResponseDtoPetType =
+  | (typeof MerchantProductResponseDtoPetType)[keyof typeof MerchantProductResponseDtoPetType]
+  | null;
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const MerchantProductResponseDtoPetType = {
+  Chó: "Chó",
+  Mèo: "Mèo",
+  Chim: "Chim",
+  Cá: "Cá",
+  Rùa: "Rùa",
+  Chuột: "Chuột",
+  Thỏ: "Thỏ",
+  Sóc: "Sóc",
+  Nhím: "Nhím",
+} as const;
+
+/**
+ * Product avatar (main image)
+ * @nullable
+ */
+export type MerchantProductResponseDtoMedia = Media | null;
+
+export type MerchantProductResponseDto = {
+  /** Product ID */
+  id: string;
+  /** Product code */
+  code: string;
+  /** Product name */
+  name: string;
+  /**
+   * Product description (plain text)
+   * @nullable
+   */
+  description?: string | null;
+  /** Selling price (VND) */
+  price: number;
+  /** Product status */
+  status: MerchantProductResponseDtoStatus;
+  /** Sold count */
+  soldCount: number;
+  /**
+   * Master category ID
+   * @nullable
+   */
+  masterCategoryId?: string | null;
+  /**
+   * Category summary
+   * @nullable
+   */
+  masterCategory?: MerchantProductResponseDtoMasterCategory;
+  /**
+   * Target pet species for this product
+   * @nullable
+   */
+  petType?: MerchantProductResponseDtoPetType;
+  /**
+   * Product avatar (main image)
+   * @nullable
+   */
+  media?: MerchantProductResponseDtoMedia;
+  /** Product gallery photos (sorted by sortOrder ASC) */
+  merchantProductMedias?: MerchantProductMedia[];
+  /** Merchant */
+  merchant: MerchantPublicDto;
+  /** Stock quantity */
+  stockQty: number;
+  /** Has stock quantity */
+  hasStockQty: boolean;
+  /**
+   * Distance in KM from the user
+   * @nullable
+   */
+  distanceKm?: number | null;
+};
+
+export type ProductCategoryGroupDto = {
+  /** Master Category ID */
+  masterCategoryId: string;
+  /** Master Category Name */
+  categoryName: string;
+  /** List of products in this category */
+  products: MerchantProductResponseDto[];
+};
+
+export type HomePageProductsResponseDto = {
+  /** List of featured products (best sellers) */
+  featuredProducts: MerchantProductResponseDto[];
+  /** Products grouped by category */
+  categories: ProductCategoryGroupDto[];
+};
+
+/**
+ * Shop current status
+ */
+export type ShopProfileDtoStatus =
+  (typeof ShopProfileDtoStatus)[keyof typeof ShopProfileDtoStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const ShopProfileDtoStatus = {
+  pending: "pending",
+  active: "active",
+  inactive: "inactive",
+  rejected: "rejected",
+  blocked: "blocked",
+} as const;
+
+export type ShopProfileDto = {
+  /** Shop unique identifier */
+  id: string;
+  /** Shop name */
+  name: string;
+  /** Shop description */
+  description?: string;
+  /** Shop avatar URL */
+  avatarUrl?: string;
+  /** Shop default check-in time (opening hours) */
+  defaultCheckInTime?: string;
+  /** Shop default check-out time (closing hours) */
+  defaultCheckOutTime?: string;
+  /** Shop complete address */
+  address?: AddressDto;
+  /** Shop current status */
+  status: ShopProfileDtoStatus;
+};
+
+export type GetManyMerchantProductResponseDtoDto = {
+  data: MerchantProductResponseDto[];
+  total: number;
+  page: number;
+  limit: number;
+  hasNextPage: boolean;
+  pageCount: number;
+};
+
+export type ShopProfileResponseDto = {
+  /** The merchant shop profile details */
+  shop: ShopProfileDto;
+  /** Paginated list of all products belonging to this shop */
+  products: GetManyMerchantProductResponseDtoDto;
+};
+
+export type ProductDetailResponseDto = {
+  /** The main requested product */
+  product: MerchantProductResponseDto;
+  /** Top 10 best-selling related products from the same merchant */
+  relatedProducts: MerchantProductResponseDto[];
+};
+
+export type CapabilityMatrixRowDto = {
+  /** Staff member ID */
+  staffId: string;
+  /** List of service IDs this staff member can perform */
+  serviceIds: string[];
+};
+
+export type UpdateCapabilityMatrixDto = {
+  /** Capability matrix rows: each item contains a staffId and a list of serviceIds */
+  rows: CapabilityMatrixRowDto[];
+};
+
+export type CreateMerchantStaffDto = {
+  /** Full name of the staff member */
+  fullName: string;
+  /**
+   * Phone number
+   * @nullable
+   */
+  phone?: string | null;
+  /**
+   * Position/title — freely entered by the merchant
+   * @nullable
+   */
+  position?: string | null;
+  /**
+   * Date the staff member joined (YYYY-MM-DD)
+   * @nullable
+   */
+  joinedAt?: string | null;
+  /**
+   * Date the staff member resigned (YYYY-MM-DD)
+   * @nullable
+   */
+  resignedAt?: string | null;
+};
+
+export type UpdateMerchantStaffDto = {
+  /** Full name of the staff member */
+  fullName?: string;
+  /**
+   * Phone number
+   * @nullable
+   */
+  phone?: string | null;
+  /**
+   * Position/title — freely entered by the merchant
+   * @nullable
+   */
+  position?: string | null;
+  /**
+   * Date the staff member joined (YYYY-MM-DD)
+   * @nullable
+   */
+  joinedAt?: string | null;
+  /**
+   * Date the staff member resigned (YYYY-MM-DD)
+   * @nullable
+   */
+  resignedAt?: string | null;
+};
+
+/**
+ * Staff status: active | inactive
+ */
+export type UpdateStaffStatusDtoStatus =
+  (typeof UpdateStaffStatusDtoStatus)[keyof typeof UpdateStaffStatusDtoStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const UpdateStaffStatusDtoStatus = {
+  active: "active",
+  inactive: "inactive",
+} as const;
+
+export type UpdateStaffStatusDto = {
+  /** Staff status: active | inactive */
+  status: UpdateStaffStatusDtoStatus;
+};
+
+export type SetStaffBlockTimesDto = {
+  /** Staff member ID */
+  staffId: string;
+  /** List of blocked merchant working hour IDs for the staff */
+  blockedWorkingHourIds: string[];
+};
+
+export type WorkingHourSlotDto = {
+  /** Opening time HH:MM */
+  openTime: string;
+  /** Closing time HH:MM */
+  closeTime: string;
+};
+
+export type DayWorkingHoursDto = {
+  /** Day of week: 1 (Mon) -> 7 (Sun) */
+  dayOfWeek: number;
+  /** Is closed on this day */
+  isClosed: boolean;
+  /** Multiple time slots for this day */
+  slots?: WorkingHourSlotDto[];
+};
+
+export type UpdateMerchantWorkingHoursDto = {
+  /** Array of working hour configs per day */
+  days: DayWorkingHoursDto[];
+};
+
+export type CancelBookingDto = {
+  /**
+   * Reason for cancellation
+   * @nullable
+   */
+  cancelReason?: string | null;
+  /** Reason for cancellation */
+  reason?: string;
+};
+
+/**
+ * Booking type: online | walk_in
+ */
+export type CreateMerchantBookingDtoType =
+  (typeof CreateMerchantBookingDtoType)[keyof typeof CreateMerchantBookingDtoType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const CreateMerchantBookingDtoType = {
+  online: "online",
+  walk_in: "walk_in",
+} as const;
+
+export type CreateMerchantBookingDto = {
+  /**
+   * Merchant service ID (FK)
+   * @nullable
+   */
+  merchantServiceId?: string | null;
+  /**
+   * Merchant staff ID (FK)
+   * @nullable
+   */
+  merchantStaffId?: string | null;
+  /**
+   * Guardian name (who brings the pet)
+   * @nullable
+   */
+  guardian?: string | null;
+  /** Number of pets in this booking */
+  petCount: number;
+  /** Booking start datetime (ISO 8601) */
+  startAt: string;
+  /**
+   * Booking end datetime (ISO 8601)
+   * @nullable
+   */
+  endAt?: string | null;
+  /** Booking type: online | walk_in */
+  type: CreateMerchantBookingDtoType;
+  /**
+   * Additional note from the pet owner
+   * @nullable
+   */
+  note?: string | null;
 };
 
 /**
@@ -807,11 +1912,25 @@ export const CreateBreedDtoSpeciesName = {
   Nhím: "Nhím",
 } as const;
 
+/**
+ * Status
+ */
+export type CreateBreedDtoStatus =
+  (typeof CreateBreedDtoStatus)[keyof typeof CreateBreedDtoStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const CreateBreedDtoStatus = {
+  active: "active",
+  inactive: "inactive",
+} as const;
+
 export type CreateBreedDto = {
   /** Species name */
   speciesName: CreateBreedDtoSpeciesName;
   /** Breed name */
   name: string;
+  /** Status */
+  status: CreateBreedDtoStatus;
 };
 
 /**
@@ -833,11 +1952,25 @@ export const UpdateBreedDtoSpeciesName = {
   Nhím: "Nhím",
 } as const;
 
+/**
+ * Status
+ */
+export type UpdateBreedDtoStatus =
+  (typeof UpdateBreedDtoStatus)[keyof typeof UpdateBreedDtoStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const UpdateBreedDtoStatus = {
+  active: "active",
+  inactive: "inactive",
+} as const;
+
 export type UpdateBreedDto = {
   /** Species name */
   speciesName?: UpdateBreedDtoSpeciesName;
   /** Breed name */
   name?: string;
+  /** Status */
+  status?: UpdateBreedDtoStatus;
 };
 
 /**
@@ -857,8 +1990,596 @@ export type UpdateBreedStatusDto = {
   status: UpdateBreedStatusDtoStatus;
 };
 
-export type UsersControllerUpdateAvatarBody = {
-  file?: Blob;
+export type BreedSummaryDto = {
+  speciesName: string;
+  name: string;
+  status: string;
+};
+
+export type MediaSummaryDtoStatus =
+  (typeof MediaSummaryDtoStatus)[keyof typeof MediaSummaryDtoStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const MediaSummaryDtoStatus = {
+  PENDING: "PENDING",
+  COMPLETED: "COMPLETED",
+  FAILED: "FAILED",
+} as const;
+
+export type MediaSummaryDto = {
+  fileName: string;
+  mimeType: string;
+  size: number;
+  s3Key: string;
+  url: string;
+  status: MediaSummaryDtoStatus;
+};
+
+export type PetMediaSummaryDto = {
+  id: string;
+  mediaId: string;
+  media?: MediaSummaryDto;
+};
+
+export type UserSummaryDto = {
+  name?: string;
+  phone?: string;
+  email: string;
+};
+
+export type PetResponseDtoBreedId = { [key: string]: unknown };
+
+export type PetResponseDtoMediaId = { [key: string]: unknown };
+
+export type PetResponseDtoGender =
+  (typeof PetResponseDtoGender)[keyof typeof PetResponseDtoGender];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const PetResponseDtoGender = {
+  male: "male",
+  female: "female",
+  unknown: "unknown",
+} as const;
+
+export type PetResponseDtoStatus =
+  (typeof PetResponseDtoStatus)[keyof typeof PetResponseDtoStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const PetResponseDtoStatus = {
+  active: "active",
+  inactive: "inactive",
+  lost: "lost",
+  rip: "rip",
+} as const;
+
+export type PetResponseDtoDeletedAt = { [key: string]: unknown };
+
+export type PetResponseDto = {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  userId: string;
+  breedId?: PetResponseDtoBreedId;
+  mediaId?: PetResponseDtoMediaId;
+  name: string;
+  gender: PetResponseDtoGender;
+  weight?: number;
+  yearOfBirth: number;
+  address: AddressDto;
+  isNeutered?: boolean;
+  isIdentified: boolean;
+  allergyNote?: string;
+  status: PetResponseDtoStatus;
+  deletedAt?: PetResponseDtoDeletedAt;
+  breed?: BreedSummaryDto;
+  media?: MediaSummaryDto;
+  petMedias?: PetMediaSummaryDto[];
+  /** Owner profile */
+  user?: UserSummaryDto;
+};
+
+export type GetManyPetResponseDtoDto = {
+  data: PetResponseDto[];
+  total: number;
+  page: number;
+  limit: number;
+  hasNextPage: boolean;
+  pageCount: number;
+};
+
+export type CreatePetsDtoGender =
+  (typeof CreatePetsDtoGender)[keyof typeof CreatePetsDtoGender];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const CreatePetsDtoGender = {
+  male: "male",
+  female: "female",
+  unknown: "unknown",
+} as const;
+
+export type CreatePetsDto = {
+  /** Pet name */
+  name: string;
+  gender: CreatePetsDtoGender;
+  /** Year of birth */
+  yearOfBirth: number;
+  /** Weight (kg) */
+  weight?: number;
+  /** Allergy notes */
+  allergyNote?: string;
+  /** Neutering status */
+  isNeutered?: boolean;
+  /** Associated breed ID (FK) */
+  breedId?: string;
+  /** Pet address JSON string (province, district, ward, detail, coords, fullAddress) */
+  address: AddressDto;
+  /** Pet avatar image file (.jpg, .png, .heic). Max 5MB. Optional. */
+  avatar?: Blob;
+  /** Pet gallery images (max 5 files). */
+  gallery?: Blob[];
+  /** Confirm duplicate pet name */
+  confirmDuplicateName?: boolean;
+};
+
+export type CreatePetChipDto = {
+  /** Associated pet ID */
+  petId: string;
+  /** Associated appointment ID */
+  appointmentId: string;
+  /** Unique code of the chip */
+  code: string;
+  /** Staff name who performed the chip implant */
+  staffName: string;
+  /** Time of chip implant (HH:mm) */
+  injectionTime: string;
+  /** Date of chip implant (YYYY-MM-DD) */
+  injectionDate: string;
+  /** Additional notes */
+  note: string;
+  /** Date when identified. Defaults to current time. */
+  identifiedAt?: string;
+  /** Pet gallery images (max 4 files). */
+  gallery?: Blob[];
+};
+
+export type UpdatePetsDtoGender =
+  (typeof UpdatePetsDtoGender)[keyof typeof UpdatePetsDtoGender];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const UpdatePetsDtoGender = {
+  male: "male",
+  female: "female",
+  unknown: "unknown",
+} as const;
+
+export type UpdatePetsDto = {
+  /** Pet name */
+  name?: string;
+  gender?: UpdatePetsDtoGender;
+  /** Year of birth */
+  yearOfBirth?: number;
+  /** Weight (kg) */
+  weight?: number;
+  /** Allergy notes */
+  allergyNote?: string;
+  /** Neutering status */
+  isNeutered?: boolean;
+  /** Associated breed ID (FK) */
+  breedId?: string;
+  /** Pet address JSON string (province, district, ward, detail, coords, fullAddress) */
+  address?: AddressDto;
+  /** Pet avatar image file (.jpg, .png, .heic). Max 5MB. Optional. */
+  avatar?: Blob;
+  /** Pet gallery images (max 5 files). */
+  gallery?: Blob[];
+  /** Confirm duplicate pet name */
+  confirmDuplicateName?: boolean;
+  /** Delete current pet avatar */
+  deleteAvatar?: boolean;
+  /** List of PetMedia IDs to delete from gallery */
+  deletePhotoIds?: string[];
+};
+
+export type AppointmentUserDto = {
+  id?: string;
+  fullName: string;
+  /** count of pets unidentified */
+  unidentifiedPetCount: number;
+  avatar?: string;
+};
+
+/**
+ * Clinic address
+ */
+export type AppointmentClinicDtoAddress = { [key: string]: unknown };
+
+export type AppointmentClinicDto = {
+  id: string;
+  name: string;
+  phone?: string;
+  email?: string;
+  /** Clinic avatar URL */
+  avatar?: string;
+  /** Clinic address */
+  address?: AppointmentClinicDtoAddress;
+};
+
+export type AppointmentPetDto = {
+  id: string;
+  name: string;
+  breedName?: string;
+  isIdentified: boolean;
+};
+
+export type AppointmentIdentificationResponseDtoStatus =
+  (typeof AppointmentIdentificationResponseDtoStatus)[keyof typeof AppointmentIdentificationResponseDtoStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const AppointmentIdentificationResponseDtoStatus = {
+  pending: "pending",
+  used: "used",
+  cancelled: "cancelled",
+  expired: "expired",
+} as const;
+
+export type AppointmentIdentificationResponseDto = {
+  id: string;
+  qrString: string;
+  status: AppointmentIdentificationResponseDtoStatus;
+  /** Qr code validity */
+  isValid: boolean;
+  expiryDate: string;
+  createdAt: string;
+  user: AppointmentUserDto;
+  clinic?: AppointmentClinicDto;
+  /** List of unidentified pets */
+  pets: AppointmentPetDto[];
+};
+
+export type CreateAppointmentIdentificationDto = {
+  /** Associated clinic ID (FK) */
+  clinicId: string;
+};
+
+/**
+ * Geographic location (PostGIS point)
+ * @nullable
+ */
+export type ShippingAddressLocation = LocationDto | null;
+
+export type ShippingAddress = {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  /** The user ID this address belongs to */
+  userId: string;
+  /** Receiver Name */
+  receiverName: string;
+  /** Receiver Phone */
+  receiverPhone: string;
+  /** Address Type */
+  addressType: string;
+  /** Specific address in JSON format */
+  address: AddressDto;
+  /**
+   * Geographic location (PostGIS point)
+   * @nullable
+   */
+  location: ShippingAddressLocation;
+  /** Flag marking default shipping address */
+  isDefault: boolean;
+  /**
+   * Soft delete timestamp
+   * @nullable
+   */
+  deletedAt: string | null;
+};
+
+/**
+ * Geographic location (PostGIS point)
+ * @nullable
+ */
+export type CreateShippingAddressDtoLocation = LocationDto | null;
+
+export type CreateShippingAddressDto = {
+  /** Receiver Name */
+  receiverName: string;
+  /** Receiver Phone */
+  receiverPhone: string;
+  /** Address Type */
+  addressType: string;
+  /** Specific address in JSON format */
+  address: AddressDto;
+  /**
+   * Geographic location (PostGIS point)
+   * @nullable
+   */
+  location: CreateShippingAddressDtoLocation;
+  /** Flag marking default shipping address */
+  isDefault: boolean;
+};
+
+/**
+ * Geographic location (PostGIS point)
+ * @nullable
+ */
+export type UpdateShippingAddressDtoLocation = LocationDto | null;
+
+export type UpdateShippingAddressDto = {
+  /** Receiver Name */
+  receiverName?: string;
+  /** Receiver Phone */
+  receiverPhone?: string;
+  /** Address Type */
+  addressType?: string;
+  /** Specific address in JSON format */
+  address?: AddressDto;
+  /**
+   * Geographic location (PostGIS point)
+   * @nullable
+   */
+  location?: UpdateShippingAddressDtoLocation;
+  /** Flag marking default shipping address */
+  isDefault?: boolean;
+};
+
+export type AddToCartDto = {
+  /** The merchant product ID */
+  productId: string;
+  /** Quantity of the product in the cart */
+  quantity: number;
+};
+
+export type UpdateCartItemDto = {
+  /** Quantity of the product in the cart */
+  quantity: number;
+};
+
+export type BuyNowItemDto = {
+  /** Product ID */
+  productId: string;
+  /** Quantity to purchase */
+  quantity: number;
+};
+
+export type PreviewOrderDto = {
+  /** List of selected CartItem IDs for checkout preview */
+  cartItemIds?: string[];
+  /** Buy now product item */
+  buyNowItem?: BuyNowItemDto;
+};
+
+/**
+ * Payment method
+ */
+export type CheckoutOrderDtoPaymentMethod =
+  (typeof CheckoutOrderDtoPaymentMethod)[keyof typeof CheckoutOrderDtoPaymentMethod];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const CheckoutOrderDtoPaymentMethod = {
+  cash: "cash",
+  banking: "banking",
+} as const;
+
+/**
+ * Notes for each Merchant. Key is merchantId, Value is the note content.
+ */
+export type CheckoutOrderDtoMerchantNotes = { [key: string]: unknown };
+
+export type CheckoutOrderDto = {
+  /** List of selected CartItem IDs for checkout preview */
+  cartItemIds?: string[];
+  /** Buy now product item */
+  buyNowItem?: BuyNowItemDto;
+  /** Shipping address ID */
+  shippingAddressId: string;
+  /** Payment method */
+  paymentMethod: CheckoutOrderDtoPaymentMethod;
+  /** Notes for each Merchant. Key is merchantId, Value is the note content. */
+  merchantNotes?: CheckoutOrderDtoMerchantNotes;
+  /** Shipping unit */
+  shippingUnit: string;
+};
+
+/**
+ * Payment status
+ */
+export type SubOrderPaymentStatus =
+  (typeof SubOrderPaymentStatus)[keyof typeof SubOrderPaymentStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const SubOrderPaymentStatus = {
+  pending: "pending",
+  paid: "paid",
+  failed: "failed",
+  refunded: "refunded",
+} as const;
+
+/**
+ * Processing status of Shop
+ */
+export type SubOrderStatus =
+  (typeof SubOrderStatus)[keyof typeof SubOrderStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const SubOrderStatus = {
+  pending: "pending",
+  confirmed: "confirmed",
+  preparing: "preparing",
+  shipping: "shipping",
+  delivered: "delivered",
+  cancelled: "cancelled",
+} as const;
+
+export type SubOrder = {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  /** Master Order ID */
+  orderId: string;
+  /** Merchant ID */
+  merchantId: string;
+  /** Total amount of sub order */
+  subTotal: number;
+  /** Shipping fee */
+  shippingFee: number;
+  /** Shipping unit */
+  shippingUnit: string;
+  /** Discount amount provided by shop */
+  discountAmount: number;
+  /** Payment status */
+  paymentStatus: SubOrderPaymentStatus;
+  /** Processing status of Shop */
+  status: SubOrderStatus;
+  /** Shop note */
+  note: string;
+  /** Order confirmed date */
+  confirmedAt?: string;
+  /** Order sent date */
+  sentAt?: string;
+  /** Order delivered date */
+  deliveredAt?: string;
+  /** Cancel reason */
+  cancelReason?: string;
+  /** Order cancelled date */
+  cancelledAt?: string;
+};
+
+export type GetManySubOrderDto = {
+  data: SubOrder[];
+  total: number;
+  page: number;
+  limit: number;
+  hasNextPage: boolean;
+  pageCount: number;
+};
+
+export type CancelOrderDto = {
+  /** Reason for cancellation */
+  cancelReason: string;
+};
+
+export type ShipOrderDto = {
+  /** Tracking code */
+  trackingCode?: string;
+  /** Shipping unit (e.g. FedEx, UPS, local delivery) */
+  shippingUnit: string;
+};
+
+/**
+ * Type of device
+ */
+export type RegisterDeviceDtoDeviceType =
+  (typeof RegisterDeviceDtoDeviceType)[keyof typeof RegisterDeviceDtoDeviceType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const RegisterDeviceDtoDeviceType = {
+  ios: "ios",
+  android: "android",
+  web: "web",
+} as const;
+
+export type RegisterDeviceDto = {
+  /** FCM Token for push notifications */
+  token: string;
+  /** Type of device */
+  deviceType: RegisterDeviceDtoDeviceType;
+};
+
+export type UnregisterDeviceDto = {
+  /** FCM Token to unregister */
+  token: string;
+};
+
+export type RegisterReferralDto = {
+  email: string;
+  /** 4-character alphanumeric referral code */
+  referralCode: string;
+  /** Business name */
+  name: string;
+  /** Business phone number */
+  phone?: string;
+};
+
+export type Object = { [key: string]: unknown };
+
+export type CompleteRegistrationDto = {
+  /** Registration token */
+  token: string;
+  /** Password */
+  password: string;
+};
+
+export type Referrer = {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  /** Referrer name */
+  name: string;
+  /** Referrer email */
+  email: string;
+  /** Referrer phone number */
+  phone: string;
+  /** Referrer unique code */
+  code: string;
+};
+
+export type GetManyReferrerDto = {
+  data: Referrer[];
+  total: number;
+  page: number;
+  limit: number;
+  hasNextPage: boolean;
+  pageCount: number;
+};
+
+export type CreateReferrerDto = {
+  name: string;
+  email: string;
+  phone: string;
+  /** Referral code (4 uppercase or numeric characters) */
+  code?: string;
+};
+
+/**
+ * Role assigned
+ */
+export type ReferralHistoryRole =
+  (typeof ReferralHistoryRole)[keyof typeof ReferralHistoryRole];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const ReferralHistoryRole = {
+  admin: "admin",
+  user: "user",
+  merchant: "merchant",
+  clinic: "clinic",
+} as const;
+
+export type ReferralHistory = {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  /** Associated referrer ID (FK) */
+  referrerId: string;
+  /** Referred email */
+  email: string;
+  /** Role assigned */
+  role: ReferralHistoryRole;
+  /** Name of the business (Merchant/Clinic) */
+  name: string;
+  /** ID of the created Merchant or Clinic */
+  refId?: string;
+  /** ID of the created User */
+  userId?: string;
+};
+
+export type GetManyReferralHistoryDto = {
+  data: ReferralHistory[];
+  total: number;
+  page: number;
+  limit: number;
+  hasNextPage: boolean;
+  pageCount: number;
 };
 
 export type MerchantsControllerGetAllParams = {
@@ -867,7 +2588,35 @@ export type MerchantsControllerGetAllParams = {
   limit?: number;
   sortBy?: string;
   sortOrder?: string;
+  /**
+   * Filter by merchant status
+   */
+  status?: MerchantsControllerGetAllStatus;
+  /**
+   * Filter by province/city
+   */
+  province?: string;
+  /**
+   * Latitude for nearby search
+   */
+  latitude?: number;
+  /**
+   * Longitude for nearby search
+   */
+  longitude?: number;
 };
+
+export type MerchantsControllerGetAllStatus =
+  (typeof MerchantsControllerGetAllStatus)[keyof typeof MerchantsControllerGetAllStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const MerchantsControllerGetAllStatus = {
+  pending: "pending",
+  active: "active",
+  inactive: "inactive",
+  rejected: "rejected",
+  blocked: "blocked",
+} as const;
 
 export type ClinicsControllerGetAllParams = {
   search?: string;
@@ -875,7 +2624,27 @@ export type ClinicsControllerGetAllParams = {
   limit?: number;
   sortBy?: string;
   sortOrder?: string;
+  /**
+   * Filter by clinic status
+   */
+  status?: ClinicsControllerGetAllStatus;
+  /**
+   * Filter by province/city
+   */
+  province?: string;
 };
+
+export type ClinicsControllerGetAllStatus =
+  (typeof ClinicsControllerGetAllStatus)[keyof typeof ClinicsControllerGetAllStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const ClinicsControllerGetAllStatus = {
+  pending: "pending",
+  active: "active",
+  inactive: "inactive",
+  rejected: "rejected",
+  blocked: "blocked",
+} as const;
 
 export type MasterCategoriesControllerGetAllMasterCategoriesParams = {
   search?: string;
@@ -883,6 +2652,10 @@ export type MasterCategoriesControllerGetAllMasterCategoriesParams = {
   limit?: number;
   sortBy?: string;
   sortOrder?: string;
+  /**
+   * Filter by category name (partial match)
+   */
+  name?: string;
   /**
    * Master category type
    */
@@ -900,6 +2673,7 @@ export type MasterCategoriesControllerGetAllMasterCategoriesType =
 export const MasterCategoriesControllerGetAllMasterCategoriesType = {
   service: "service",
   product: "product",
+  unclassified: "unclassified",
 } as const;
 
 export type MasterCategoriesControllerGetAllMasterCategoriesStatus =
@@ -917,88 +2691,565 @@ export type MerchantServicesControllerGetAllParams = {
   limit?: number;
   sortBy?: string;
   sortOrder?: string;
-};
-
-export type MerchantServicesControllerCreateBodySpeciesPetItem =
-  (typeof MerchantServicesControllerCreateBodySpeciesPetItem)[keyof typeof MerchantServicesControllerCreateBodySpeciesPetItem];
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const MerchantServicesControllerCreateBodySpeciesPetItem = {
-  Chó: "Chó",
-  Mèo: "Mèo",
-  Chim: "Chim",
-  Cá: "Cá",
-  Rùa: "Rùa",
-  Chuột: "Chuột",
-  Thỏ: "Thỏ",
-  Sóc: "Sóc",
-  Nhím: "Nhím",
-} as const;
-
-export type MerchantServicesControllerCreateBodyStatus =
-  (typeof MerchantServicesControllerCreateBodyStatus)[keyof typeof MerchantServicesControllerCreateBodyStatus];
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const MerchantServicesControllerCreateBodyStatus = {
-  active: "active",
-  inactive: "inactive",
-} as const;
-
-export type MerchantServicesControllerCreateBody = {
-  files?: Blob[];
-  merchantId: string;
-  masterCategoryId: string;
-  name: string;
-  description?: string;
-  speciesPet?: MerchantServicesControllerCreateBodySpeciesPetItem[];
-  serviceFee: number;
-  isShippingFee?: boolean;
-  shippingFee?: number;
-  durationMinutes?: number;
-  status?: MerchantServicesControllerCreateBodyStatus;
-};
-
-export type MerchantServicesControllerUpdateBodySpeciesPetItem =
-  (typeof MerchantServicesControllerUpdateBodySpeciesPetItem)[keyof typeof MerchantServicesControllerUpdateBodySpeciesPetItem];
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const MerchantServicesControllerUpdateBodySpeciesPetItem = {
-  Chó: "Chó",
-  Mèo: "Mèo",
-  Chim: "Chim",
-  Cá: "Cá",
-  Rùa: "Rùa",
-  Chuột: "Chuột",
-  Thỏ: "Thỏ",
-  Sóc: "Sóc",
-  Nhím: "Nhím",
-} as const;
-
-export type MerchantServicesControllerUpdateBodyStatus =
-  (typeof MerchantServicesControllerUpdateBodyStatus)[keyof typeof MerchantServicesControllerUpdateBodyStatus];
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const MerchantServicesControllerUpdateBodyStatus = {
-  active: "active",
-  inactive: "inactive",
-} as const;
-
-export type MerchantServicesControllerUpdateBody = {
-  files?: Blob[];
+  /**
+   * Filter by merchant UUID (optional for admin/user requests)
+   */
   merchantId?: string;
+  /**
+   * Filter by master category UUID
+   */
   masterCategoryId?: string;
+  /**
+   * Filter by service name (partial match)
+   */
   name?: string;
-  description?: string;
-  speciesPet?: MerchantServicesControllerUpdateBodySpeciesPetItem[];
-  serviceFee?: number;
-  isShippingFee?: boolean;
-  shippingFee?: number;
-  durationMinutes?: number;
-  status?: MerchantServicesControllerUpdateBodyStatus;
-  mediaIds?: string[];
+  /**
+   * Filter by species (any match)
+   */
+  speciesPet?: MerchantServicesControllerGetAllSpeciesPetItem[];
+  /**
+   * Service type: normal (time-based) | stay (room-based)
+   */
+  type?: MerchantServicesControllerGetAllType;
+  /**
+   * Latitude for nearby search
+   */
+  latitude?: number;
+  /**
+   * Longitude for nearby search
+   */
+  longitude?: number;
 };
+
+export type MerchantServicesControllerGetAllSpeciesPetItem =
+  (typeof MerchantServicesControllerGetAllSpeciesPetItem)[keyof typeof MerchantServicesControllerGetAllSpeciesPetItem];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const MerchantServicesControllerGetAllSpeciesPetItem = {
+  Chó: "Chó",
+  Mèo: "Mèo",
+  Chim: "Chim",
+  Cá: "Cá",
+  Rùa: "Rùa",
+  Chuột: "Chuột",
+  Thỏ: "Thỏ",
+  Sóc: "Sóc",
+  Nhím: "Nhím",
+} as const;
+
+export type MerchantServicesControllerGetAllType =
+  (typeof MerchantServicesControllerGetAllType)[keyof typeof MerchantServicesControllerGetAllType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const MerchantServicesControllerGetAllType = {
+  normal: "normal",
+  stay: "stay",
+} as const;
+
+export type CapacitySnapshotsControllerGetAvailableSlotsParams = {
+  /**
+   * Date to check slots (YYYY-MM-DD)
+   */
+  date: string;
+};
+
+export type CapacitySnapshotsControllerGetStayAvailabilityParams = {
+  /**
+   * Check-in datetime (ISO 8601)
+   */
+  checkIn: string;
+  /**
+   * Check-out datetime (ISO 8601)
+   */
+  checkOut: string;
+};
+
+export type MerchantProductControllerGetAllParams = {
+  search?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: string;
+  /**
+   * Filter by pet species (DOG, CAT, BIRD, etc)
+   */
+  petType?: MerchantProductControllerGetAllPetType;
+  /**
+   * Minimum price filter
+   */
+  minPrice?: number;
+  /**
+   * Maximum price filter
+   */
+  maxPrice?: number;
+  /**
+   * Longitude for nearest search
+   */
+  longitude?: number;
+  /**
+   * Latitude for nearest search
+   */
+  latitude?: number;
+  /**
+   * Filter by merchant UUID (optional for admin/user requests)
+   */
+  merchantId?: string;
+  /**
+   * Filter by master category UUIDs (comma-separated or array)
+   */
+  masterCategoryId?: string[];
+  /**
+   * Filter by product status
+   */
+  status?: string;
+  /**
+   * Filter by service name (partial match)
+   */
+  name?: string;
+  /**
+   * Filter by product code (partial match)
+   */
+  code?: string;
+};
+
+export type MerchantProductControllerGetAllPetType =
+  (typeof MerchantProductControllerGetAllPetType)[keyof typeof MerchantProductControllerGetAllPetType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const MerchantProductControllerGetAllPetType = {
+  Chó: "Chó",
+  Mèo: "Mèo",
+  Chim: "Chim",
+  Cá: "Cá",
+  Rùa: "Rùa",
+  Chuột: "Chuột",
+  Thỏ: "Thỏ",
+  Sóc: "Sóc",
+  Nhím: "Nhím",
+} as const;
+
+export type PetOwnerProductControllerGetHomeProductsParams = {
+  /**
+   * Longitude for radius search
+   */
+  longitude?: number;
+  /**
+   * Latitude for radius search
+   */
+  latitude?: number;
+};
+
+export type PetOwnerProductControllerGetShopProfileParams = {
+  search?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: string;
+  /**
+   * Filter by pet species (DOG, CAT, BIRD, etc)
+   */
+  petType?: PetOwnerProductControllerGetShopProfilePetType;
+  /**
+   * Minimum price filter
+   */
+  minPrice?: number;
+  /**
+   * Maximum price filter
+   */
+  maxPrice?: number;
+  /**
+   * Longitude for nearest search
+   */
+  longitude?: number;
+  /**
+   * Latitude for nearest search
+   */
+  latitude?: number;
+  /**
+   * Filter by merchant UUID (optional for admin/user requests)
+   */
+  merchantId?: string;
+  /**
+   * Filter by master category UUIDs (comma-separated or array)
+   */
+  masterCategoryId?: string[];
+  /**
+   * Filter by product status
+   */
+  status?: string;
+  /**
+   * Filter by service name (partial match)
+   */
+  name?: string;
+  /**
+   * Filter by product code (partial match)
+   */
+  code?: string;
+};
+
+export type PetOwnerProductControllerGetShopProfilePetType =
+  (typeof PetOwnerProductControllerGetShopProfilePetType)[keyof typeof PetOwnerProductControllerGetShopProfilePetType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const PetOwnerProductControllerGetShopProfilePetType = {
+  Chó: "Chó",
+  Mèo: "Mèo",
+  Chim: "Chim",
+  Cá: "Cá",
+  Rùa: "Rùa",
+  Chuột: "Chuột",
+  Thỏ: "Thỏ",
+  Sóc: "Sóc",
+  Nhím: "Nhím",
+} as const;
+
+export type PetOwnerProductControllerGetProductDetailParams = {
+  /**
+   * Longitude for radius search
+   */
+  longitude?: number;
+  /**
+   * Latitude for radius search
+   */
+  latitude?: number;
+};
+
+export type PetOwnerProductControllerGetAllParams = {
+  search?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: string;
+  /**
+   * Filter by pet species (DOG, CAT, BIRD, etc)
+   */
+  petType?: PetOwnerProductControllerGetAllPetType;
+  /**
+   * Minimum price filter
+   */
+  minPrice?: number;
+  /**
+   * Maximum price filter
+   */
+  maxPrice?: number;
+  /**
+   * Longitude for nearest search
+   */
+  longitude?: number;
+  /**
+   * Latitude for nearest search
+   */
+  latitude?: number;
+  /**
+   * Filter by merchant UUID (optional for admin/user requests)
+   */
+  merchantId?: string;
+  /**
+   * Filter by master category UUIDs (comma-separated or array)
+   */
+  masterCategoryId?: string[];
+  /**
+   * Filter by product status
+   */
+  status?: string;
+  /**
+   * Filter by service name (partial match)
+   */
+  name?: string;
+  /**
+   * Filter by product code (partial match)
+   */
+  code?: string;
+};
+
+export type PetOwnerProductControllerGetAllPetType =
+  (typeof PetOwnerProductControllerGetAllPetType)[keyof typeof PetOwnerProductControllerGetAllPetType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const PetOwnerProductControllerGetAllPetType = {
+  Chó: "Chó",
+  Mèo: "Mèo",
+  Chim: "Chim",
+  Cá: "Cá",
+  Rùa: "Rùa",
+  Chuột: "Chuột",
+  Thỏ: "Thỏ",
+  Sóc: "Sóc",
+  Nhím: "Nhím",
+} as const;
+
+export type MerchantStaffsControllerGetStaffListParams = {
+  search?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: string;
+  /**
+   * Filter by status
+   */
+  status?: MerchantStaffsControllerGetStaffListStatus;
+};
+
+export type MerchantStaffsControllerGetStaffListStatus =
+  (typeof MerchantStaffsControllerGetStaffListStatus)[keyof typeof MerchantStaffsControllerGetStaffListStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const MerchantStaffsControllerGetStaffListStatus = {
+  active: "active",
+  inactive: "inactive",
+} as const;
+
+export type MerchantBookingsControllerGetMyBookingsParams = {
+  search?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: string;
+  /**
+   * upcoming | history
+   */
+  tab?: string;
+};
+
+export type MerchantBookingsControllerGetDayViewParams = {
+  /**
+   * Date to view (YYYY-MM-DD)
+   */
+  date: string;
+  /**
+   * Filter by service type
+   */
+  type?: MerchantBookingsControllerGetDayViewType;
+};
+
+export type MerchantBookingsControllerGetDayViewType =
+  (typeof MerchantBookingsControllerGetDayViewType)[keyof typeof MerchantBookingsControllerGetDayViewType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const MerchantBookingsControllerGetDayViewType = {
+  normal: "normal",
+  stay: "stay",
+} as const;
+
+export type MerchantBookingsControllerGetMerchantBookingsParams = {
+  search?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: string;
+  /**
+   * Filter from date (ISO date)
+   */
+  dateFrom?: string;
+  /**
+   * Filter to date (ISO date)
+   */
+  dateTo?: string;
+  /**
+   * Filter by booking status
+   */
+  status?: MerchantBookingsControllerGetMerchantBookingsStatus;
+  /**
+   * Filter service type (normal | stay)
+   */
+  type?: MerchantBookingsControllerGetMerchantBookingsType;
+};
+
+export type MerchantBookingsControllerGetMerchantBookingsStatus =
+  (typeof MerchantBookingsControllerGetMerchantBookingsStatus)[keyof typeof MerchantBookingsControllerGetMerchantBookingsStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const MerchantBookingsControllerGetMerchantBookingsStatus = {
+  pending: "pending",
+  confirmed: "confirmed",
+  checked_in: "checked_in",
+  completed: "completed",
+  cancelled: "cancelled",
+  no_show: "no_show",
+} as const;
+
+export type MerchantBookingsControllerGetMerchantBookingsType =
+  (typeof MerchantBookingsControllerGetMerchantBookingsType)[keyof typeof MerchantBookingsControllerGetMerchantBookingsType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const MerchantBookingsControllerGetMerchantBookingsType = {
+  normal: "normal",
+  stay: "stay",
+} as const;
 
 export type BreedsControllerGetAllParams = {
+  search?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: string;
+  status?: string;
+  /**
+   * Filter by species name
+   */
+  speciesName?: BreedsControllerGetAllSpeciesName;
+  /**
+   * Filter by breed name (partial match)
+   */
+  name?: string;
+};
+
+export type BreedsControllerGetAllSpeciesName =
+  (typeof BreedsControllerGetAllSpeciesName)[keyof typeof BreedsControllerGetAllSpeciesName];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const BreedsControllerGetAllSpeciesName = {
+  Chó: "Chó",
+  Mèo: "Mèo",
+  Chim: "Chim",
+  Cá: "Cá",
+  Rùa: "Rùa",
+  Chuột: "Chuột",
+  Thỏ: "Thỏ",
+  Sóc: "Sóc",
+  Nhím: "Nhím",
+} as const;
+
+export type PetsControllerGetPetsParams = {
+  search?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: string;
+  /**
+   * Filter by user UUID
+   */
+  userId?: string;
+  /**
+   * Filter by pet name (partial match)
+   */
+  name?: string;
+  /**
+   * Filter by breed UUID
+   */
+  breedId?: string;
+  /**
+   * Filter by identification status
+   */
+  isIdentified?: boolean;
+};
+
+export type PetsControllerFindAllPetChipsParams = {
+  search?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: string;
+  /**
+   * Filter by user UUID
+   */
+  userId?: string;
+  /**
+   * Filter by pet name (partial match)
+   */
+  name?: string;
+  /**
+   * Filter by breed UUID
+   */
+  breedId?: string;
+  /**
+   * Filter by identification status
+   */
+  isIdentified?: boolean;
+  chipId?: string;
+  code?: string;
+  petId?: string;
+};
+
+export type AppointmentIdentificationControllerGetAllParams = {
+  search?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: string;
+  /**
+   * Filter by appointment status
+   */
+  status?: AppointmentIdentificationControllerGetAllStatus;
+  /**
+   * Filter by Clinic ID
+   */
+  clinicId?: string;
+  /**
+   * Filter by User ID
+   */
+  userId?: string;
+};
+
+export type AppointmentIdentificationControllerGetAllStatus =
+  (typeof AppointmentIdentificationControllerGetAllStatus)[keyof typeof AppointmentIdentificationControllerGetAllStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const AppointmentIdentificationControllerGetAllStatus = {
+  pending: "pending",
+  used: "used",
+  cancelled: "cancelled",
+  expired: "expired",
+} as const;
+
+export type ShippingAddressesControllerFindAll200 = AppResponseSerialization & {
+  data?: ShippingAddress[];
+};
+
+export type OrdersControllerGetMyOrdersParams = {
+  search?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: string;
+  /**
+   * Filter orders by status
+   */
+  status?: OrdersControllerGetMyOrdersStatus;
+};
+
+export type OrdersControllerGetMyOrdersStatus =
+  (typeof OrdersControllerGetMyOrdersStatus)[keyof typeof OrdersControllerGetMyOrdersStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const OrdersControllerGetMyOrdersStatus = {
+  pending: "pending",
+  confirmed: "confirmed",
+  preparing: "preparing",
+  shipping: "shipping",
+  delivered: "delivered",
+  cancelled: "cancelled",
+} as const;
+
+export type MerchantOrdersControllerGetOrdersParams = {
+  search?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: string;
+};
+
+export type ReferrersControllerVerifyTokenMerchantParams = {
+  token: string;
+};
+
+export type ReferrersControllerVerifyTokenClinicParams = {
+  token: string;
+};
+
+export type ReferrersControllerGetAllParams = {
+  search?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: string;
+  /**
+   * Get deleted referrers
+   */
+  isDeleted?: boolean;
+};
+
+export type ReferrersControllerGetHistoryParams = {
   search?: string;
   page?: number;
   limit?: number;
@@ -1013,174 +3264,39 @@ type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 /**
- * Get the profile of the currently logged in user.
- * @summary Role: All - Get current user profile
- */
-export const usersControllerGetMe = (
-  options?: SecondParameter<typeof orvalClient>,
-  signal?: AbortSignal,
-) => {
-  return orvalClient<User>(
-    { url: `/api/users/me`, method: "GET", signal },
-    options,
-  );
-};
-
-export const getUsersControllerGetMeQueryKey = () => {
-  return [`/api/users/me`] as const;
-};
-
-export const getUsersControllerGetMeQueryOptions = <
-  TData = Awaited<ReturnType<typeof usersControllerGetMe>>,
-  TError = unknown,
->(options?: {
-  query?: Partial<
-    UseQueryOptions<
-      Awaited<ReturnType<typeof usersControllerGetMe>>,
-      TError,
-      TData
-    >
-  >;
-  request?: SecondParameter<typeof orvalClient>;
-}) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
-
-  const queryKey = queryOptions?.queryKey ?? getUsersControllerGetMeQueryKey();
-
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof usersControllerGetMe>>
-  > = ({ signal }) => usersControllerGetMe(requestOptions, signal);
-
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof usersControllerGetMe>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export type UsersControllerGetMeQueryResult = NonNullable<
-  Awaited<ReturnType<typeof usersControllerGetMe>>
->;
-export type UsersControllerGetMeQueryError = unknown;
-
-export function useUsersControllerGetMe<
-  TData = Awaited<ReturnType<typeof usersControllerGetMe>>,
-  TError = unknown,
->(
-  options: {
-    query: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof usersControllerGetMe>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof usersControllerGetMe>>,
-          TError,
-          Awaited<ReturnType<typeof usersControllerGetMe>>
-        >,
-        "initialData"
-      >;
-    request?: SecondParameter<typeof orvalClient>;
-  },
-  queryClient?: QueryClient,
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useUsersControllerGetMe<
-  TData = Awaited<ReturnType<typeof usersControllerGetMe>>,
-  TError = unknown,
->(
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof usersControllerGetMe>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof usersControllerGetMe>>,
-          TError,
-          Awaited<ReturnType<typeof usersControllerGetMe>>
-        >,
-        "initialData"
-      >;
-    request?: SecondParameter<typeof orvalClient>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useUsersControllerGetMe<
-  TData = Awaited<ReturnType<typeof usersControllerGetMe>>,
-  TError = unknown,
->(
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof usersControllerGetMe>>,
-        TError,
-        TData
-      >
-    >;
-    request?: SecondParameter<typeof orvalClient>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-/**
- * @summary Role: All - Get current user profile
- */
-
-export function useUsersControllerGetMe<
-  TData = Awaited<ReturnType<typeof usersControllerGetMe>>,
-  TError = unknown,
->(
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof usersControllerGetMe>>,
-        TError,
-        TData
-      >
-    >;
-    request?: SecondParameter<typeof orvalClient>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions = getUsersControllerGetMeQueryOptions(options);
-
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
-    TData,
-    TError
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey;
-
-  return query;
-}
-
-/**
- * Update the profile information of the currently logged in user.
+ * Update the profile information of the currently logged in user. Supports updating text fields along with an optional avatar upload.
  * @summary Role: All - Update current user profile
  */
 export const usersControllerUpdateMe = (
   updateProfileDto: UpdateProfileDto,
   options?: SecondParameter<typeof orvalClient>,
 ) => {
+  const formData = new FormData();
+  if (updateProfileDto.name !== undefined) {
+    formData.append(`name`, updateProfileDto.name);
+  }
+  if (updateProfileDto.phone !== undefined) {
+    formData.append(`phone`, updateProfileDto.phone);
+  }
+  if (updateProfileDto.cccd !== undefined) {
+    formData.append(`cccd`, updateProfileDto.cccd);
+  }
+  if (updateProfileDto.dateOfBirth !== undefined) {
+    formData.append(`dateOfBirth`, updateProfileDto.dateOfBirth);
+  }
+  if (updateProfileDto.address !== undefined) {
+    formData.append(`address`, JSON.stringify(updateProfileDto.address));
+  }
+  if (updateProfileDto.avatar !== undefined) {
+    formData.append(`avatar`, updateProfileDto.avatar);
+  }
+
   return orvalClient<User>(
     {
       url: `/api/users/me`,
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      data: updateProfileDto,
+      headers: { "Content-Type": "multipart/form-data" },
+      data: formData,
     },
     options,
   );
@@ -1537,99 +3653,6 @@ export const useUsersControllerResendOtp = <
   return useMutation(mutationOptions, queryClient);
 };
 
-export const usersControllerUpdateAvatar = (
-  usersControllerUpdateAvatarBody: UsersControllerUpdateAvatarBody,
-  options?: SecondParameter<typeof orvalClient>,
-  signal?: AbortSignal,
-) => {
-  const formData = new FormData();
-  if (usersControllerUpdateAvatarBody.file !== undefined) {
-    formData.append(`file`, usersControllerUpdateAvatarBody.file);
-  }
-
-  return orvalClient<void>(
-    {
-      url: `/api/users/avatar`,
-      method: "POST",
-      headers: { "Content-Type": "multipart/form-data" },
-      data: formData,
-      signal,
-    },
-    options,
-  );
-};
-
-export const getUsersControllerUpdateAvatarMutationOptions = <
-  TError = unknown,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof usersControllerUpdateAvatar>>,
-    TError,
-    { data: UsersControllerUpdateAvatarBody },
-    TContext
-  >;
-  request?: SecondParameter<typeof orvalClient>;
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof usersControllerUpdateAvatar>>,
-  TError,
-  { data: UsersControllerUpdateAvatarBody },
-  TContext
-> => {
-  const mutationKey = ["usersControllerUpdateAvatar"];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof usersControllerUpdateAvatar>>,
-    { data: UsersControllerUpdateAvatarBody }
-  > = (props) => {
-    const { data } = props ?? {};
-
-    return usersControllerUpdateAvatar(data, requestOptions);
-  };
-
-  return { mutationFn, ...mutationOptions };
-};
-
-export type UsersControllerUpdateAvatarMutationResult = NonNullable<
-  Awaited<ReturnType<typeof usersControllerUpdateAvatar>>
->;
-export type UsersControllerUpdateAvatarMutationBody =
-  UsersControllerUpdateAvatarBody;
-export type UsersControllerUpdateAvatarMutationError = unknown;
-
-export const useUsersControllerUpdateAvatar = <
-  TError = unknown,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof usersControllerUpdateAvatar>>,
-      TError,
-      { data: UsersControllerUpdateAvatarBody },
-      TContext
-    >;
-    request?: SecondParameter<typeof orvalClient>;
-  },
-  queryClient?: QueryClient,
-): UseMutationResult<
-  Awaited<ReturnType<typeof usersControllerUpdateAvatar>>,
-  TError,
-  { data: UsersControllerUpdateAvatarBody },
-  TContext
-> => {
-  const mutationOptions =
-    getUsersControllerUpdateAvatarMutationOptions(options);
-
-  return useMutation(mutationOptions, queryClient);
-};
-
 /**
  * Returns health status of the system.
  * @summary Role: No - Get system health.
@@ -1787,8 +3810,321 @@ export function useRootControllerGetHealth<
 }
 
 /**
- * Retrieve a paginated list of merchants.
- * @summary Role: Admin - Get all merchants
+ * Get the authenticated merchant profile.
+ * @summary Role: Merchant - Get own profile
+ */
+export const merchantsControllerGetProfile = (
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<Merchant>(
+    { url: `/api/merchants/me`, method: "GET", signal },
+    options,
+  );
+};
+
+export const getMerchantsControllerGetProfileQueryKey = () => {
+  return [`/api/merchants/me`] as const;
+};
+
+export const getMerchantsControllerGetProfileQueryOptions = <
+  TData = Awaited<ReturnType<typeof merchantsControllerGetProfile>>,
+  TError = unknown,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<
+      Awaited<ReturnType<typeof merchantsControllerGetProfile>>,
+      TError,
+      TData
+    >
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getMerchantsControllerGetProfileQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof merchantsControllerGetProfile>>
+  > = ({ signal }) => merchantsControllerGetProfile(requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof merchantsControllerGetProfile>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type MerchantsControllerGetProfileQueryResult = NonNullable<
+  Awaited<ReturnType<typeof merchantsControllerGetProfile>>
+>;
+export type MerchantsControllerGetProfileQueryError = unknown;
+
+export function useMerchantsControllerGetProfile<
+  TData = Awaited<ReturnType<typeof merchantsControllerGetProfile>>,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantsControllerGetProfile>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof merchantsControllerGetProfile>>,
+          TError,
+          Awaited<ReturnType<typeof merchantsControllerGetProfile>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantsControllerGetProfile<
+  TData = Awaited<ReturnType<typeof merchantsControllerGetProfile>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantsControllerGetProfile>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof merchantsControllerGetProfile>>,
+          TError,
+          Awaited<ReturnType<typeof merchantsControllerGetProfile>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantsControllerGetProfile<
+  TData = Awaited<ReturnType<typeof merchantsControllerGetProfile>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantsControllerGetProfile>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: Merchant - Get own profile
+ */
+
+export function useMerchantsControllerGetProfile<
+  TData = Awaited<ReturnType<typeof merchantsControllerGetProfile>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantsControllerGetProfile>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getMerchantsControllerGetProfileQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Update the authenticated merchant profile including basic info, avatar, and shop photos.
+ * @summary Role: Merchant - Update own merchant profile
+ */
+export const merchantsControllerUpdate = (
+  updateMerchantDto: UpdateMerchantDto,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  const formData = new FormData();
+  if (updateMerchantDto.name !== undefined) {
+    formData.append(`name`, updateMerchantDto.name);
+  }
+  if (
+    updateMerchantDto.phone !== undefined &&
+    updateMerchantDto.phone !== null
+  ) {
+    formData.append(`phone`, updateMerchantDto.phone);
+  }
+  if (
+    updateMerchantDto.description !== undefined &&
+    updateMerchantDto.description !== null
+  ) {
+    formData.append(`description`, updateMerchantDto.description);
+  }
+  if (
+    updateMerchantDto.address !== undefined &&
+    updateMerchantDto.address !== null
+  ) {
+    formData.append(`address`, JSON.stringify(updateMerchantDto.address));
+  }
+  if (
+    updateMerchantDto.location !== undefined &&
+    updateMerchantDto.location !== null
+  ) {
+    formData.append(`location`, JSON.stringify(updateMerchantDto.location));
+  }
+  if (updateMerchantDto.bankAccountNumber !== undefined) {
+    formData.append(`bankAccountNumber`, updateMerchantDto.bankAccountNumber);
+  }
+  if (updateMerchantDto.bankAccountName !== undefined) {
+    formData.append(`bankAccountName`, updateMerchantDto.bankAccountName);
+  }
+  if (updateMerchantDto.bankCode !== undefined) {
+    formData.append(`bankCode`, updateMerchantDto.bankCode);
+  }
+  if (updateMerchantDto.ownerName !== undefined) {
+    formData.append(`ownerName`, updateMerchantDto.ownerName);
+  }
+  if (updateMerchantDto.defaultCheckInTime !== undefined) {
+    formData.append(`defaultCheckInTime`, updateMerchantDto.defaultCheckInTime);
+  }
+  if (updateMerchantDto.defaultCheckOutTime !== undefined) {
+    formData.append(
+      `defaultCheckOutTime`,
+      updateMerchantDto.defaultCheckOutTime,
+    );
+  }
+  if (updateMerchantDto.avatar !== undefined) {
+    formData.append(`avatar`, updateMerchantDto.avatar);
+  }
+  if (updateMerchantDto.deleteAvatar !== undefined) {
+    formData.append(`deleteAvatar`, updateMerchantDto.deleteAvatar.toString());
+  }
+  if (updateMerchantDto.photos !== undefined) {
+    updateMerchantDto.photos.forEach((value) =>
+      formData.append(`photos`, value),
+    );
+  }
+  if (updateMerchantDto.deletePhotoIds !== undefined) {
+    updateMerchantDto.deletePhotoIds.forEach((value) =>
+      formData.append(`deletePhotoIds`, value),
+    );
+  }
+
+  return orvalClient<Merchant>(
+    {
+      url: `/api/merchants/me`,
+      method: "PATCH",
+      headers: { "Content-Type": "multipart/form-data" },
+      data: formData,
+    },
+    options,
+  );
+};
+
+export const getMerchantsControllerUpdateMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof merchantsControllerUpdate>>,
+    TError,
+    { data: UpdateMerchantDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof merchantsControllerUpdate>>,
+  TError,
+  { data: UpdateMerchantDto },
+  TContext
+> => {
+  const mutationKey = ["merchantsControllerUpdate"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof merchantsControllerUpdate>>,
+    { data: UpdateMerchantDto }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return merchantsControllerUpdate(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type MerchantsControllerUpdateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof merchantsControllerUpdate>>
+>;
+export type MerchantsControllerUpdateMutationBody = UpdateMerchantDto;
+export type MerchantsControllerUpdateMutationError = unknown;
+
+/**
+ * @summary Role: Merchant - Update own merchant profile
+ */
+export const useMerchantsControllerUpdate = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof merchantsControllerUpdate>>,
+      TError,
+      { data: UpdateMerchantDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof merchantsControllerUpdate>>,
+  TError,
+  { data: UpdateMerchantDto },
+  TContext
+> => {
+  const mutationOptions = getMerchantsControllerUpdateMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Admin sees all merchants with full info. User sees only ACTIVE merchants with basic info.
+ * @summary Role: Admin/User - Get all merchants
  */
 export const merchantsControllerGetAll = (
   params?: MerchantsControllerGetAllParams,
@@ -1956,7 +4292,7 @@ export function useMerchantsControllerGetAllInfinite<
   queryKey: DataTag<QueryKey, TData, TError>;
 };
 /**
- * @summary Role: Admin - Get all merchants
+ * @summary Role: Admin/User - Get all merchants
  */
 
 export function useMerchantsControllerGetAllInfinite<
@@ -2111,7 +4447,7 @@ export function useMerchantsControllerGetAll<
   queryKey: DataTag<QueryKey, TData, TError>;
 };
 /**
- * @summary Role: Admin - Get all merchants
+ * @summary Role: Admin/User - Get all merchants
  */
 
 export function useMerchantsControllerGetAll<
@@ -2242,98 +4578,7 @@ export const useMerchantsControllerCreate = <
 };
 
 /**
- * Update the authenticated merchant profile.
- * @summary Role: Merchant - Update own merchant profile
- */
-export const merchantsControllerUpdate = (
-  updateMerchantDto: UpdateMerchantDto,
-  options?: SecondParameter<typeof orvalClient>,
-) => {
-  return orvalClient<Merchant>(
-    {
-      url: `/api/merchants`,
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      data: updateMerchantDto,
-    },
-    options,
-  );
-};
-
-export const getMerchantsControllerUpdateMutationOptions = <
-  TError = unknown,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof merchantsControllerUpdate>>,
-    TError,
-    { data: UpdateMerchantDto },
-    TContext
-  >;
-  request?: SecondParameter<typeof orvalClient>;
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof merchantsControllerUpdate>>,
-  TError,
-  { data: UpdateMerchantDto },
-  TContext
-> => {
-  const mutationKey = ["merchantsControllerUpdate"];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof merchantsControllerUpdate>>,
-    { data: UpdateMerchantDto }
-  > = (props) => {
-    const { data } = props ?? {};
-
-    return merchantsControllerUpdate(data, requestOptions);
-  };
-
-  return { mutationFn, ...mutationOptions };
-};
-
-export type MerchantsControllerUpdateMutationResult = NonNullable<
-  Awaited<ReturnType<typeof merchantsControllerUpdate>>
->;
-export type MerchantsControllerUpdateMutationBody = UpdateMerchantDto;
-export type MerchantsControllerUpdateMutationError = unknown;
-
-/**
- * @summary Role: Merchant - Update own merchant profile
- */
-export const useMerchantsControllerUpdate = <
-  TError = unknown,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof merchantsControllerUpdate>>,
-      TError,
-      { data: UpdateMerchantDto },
-      TContext
-    >;
-    request?: SecondParameter<typeof orvalClient>;
-  },
-  queryClient?: QueryClient,
-): UseMutationResult<
-  Awaited<ReturnType<typeof merchantsControllerUpdate>>,
-  TError,
-  { data: UpdateMerchantDto },
-  TContext
-> => {
-  const mutationOptions = getMerchantsControllerUpdateMutationOptions(options);
-
-  return useMutation(mutationOptions, queryClient);
-};
-
-/**
- * Retrieve a merchant by ID.
+ * Admin/Merchant sees full info including banking details. User sees basic info only, with active services joined.
  * @summary Role: All - Get merchant by ID
  */
 export const merchantsControllerGetById = (
@@ -2500,92 +4745,6 @@ export function useMerchantsControllerGetById<
 
   return query;
 }
-
-/**
- * Soft delete a merchant.
- * @summary Role: Admin - Delete merchant
- */
-export const merchantsControllerDelete = (
-  id: string,
-  options?: SecondParameter<typeof orvalClient>,
-) => {
-  return orvalClient<AppResponseSerialization>(
-    { url: `/api/merchants/${id}`, method: "DELETE" },
-    options,
-  );
-};
-
-export const getMerchantsControllerDeleteMutationOptions = <
-  TError = unknown,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof merchantsControllerDelete>>,
-    TError,
-    { id: string },
-    TContext
-  >;
-  request?: SecondParameter<typeof orvalClient>;
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof merchantsControllerDelete>>,
-  TError,
-  { id: string },
-  TContext
-> => {
-  const mutationKey = ["merchantsControllerDelete"];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof merchantsControllerDelete>>,
-    { id: string }
-  > = (props) => {
-    const { id } = props ?? {};
-
-    return merchantsControllerDelete(id, requestOptions);
-  };
-
-  return { mutationFn, ...mutationOptions };
-};
-
-export type MerchantsControllerDeleteMutationResult = NonNullable<
-  Awaited<ReturnType<typeof merchantsControllerDelete>>
->;
-
-export type MerchantsControllerDeleteMutationError = unknown;
-
-/**
- * @summary Role: Admin - Delete merchant
- */
-export const useMerchantsControllerDelete = <
-  TError = unknown,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof merchantsControllerDelete>>,
-      TError,
-      { id: string },
-      TContext
-    >;
-    request?: SecondParameter<typeof orvalClient>;
-  },
-  queryClient?: QueryClient,
-): UseMutationResult<
-  Awaited<ReturnType<typeof merchantsControllerDelete>>,
-  TError,
-  { id: string },
-  TContext
-> => {
-  const mutationOptions = getMerchantsControllerDeleteMutationOptions(options);
-
-  return useMutation(mutationOptions, queryClient);
-};
 
 /**
  * Verify registration token from email and set password.
@@ -3038,8 +5197,8 @@ export const useMerchantsControllerRestore = <
 };
 
 /**
- * Retrieve a paginated list of clinics.
- * @summary Role: Admin - Get all clinics
+ * Retrieve a paginated list of clinics. Admin/Clinic see full data; User sees only active clinics with limited fields (id, name, address, phone).
+ * @summary Role: All - Get all clinics
  */
 export const clinicsControllerGetAll = (
   params?: ClinicsControllerGetAllParams,
@@ -3207,7 +5366,7 @@ export function useClinicsControllerGetAllInfinite<
   queryKey: DataTag<QueryKey, TData, TError>;
 };
 /**
- * @summary Role: Admin - Get all clinics
+ * @summary Role: All - Get all clinics
  */
 
 export function useClinicsControllerGetAllInfinite<
@@ -3362,7 +5521,7 @@ export function useClinicsControllerGetAll<
   queryKey: DataTag<QueryKey, TData, TError>;
 };
 /**
- * @summary Role: Admin - Get all clinics
+ * @summary Role: All - Get all clinics
  */
 
 export function useClinicsControllerGetAll<
@@ -3491,97 +5650,7 @@ export const useClinicsControllerCreateClinicByAdmin = <
 };
 
 /**
- * Update the authenticated clinic profile.
- * @summary Role: Clinic - Update clinic
- */
-export const clinicsControllerUpdate = (
-  updateClinicDto: UpdateClinicDto,
-  options?: SecondParameter<typeof orvalClient>,
-) => {
-  return orvalClient<Clinic>(
-    {
-      url: `/api/clinics`,
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      data: updateClinicDto,
-    },
-    options,
-  );
-};
-
-export const getClinicsControllerUpdateMutationOptions = <
-  TError = unknown,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof clinicsControllerUpdate>>,
-    TError,
-    { data: UpdateClinicDto },
-    TContext
-  >;
-  request?: SecondParameter<typeof orvalClient>;
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof clinicsControllerUpdate>>,
-  TError,
-  { data: UpdateClinicDto },
-  TContext
-> => {
-  const mutationKey = ["clinicsControllerUpdate"];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof clinicsControllerUpdate>>,
-    { data: UpdateClinicDto }
-  > = (props) => {
-    const { data } = props ?? {};
-
-    return clinicsControllerUpdate(data, requestOptions);
-  };
-
-  return { mutationFn, ...mutationOptions };
-};
-
-export type ClinicsControllerUpdateMutationResult = NonNullable<
-  Awaited<ReturnType<typeof clinicsControllerUpdate>>
->;
-export type ClinicsControllerUpdateMutationBody = UpdateClinicDto;
-export type ClinicsControllerUpdateMutationError = unknown;
-
-/**
- * @summary Role: Clinic - Update clinic
- */
-export const useClinicsControllerUpdate = <
-  TError = unknown,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof clinicsControllerUpdate>>,
-      TError,
-      { data: UpdateClinicDto },
-      TContext
-    >;
-    request?: SecondParameter<typeof orvalClient>;
-  },
-  queryClient?: QueryClient,
-): UseMutationResult<
-  Awaited<ReturnType<typeof clinicsControllerUpdate>>,
-  TError,
-  { data: UpdateClinicDto },
-  TContext
-> => {
-  const mutationOptions = getClinicsControllerUpdateMutationOptions(options);
-
-  return useMutation(mutationOptions, queryClient);
-};
-
-/**
+ * Retrieve a clinic by ID. Admin/Clinic see full data; User sees only active clinic with limited fields.
  * @summary Role: All - Get clinic by ID
  */
 export const clinicsControllerGetById = (
@@ -3748,91 +5817,6 @@ export function useClinicsControllerGetById<
 
   return query;
 }
-
-/**
- * @summary Role: Admin - Delete clinic
- */
-export const clinicsControllerDelete = (
-  id: string,
-  options?: SecondParameter<typeof orvalClient>,
-) => {
-  return orvalClient<AppResponseSerialization>(
-    { url: `/api/clinics/${id}`, method: "DELETE" },
-    options,
-  );
-};
-
-export const getClinicsControllerDeleteMutationOptions = <
-  TError = unknown,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof clinicsControllerDelete>>,
-    TError,
-    { id: string },
-    TContext
-  >;
-  request?: SecondParameter<typeof orvalClient>;
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof clinicsControllerDelete>>,
-  TError,
-  { id: string },
-  TContext
-> => {
-  const mutationKey = ["clinicsControllerDelete"];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof clinicsControllerDelete>>,
-    { id: string }
-  > = (props) => {
-    const { id } = props ?? {};
-
-    return clinicsControllerDelete(id, requestOptions);
-  };
-
-  return { mutationFn, ...mutationOptions };
-};
-
-export type ClinicsControllerDeleteMutationResult = NonNullable<
-  Awaited<ReturnType<typeof clinicsControllerDelete>>
->;
-
-export type ClinicsControllerDeleteMutationError = unknown;
-
-/**
- * @summary Role: Admin - Delete clinic
- */
-export const useClinicsControllerDelete = <
-  TError = unknown,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof clinicsControllerDelete>>,
-      TError,
-      { id: string },
-      TContext
-    >;
-    request?: SecondParameter<typeof orvalClient>;
-  },
-  queryClient?: QueryClient,
-): UseMutationResult<
-  Awaited<ReturnType<typeof clinicsControllerDelete>>,
-  TError,
-  { id: string },
-  TContext
-> => {
-  const mutationOptions = getClinicsControllerDeleteMutationOptions(options);
-
-  return useMutation(mutationOptions, queryClient);
-};
 
 /**
  * Verify registration token from email and set password.
@@ -4106,6 +6090,152 @@ export function useClinicsControllerGetRegistrationInfo<
 }
 
 /**
+ * Update the authenticated clinic profile including basic info, avatar, and photos.
+ * @summary Role: Clinic - Update clinic profile
+ */
+export const clinicsControllerUpdate = (
+  updateClinicDto: UpdateClinicDto,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  const formData = new FormData();
+  if (updateClinicDto.name !== undefined) {
+    formData.append(`name`, updateClinicDto.name);
+  }
+  if (
+    updateClinicDto.openTime !== undefined &&
+    updateClinicDto.openTime !== null
+  ) {
+    formData.append(`openTime`, updateClinicDto.openTime);
+  }
+  if (
+    updateClinicDto.closeTime !== undefined &&
+    updateClinicDto.closeTime !== null
+  ) {
+    formData.append(`closeTime`, updateClinicDto.closeTime);
+  }
+  if (updateClinicDto.phone !== undefined && updateClinicDto.phone !== null) {
+    formData.append(`phone`, updateClinicDto.phone);
+  }
+  if (
+    updateClinicDto.description !== undefined &&
+    updateClinicDto.description !== null
+  ) {
+    formData.append(`description`, updateClinicDto.description);
+  }
+  if (
+    updateClinicDto.address !== undefined &&
+    updateClinicDto.address !== null
+  ) {
+    formData.append(`address`, JSON.stringify(updateClinicDto.address));
+  }
+  if (
+    updateClinicDto.location !== undefined &&
+    updateClinicDto.location !== null
+  ) {
+    formData.append(`location`, JSON.stringify(updateClinicDto.location));
+  }
+  if (updateClinicDto.ownerName !== undefined) {
+    formData.append(`ownerName`, updateClinicDto.ownerName);
+  }
+  if (updateClinicDto.avatar !== undefined) {
+    formData.append(`avatar`, updateClinicDto.avatar);
+  }
+  if (updateClinicDto.deleteAvatar !== undefined) {
+    formData.append(`deleteAvatar`, updateClinicDto.deleteAvatar.toString());
+  }
+  if (updateClinicDto.photos !== undefined) {
+    updateClinicDto.photos.forEach((value) => formData.append(`photos`, value));
+  }
+  if (updateClinicDto.deletePhotoIds !== undefined) {
+    updateClinicDto.deletePhotoIds.forEach((value) =>
+      formData.append(`deletePhotoIds`, value),
+    );
+  }
+
+  return orvalClient<Clinic>(
+    {
+      url: `/api/clinics/me`,
+      method: "PATCH",
+      headers: { "Content-Type": "multipart/form-data" },
+      data: formData,
+    },
+    options,
+  );
+};
+
+export const getClinicsControllerUpdateMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof clinicsControllerUpdate>>,
+    TError,
+    { data: UpdateClinicDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof clinicsControllerUpdate>>,
+  TError,
+  { data: UpdateClinicDto },
+  TContext
+> => {
+  const mutationKey = ["clinicsControllerUpdate"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof clinicsControllerUpdate>>,
+    { data: UpdateClinicDto }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return clinicsControllerUpdate(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ClinicsControllerUpdateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof clinicsControllerUpdate>>
+>;
+export type ClinicsControllerUpdateMutationBody = UpdateClinicDto;
+export type ClinicsControllerUpdateMutationError = unknown;
+
+/**
+ * @summary Role: Clinic - Update clinic profile
+ */
+export const useClinicsControllerUpdate = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof clinicsControllerUpdate>>,
+      TError,
+      { data: UpdateClinicDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof clinicsControllerUpdate>>,
+  TError,
+  { data: UpdateClinicDto },
+  TContext
+> => {
+  const mutationOptions = getClinicsControllerUpdateMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
  * @summary Role: Admin - Update clinic status
  */
 export const clinicsControllerUpdateStatus = (
@@ -4285,7 +6415,7 @@ export const useClinicsControllerRestore = <
 
 /**
  * Get list of master categories (pagination, search).
- * @summary All Role: Get all master categories
+ * @summary Role: All - Get all master categories
  */
 export const masterCategoriesControllerGetAllMasterCategories = (
   params?: MasterCategoriesControllerGetAllMasterCategoriesParams,
@@ -4293,12 +6423,7 @@ export const masterCategoriesControllerGetAllMasterCategories = (
   signal?: AbortSignal,
 ) => {
   return orvalClient<GetManyMasterCategoryWithSubCategoriesDtoDto>(
-    {
-      url: `/api/master-data/master-categories`,
-      method: "GET",
-      params,
-      signal,
-    },
+    { url: `/api/master-categories`, method: "GET", params, signal },
     options,
   );
 };
@@ -4307,7 +6432,7 @@ export const getMasterCategoriesControllerGetAllMasterCategoriesInfiniteQueryKey
   (params?: MasterCategoriesControllerGetAllMasterCategoriesParams) => {
     return [
       "infinate",
-      `/api/master-data/master-categories`,
+      `/api/master-categories`,
       ...(params ? [params] : []),
     ] as const;
   };
@@ -4315,10 +6440,7 @@ export const getMasterCategoriesControllerGetAllMasterCategoriesInfiniteQueryKey
 export const getMasterCategoriesControllerGetAllMasterCategoriesQueryKey = (
   params?: MasterCategoriesControllerGetAllMasterCategoriesParams,
 ) => {
-  return [
-    `/api/master-data/master-categories`,
-    ...(params ? [params] : []),
-  ] as const;
+  return [`/api/master-categories`, ...(params ? [params] : [])] as const;
 };
 
 export const getMasterCategoriesControllerGetAllMasterCategoriesInfiniteQueryOptions =
@@ -4497,7 +6619,7 @@ export function useMasterCategoriesControllerGetAllMasterCategoriesInfinite<
   queryKey: DataTag<QueryKey, TData, TError>;
 };
 /**
- * @summary All Role: Get all master categories
+ * @summary Role: All - Get all master categories
  */
 
 export function useMasterCategoriesControllerGetAllMasterCategoriesInfinite<
@@ -4691,7 +6813,7 @@ export function useMasterCategoriesControllerGetAllMasterCategories<
   queryKey: DataTag<QueryKey, TData, TError>;
 };
 /**
- * @summary All Role: Get all master categories
+ * @summary Role: All - Get all master categories
  */
 
 export function useMasterCategoriesControllerGetAllMasterCategories<
@@ -4742,9 +6864,9 @@ export const masterCategoriesControllerCreateMasterCategory = (
   options?: SecondParameter<typeof orvalClient>,
   signal?: AbortSignal,
 ) => {
-  return orvalClient<MasterCategoryEntity>(
+  return orvalClient<MasterCategory>(
     {
-      url: `/api/master-data/master-categories`,
+      url: `/api/master-categories`,
       method: "POST",
       headers: { "Content-Type": "application/json" },
       data: createMasterCategoryDto,
@@ -4838,8 +6960,8 @@ export const useMasterCategoriesControllerCreateMasterCategory = <
 };
 
 /**
- * Get master category details by ID.
- * @summary All Role: Get master category details
+ * Get master category detail by ID.
+ * @summary Role: All - Get master category detail
  */
 export const masterCategoriesControllerGetMasterCategoryById = (
   id: string,
@@ -4847,7 +6969,7 @@ export const masterCategoriesControllerGetMasterCategoryById = (
   signal?: AbortSignal,
 ) => {
   return orvalClient<MasterCategoryWithSubCategoriesDto>(
-    { url: `/api/master-data/master-categories/${id}`, method: "GET", signal },
+    { url: `/api/master-categories/${id}`, method: "GET", signal },
     options,
   );
 };
@@ -4855,7 +6977,7 @@ export const masterCategoriesControllerGetMasterCategoryById = (
 export const getMasterCategoriesControllerGetMasterCategoryByIdQueryKey = (
   id?: string,
 ) => {
-  return [`/api/master-data/master-categories/${id}`] as const;
+  return [`/api/master-categories/${id}`] as const;
 };
 
 export const getMasterCategoriesControllerGetMasterCategoryByIdQueryOptions = <
@@ -5001,7 +7123,7 @@ export function useMasterCategoriesControllerGetMasterCategoryById<
   queryKey: DataTag<QueryKey, TData, TError>;
 };
 /**
- * @summary All Role: Get master category details
+ * @summary Role: All - Get master category detail
  */
 
 export function useMasterCategoriesControllerGetMasterCategoryById<
@@ -5049,9 +7171,9 @@ export const masterCategoriesControllerUpdateMasterCategory = (
   updateMasterCategoryDto: UpdateMasterCategoryDto,
   options?: SecondParameter<typeof orvalClient>,
 ) => {
-  return orvalClient<MasterCategoryEntity>(
+  return orvalClient<MasterCategory>(
     {
-      url: `/api/master-data/master-categories/${id}`,
+      url: `/api/master-categories/${id}`,
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       data: updateMasterCategoryDto,
@@ -5145,6 +7267,99 @@ export const useMasterCategoriesControllerUpdateMasterCategory = <
 };
 
 /**
+ * Delete master category by ID.
+ * @summary Role: Admin - Delete master category
+ */
+export const masterCategoriesControllerDeleteMasterCategory = (
+  id: string,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    { url: `/api/master-categories/${id}`, method: "DELETE" },
+    options,
+  );
+};
+
+export const getMasterCategoriesControllerDeleteMasterCategoryMutationOptions =
+  <TError = unknown, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<
+      Awaited<
+        ReturnType<typeof masterCategoriesControllerDeleteMasterCategory>
+      >,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  }): UseMutationOptions<
+    Awaited<ReturnType<typeof masterCategoriesControllerDeleteMasterCategory>>,
+    TError,
+    { id: string },
+    TContext
+  > => {
+    const mutationKey = ["masterCategoriesControllerDeleteMasterCategory"];
+    const { mutation: mutationOptions, request: requestOptions } = options
+      ? options.mutation &&
+        "mutationKey" in options.mutation &&
+        options.mutation.mutationKey
+        ? options
+        : { ...options, mutation: { ...options.mutation, mutationKey } }
+      : { mutation: { mutationKey }, request: undefined };
+
+    const mutationFn: MutationFunction<
+      Awaited<
+        ReturnType<typeof masterCategoriesControllerDeleteMasterCategory>
+      >,
+      { id: string }
+    > = (props) => {
+      const { id } = props ?? {};
+
+      return masterCategoriesControllerDeleteMasterCategory(id, requestOptions);
+    };
+
+    return { mutationFn, ...mutationOptions };
+  };
+
+export type MasterCategoriesControllerDeleteMasterCategoryMutationResult =
+  NonNullable<
+    Awaited<ReturnType<typeof masterCategoriesControllerDeleteMasterCategory>>
+  >;
+
+export type MasterCategoriesControllerDeleteMasterCategoryMutationError =
+  unknown;
+
+/**
+ * @summary Role: Admin - Delete master category
+ */
+export const useMasterCategoriesControllerDeleteMasterCategory = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<
+        ReturnType<typeof masterCategoriesControllerDeleteMasterCategory>
+      >,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof masterCategoriesControllerDeleteMasterCategory>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationOptions =
+    getMasterCategoriesControllerDeleteMasterCategoryMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
  * Update status for a master category by ID.
  * @summary Role: Admin - Update master category status
  */
@@ -5153,9 +7368,9 @@ export const masterCategoriesControllerUpdateMasterCategoryStatus = (
   updateMasterCategoryStatusDto: UpdateMasterCategoryStatusDto,
   options?: SecondParameter<typeof orvalClient>,
 ) => {
-  return orvalClient<MasterCategoryEntity>(
+  return orvalClient<MasterCategory>(
     {
-      url: `/api/master-data/master-categories/${id}/status`,
+      url: `/api/master-categories/${id}/status`,
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       data: updateMasterCategoryStatusDto,
@@ -5259,7 +7474,103 @@ export const useMasterCategoriesControllerUpdateMasterCategoryStatus = <
 };
 
 /**
- * Retrieve a paginated list of merchant services.
+ * Restore a soft-deleted master category.
+ * @summary Role: Admin - Restore master category
+ */
+export const masterCategoriesControllerRestoreMasterCategory = (
+  id: string,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    { url: `/api/master-categories/${id}/restore`, method: "PATCH" },
+    options,
+  );
+};
+
+export const getMasterCategoriesControllerRestoreMasterCategoryMutationOptions =
+  <TError = unknown, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<
+      Awaited<
+        ReturnType<typeof masterCategoriesControllerRestoreMasterCategory>
+      >,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  }): UseMutationOptions<
+    Awaited<ReturnType<typeof masterCategoriesControllerRestoreMasterCategory>>,
+    TError,
+    { id: string },
+    TContext
+  > => {
+    const mutationKey = ["masterCategoriesControllerRestoreMasterCategory"];
+    const { mutation: mutationOptions, request: requestOptions } = options
+      ? options.mutation &&
+        "mutationKey" in options.mutation &&
+        options.mutation.mutationKey
+        ? options
+        : { ...options, mutation: { ...options.mutation, mutationKey } }
+      : { mutation: { mutationKey }, request: undefined };
+
+    const mutationFn: MutationFunction<
+      Awaited<
+        ReturnType<typeof masterCategoriesControllerRestoreMasterCategory>
+      >,
+      { id: string }
+    > = (props) => {
+      const { id } = props ?? {};
+
+      return masterCategoriesControllerRestoreMasterCategory(
+        id,
+        requestOptions,
+      );
+    };
+
+    return { mutationFn, ...mutationOptions };
+  };
+
+export type MasterCategoriesControllerRestoreMasterCategoryMutationResult =
+  NonNullable<
+    Awaited<ReturnType<typeof masterCategoriesControllerRestoreMasterCategory>>
+  >;
+
+export type MasterCategoriesControllerRestoreMasterCategoryMutationError =
+  unknown;
+
+/**
+ * @summary Role: Admin - Restore master category
+ */
+export const useMasterCategoriesControllerRestoreMasterCategory = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<
+        ReturnType<typeof masterCategoriesControllerRestoreMasterCategory>
+      >,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof masterCategoriesControllerRestoreMasterCategory>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationOptions =
+    getMasterCategoriesControllerRestoreMasterCategoryMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Retrieve a paginated list of merchant services. Merchant uses its own merchantId from session; admin/user can filter by merchantId if provided.
  * @summary Role: All - Get all merchant services
  */
 export const merchantServicesControllerGetAll = (
@@ -5267,7 +7578,7 @@ export const merchantServicesControllerGetAll = (
   options?: SecondParameter<typeof orvalClient>,
   signal?: AbortSignal,
 ) => {
-  return orvalClient<GetManyMerchantServiceEntityDto>(
+  return orvalClient<GetManyMerchantServiceDto>(
     { url: `/api/merchant-services`, method: "GET", params, signal },
     options,
   );
@@ -5627,67 +7938,85 @@ export function useMerchantServicesControllerGetAll<
 }
 
 /**
- * Create a new merchant service.
+ * Create a new merchant service. Merchant ID is resolved from session.
  * @summary Role: Merchant - Create merchant service
  */
 export const merchantServicesControllerCreate = (
-  merchantServicesControllerCreateBody: MerchantServicesControllerCreateBody,
+  createMerchantServiceDto: CreateMerchantServiceDto,
   options?: SecondParameter<typeof orvalClient>,
   signal?: AbortSignal,
 ) => {
   const formData = new FormData();
-  if (merchantServicesControllerCreateBody.files !== undefined) {
-    merchantServicesControllerCreateBody.files.forEach((value) =>
-      formData.append(`files`, value),
-    );
-  }
-  formData.append(
-    `merchantId`,
-    merchantServicesControllerCreateBody.merchantId,
-  );
   formData.append(
     `masterCategoryId`,
-    merchantServicesControllerCreateBody.masterCategoryId,
+    createMerchantServiceDto.masterCategoryId,
   );
-  formData.append(`name`, merchantServicesControllerCreateBody.name);
-  if (merchantServicesControllerCreateBody.description !== undefined) {
-    formData.append(
-      `description`,
-      merchantServicesControllerCreateBody.description,
-    );
-  }
-  if (merchantServicesControllerCreateBody.speciesPet !== undefined) {
-    merchantServicesControllerCreateBody.speciesPet.forEach((value) =>
+  formData.append(`type`, createMerchantServiceDto.type);
+  formData.append(`name`, createMerchantServiceDto.name);
+  if (createMerchantServiceDto.speciesPet !== undefined) {
+    createMerchantServiceDto.speciesPet.forEach((value) =>
       formData.append(`speciesPet`, value),
     );
   }
-  formData.append(
-    `serviceFee`,
-    merchantServicesControllerCreateBody.serviceFee.toString(),
-  );
-  if (merchantServicesControllerCreateBody.isShippingFee !== undefined) {
-    formData.append(
-      `isShippingFee`,
-      merchantServicesControllerCreateBody.isShippingFee.toString(),
-    );
-  }
-  if (merchantServicesControllerCreateBody.shippingFee !== undefined) {
-    formData.append(
-      `shippingFee`,
-      merchantServicesControllerCreateBody.shippingFee.toString(),
-    );
-  }
-  if (merchantServicesControllerCreateBody.durationMinutes !== undefined) {
+  if (
+    createMerchantServiceDto.durationMinutes !== undefined &&
+    createMerchantServiceDto.durationMinutes !== null
+  ) {
     formData.append(
       `durationMinutes`,
-      merchantServicesControllerCreateBody.durationMinutes.toString(),
+      createMerchantServiceDto.durationMinutes.toString(),
     );
   }
-  if (merchantServicesControllerCreateBody.status !== undefined) {
-    formData.append(`status`, merchantServicesControllerCreateBody.status);
+  if (
+    createMerchantServiceDto.capacity !== undefined &&
+    createMerchantServiceDto.capacity !== null
+  ) {
+    formData.append(`capacity`, createMerchantServiceDto.capacity.toString());
+  }
+  formData.append(
+    `hasCapacity`,
+    createMerchantServiceDto.hasCapacity.toString(),
+  );
+  if (
+    createMerchantServiceDto.serviceFee !== undefined &&
+    createMerchantServiceDto.serviceFee !== null
+  ) {
+    formData.append(
+      `serviceFee`,
+      createMerchantServiceDto.serviceFee.toString(),
+    );
+  }
+  formData.append(`deposit`, createMerchantServiceDto.deposit.toString());
+  formData.append(
+    `isShippingFee`,
+    createMerchantServiceDto.isShippingFee.toString(),
+  );
+  if (
+    createMerchantServiceDto.shippingFee !== undefined &&
+    createMerchantServiceDto.shippingFee !== null
+  ) {
+    formData.append(
+      `shippingFee`,
+      createMerchantServiceDto.shippingFee.toString(),
+    );
+  }
+  formData.append(`status`, createMerchantServiceDto.status);
+  if (
+    createMerchantServiceDto.description !== undefined &&
+    createMerchantServiceDto.description !== null
+  ) {
+    formData.append(`description`, createMerchantServiceDto.description);
+  }
+  if (createMerchantServiceDto.avatar !== undefined) {
+    formData.append(`avatar`, createMerchantServiceDto.avatar);
+  }
+  if (createMerchantServiceDto.photos !== undefined) {
+    createMerchantServiceDto.photos.forEach((value) =>
+      formData.append(`photos`, value),
+    );
   }
 
-  return orvalClient<MerchantServiceEntity>(
+  return orvalClient<MerchantService>(
     {
       url: `/api/merchant-services`,
       method: "POST",
@@ -5706,14 +8035,14 @@ export const getMerchantServicesControllerCreateMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof merchantServicesControllerCreate>>,
     TError,
-    { data: MerchantServicesControllerCreateBody },
+    { data: CreateMerchantServiceDto },
     TContext
   >;
   request?: SecondParameter<typeof orvalClient>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof merchantServicesControllerCreate>>,
   TError,
-  { data: MerchantServicesControllerCreateBody },
+  { data: CreateMerchantServiceDto },
   TContext
 > => {
   const mutationKey = ["merchantServicesControllerCreate"];
@@ -5727,7 +8056,7 @@ export const getMerchantServicesControllerCreateMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof merchantServicesControllerCreate>>,
-    { data: MerchantServicesControllerCreateBody }
+    { data: CreateMerchantServiceDto }
   > = (props) => {
     const { data } = props ?? {};
 
@@ -5741,7 +8070,7 @@ export type MerchantServicesControllerCreateMutationResult = NonNullable<
   Awaited<ReturnType<typeof merchantServicesControllerCreate>>
 >;
 export type MerchantServicesControllerCreateMutationBody =
-  MerchantServicesControllerCreateBody;
+  CreateMerchantServiceDto;
 export type MerchantServicesControllerCreateMutationError = unknown;
 
 /**
@@ -5755,7 +8084,7 @@ export const useMerchantServicesControllerCreate = <
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof merchantServicesControllerCreate>>,
       TError,
-      { data: MerchantServicesControllerCreateBody },
+      { data: CreateMerchantServiceDto },
       TContext
     >;
     request?: SecondParameter<typeof orvalClient>;
@@ -5764,7 +8093,7 @@ export const useMerchantServicesControllerCreate = <
 ): UseMutationResult<
   Awaited<ReturnType<typeof merchantServicesControllerCreate>>,
   TError,
-  { data: MerchantServicesControllerCreateBody },
+  { data: CreateMerchantServiceDto },
   TContext
 > => {
   const mutationOptions =
@@ -5775,14 +8104,14 @@ export const useMerchantServicesControllerCreate = <
 
 /**
  * Retrieve a merchant service by ID.
- * @summary Role: All - Get merchant service details
+ * @summary Role: All - Get merchant service detail
  */
 export const merchantServicesControllerGetById = (
   id: string,
   options?: SecondParameter<typeof orvalClient>,
   signal?: AbortSignal,
 ) => {
-  return orvalClient<MerchantServiceEntity>(
+  return orvalClient<MerchantService>(
     { url: `/api/merchant-services/${id}`, method: "GET", signal },
     options,
   );
@@ -5909,7 +8238,7 @@ export function useMerchantServicesControllerGetById<
   queryKey: DataTag<QueryKey, TData, TError>;
 };
 /**
- * @summary Role: All - Get merchant service details
+ * @summary Role: All - Get merchant service detail
  */
 
 export function useMerchantServicesControllerGetById<
@@ -5947,80 +8276,110 @@ export function useMerchantServicesControllerGetById<
 }
 
 /**
- * Update a merchant service by ID.
+ * Update a merchant service by ID. Merchant ID is resolved from session.
  * @summary Role: Merchant - Update merchant service
  */
 export const merchantServicesControllerUpdate = (
   id: string,
-  merchantServicesControllerUpdateBody: MerchantServicesControllerUpdateBody,
+  updateMerchantServiceDto: UpdateMerchantServiceDto,
   options?: SecondParameter<typeof orvalClient>,
 ) => {
   const formData = new FormData();
-  if (merchantServicesControllerUpdateBody.files !== undefined) {
-    merchantServicesControllerUpdateBody.files.forEach((value) =>
-      formData.append(`files`, value),
-    );
-  }
-  if (merchantServicesControllerUpdateBody.merchantId !== undefined) {
-    formData.append(
-      `merchantId`,
-      merchantServicesControllerUpdateBody.merchantId,
-    );
-  }
-  if (merchantServicesControllerUpdateBody.masterCategoryId !== undefined) {
+  if (updateMerchantServiceDto.masterCategoryId !== undefined) {
     formData.append(
       `masterCategoryId`,
-      merchantServicesControllerUpdateBody.masterCategoryId,
+      updateMerchantServiceDto.masterCategoryId,
     );
   }
-  if (merchantServicesControllerUpdateBody.name !== undefined) {
-    formData.append(`name`, merchantServicesControllerUpdateBody.name);
+  if (updateMerchantServiceDto.type !== undefined) {
+    formData.append(`type`, updateMerchantServiceDto.type);
   }
-  if (merchantServicesControllerUpdateBody.description !== undefined) {
-    formData.append(
-      `description`,
-      merchantServicesControllerUpdateBody.description,
-    );
+  if (updateMerchantServiceDto.name !== undefined) {
+    formData.append(`name`, updateMerchantServiceDto.name);
   }
-  if (merchantServicesControllerUpdateBody.speciesPet !== undefined) {
-    merchantServicesControllerUpdateBody.speciesPet.forEach((value) =>
+  if (updateMerchantServiceDto.speciesPet !== undefined) {
+    updateMerchantServiceDto.speciesPet.forEach((value) =>
       formData.append(`speciesPet`, value),
     );
   }
-  if (merchantServicesControllerUpdateBody.serviceFee !== undefined) {
-    formData.append(
-      `serviceFee`,
-      merchantServicesControllerUpdateBody.serviceFee.toString(),
-    );
-  }
-  if (merchantServicesControllerUpdateBody.isShippingFee !== undefined) {
-    formData.append(
-      `isShippingFee`,
-      merchantServicesControllerUpdateBody.isShippingFee.toString(),
-    );
-  }
-  if (merchantServicesControllerUpdateBody.shippingFee !== undefined) {
-    formData.append(
-      `shippingFee`,
-      merchantServicesControllerUpdateBody.shippingFee.toString(),
-    );
-  }
-  if (merchantServicesControllerUpdateBody.durationMinutes !== undefined) {
+  if (
+    updateMerchantServiceDto.durationMinutes !== undefined &&
+    updateMerchantServiceDto.durationMinutes !== null
+  ) {
     formData.append(
       `durationMinutes`,
-      merchantServicesControllerUpdateBody.durationMinutes.toString(),
+      updateMerchantServiceDto.durationMinutes.toString(),
     );
   }
-  if (merchantServicesControllerUpdateBody.status !== undefined) {
-    formData.append(`status`, merchantServicesControllerUpdateBody.status);
+  if (
+    updateMerchantServiceDto.capacity !== undefined &&
+    updateMerchantServiceDto.capacity !== null
+  ) {
+    formData.append(`capacity`, updateMerchantServiceDto.capacity.toString());
   }
-  if (merchantServicesControllerUpdateBody.mediaIds !== undefined) {
-    merchantServicesControllerUpdateBody.mediaIds.forEach((value) =>
-      formData.append(`mediaIds`, value),
+  if (updateMerchantServiceDto.hasCapacity !== undefined) {
+    formData.append(
+      `hasCapacity`,
+      updateMerchantServiceDto.hasCapacity.toString(),
+    );
+  }
+  if (
+    updateMerchantServiceDto.serviceFee !== undefined &&
+    updateMerchantServiceDto.serviceFee !== null
+  ) {
+    formData.append(
+      `serviceFee`,
+      updateMerchantServiceDto.serviceFee.toString(),
+    );
+  }
+  if (updateMerchantServiceDto.deposit !== undefined) {
+    formData.append(`deposit`, updateMerchantServiceDto.deposit.toString());
+  }
+  if (updateMerchantServiceDto.isShippingFee !== undefined) {
+    formData.append(
+      `isShippingFee`,
+      updateMerchantServiceDto.isShippingFee.toString(),
+    );
+  }
+  if (
+    updateMerchantServiceDto.shippingFee !== undefined &&
+    updateMerchantServiceDto.shippingFee !== null
+  ) {
+    formData.append(
+      `shippingFee`,
+      updateMerchantServiceDto.shippingFee.toString(),
+    );
+  }
+  if (updateMerchantServiceDto.status !== undefined) {
+    formData.append(`status`, updateMerchantServiceDto.status);
+  }
+  if (
+    updateMerchantServiceDto.description !== undefined &&
+    updateMerchantServiceDto.description !== null
+  ) {
+    formData.append(`description`, updateMerchantServiceDto.description);
+  }
+  if (updateMerchantServiceDto.avatar !== undefined) {
+    formData.append(`avatar`, updateMerchantServiceDto.avatar);
+  }
+  if (updateMerchantServiceDto.photos !== undefined) {
+    updateMerchantServiceDto.photos.forEach((value) =>
+      formData.append(`photos`, value),
+    );
+  }
+  if (updateMerchantServiceDto.deleteAvatar !== undefined) {
+    formData.append(
+      `deleteAvatar`,
+      updateMerchantServiceDto.deleteAvatar.toString(),
+    );
+  }
+  if (updateMerchantServiceDto.deletePhotoIds !== undefined) {
+    updateMerchantServiceDto.deletePhotoIds.forEach((value) =>
+      formData.append(`deletePhotoIds`, value),
     );
   }
 
-  return orvalClient<MerchantServiceEntity>(
+  return orvalClient<MerchantService>(
     {
       url: `/api/merchant-services/${id}`,
       method: "PATCH",
@@ -6038,14 +8397,14 @@ export const getMerchantServicesControllerUpdateMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof merchantServicesControllerUpdate>>,
     TError,
-    { id: string; data: MerchantServicesControllerUpdateBody },
+    { id: string; data: UpdateMerchantServiceDto },
     TContext
   >;
   request?: SecondParameter<typeof orvalClient>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof merchantServicesControllerUpdate>>,
   TError,
-  { id: string; data: MerchantServicesControllerUpdateBody },
+  { id: string; data: UpdateMerchantServiceDto },
   TContext
 > => {
   const mutationKey = ["merchantServicesControllerUpdate"];
@@ -6059,7 +8418,7 @@ export const getMerchantServicesControllerUpdateMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof merchantServicesControllerUpdate>>,
-    { id: string; data: MerchantServicesControllerUpdateBody }
+    { id: string; data: UpdateMerchantServiceDto }
   > = (props) => {
     const { id, data } = props ?? {};
 
@@ -6073,7 +8432,7 @@ export type MerchantServicesControllerUpdateMutationResult = NonNullable<
   Awaited<ReturnType<typeof merchantServicesControllerUpdate>>
 >;
 export type MerchantServicesControllerUpdateMutationBody =
-  MerchantServicesControllerUpdateBody;
+  UpdateMerchantServiceDto;
 export type MerchantServicesControllerUpdateMutationError = unknown;
 
 /**
@@ -6087,7 +8446,7 @@ export const useMerchantServicesControllerUpdate = <
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof merchantServicesControllerUpdate>>,
       TError,
-      { id: string; data: MerchantServicesControllerUpdateBody },
+      { id: string; data: UpdateMerchantServiceDto },
       TContext
     >;
     request?: SecondParameter<typeof orvalClient>;
@@ -6096,7 +8455,7 @@ export const useMerchantServicesControllerUpdate = <
 ): UseMutationResult<
   Awaited<ReturnType<typeof merchantServicesControllerUpdate>>,
   TError,
-  { id: string; data: MerchantServicesControllerUpdateBody },
+  { id: string; data: UpdateMerchantServiceDto },
   TContext
 > => {
   const mutationOptions =
@@ -6106,8 +8465,7232 @@ export const useMerchantServicesControllerUpdate = <
 };
 
 /**
+ * Soft delete a merchant service.
+ * @summary Role: Merchant - Delete merchant service
+ */
+export const merchantServicesControllerDelete = (
+  id: string,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    { url: `/api/merchant-services/${id}`, method: "DELETE" },
+    options,
+  );
+};
+
+export const getMerchantServicesControllerDeleteMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof merchantServicesControllerDelete>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof merchantServicesControllerDelete>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["merchantServicesControllerDelete"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof merchantServicesControllerDelete>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return merchantServicesControllerDelete(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type MerchantServicesControllerDeleteMutationResult = NonNullable<
+  Awaited<ReturnType<typeof merchantServicesControllerDelete>>
+>;
+
+export type MerchantServicesControllerDeleteMutationError = unknown;
+
+/**
+ * @summary Role: Merchant - Delete merchant service
+ */
+export const useMerchantServicesControllerDelete = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof merchantServicesControllerDelete>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof merchantServicesControllerDelete>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationOptions =
+    getMerchantServicesControllerDeleteMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Update status of a merchant service.
+ * @summary Role: Merchant - Update merchant service status
+ */
+export const merchantServicesControllerUpdateStatus = (
+  id: string,
+  updateMerchantServiceStatusDto: UpdateMerchantServiceStatusDto,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<MerchantService>(
+    {
+      url: `/api/merchant-services/${id}/status`,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      data: updateMerchantServiceStatusDto,
+    },
+    options,
+  );
+};
+
+export const getMerchantServicesControllerUpdateStatusMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof merchantServicesControllerUpdateStatus>>,
+    TError,
+    { id: string; data: UpdateMerchantServiceStatusDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof merchantServicesControllerUpdateStatus>>,
+  TError,
+  { id: string; data: UpdateMerchantServiceStatusDto },
+  TContext
+> => {
+  const mutationKey = ["merchantServicesControllerUpdateStatus"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof merchantServicesControllerUpdateStatus>>,
+    { id: string; data: UpdateMerchantServiceStatusDto }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return merchantServicesControllerUpdateStatus(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type MerchantServicesControllerUpdateStatusMutationResult = NonNullable<
+  Awaited<ReturnType<typeof merchantServicesControllerUpdateStatus>>
+>;
+export type MerchantServicesControllerUpdateStatusMutationBody =
+  UpdateMerchantServiceStatusDto;
+export type MerchantServicesControllerUpdateStatusMutationError = unknown;
+
+/**
+ * @summary Role: Merchant - Update merchant service status
+ */
+export const useMerchantServicesControllerUpdateStatus = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof merchantServicesControllerUpdateStatus>>,
+      TError,
+      { id: string; data: UpdateMerchantServiceStatusDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof merchantServicesControllerUpdateStatus>>,
+  TError,
+  { id: string; data: UpdateMerchantServiceStatusDto },
+  TContext
+> => {
+  const mutationOptions =
+    getMerchantServicesControllerUpdateStatusMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Restore a soft-deleted merchant service.
+ * @summary Role: Merchant - Restore merchant service
+ */
+export const merchantServicesControllerRestore = (
+  id: string,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    { url: `/api/merchant-services/${id}/restore`, method: "PATCH" },
+    options,
+  );
+};
+
+export const getMerchantServicesControllerRestoreMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof merchantServicesControllerRestore>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof merchantServicesControllerRestore>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["merchantServicesControllerRestore"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof merchantServicesControllerRestore>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return merchantServicesControllerRestore(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type MerchantServicesControllerRestoreMutationResult = NonNullable<
+  Awaited<ReturnType<typeof merchantServicesControllerRestore>>
+>;
+
+export type MerchantServicesControllerRestoreMutationError = unknown;
+
+/**
+ * @summary Role: Merchant - Restore merchant service
+ */
+export const useMerchantServicesControllerRestore = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof merchantServicesControllerRestore>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof merchantServicesControllerRestore>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationOptions =
+    getMerchantServicesControllerRestoreMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Returns time slots available on a given date for a specific merchant service
+ * @summary Role: User - Get available slots for a service
+ */
+export const capacitySnapshotsControllerGetAvailableSlots = (
+  id: string,
+  params: CapacitySnapshotsControllerGetAvailableSlotsParams,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    {
+      url: `/api/capacity-snapshots/services/${id}/available-slots`,
+      method: "GET",
+      params,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getCapacitySnapshotsControllerGetAvailableSlotsQueryKey = (
+  id?: string,
+  params?: CapacitySnapshotsControllerGetAvailableSlotsParams,
+) => {
+  return [
+    `/api/capacity-snapshots/services/${id}/available-slots`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getCapacitySnapshotsControllerGetAvailableSlotsQueryOptions = <
+  TData = Awaited<
+    ReturnType<typeof capacitySnapshotsControllerGetAvailableSlots>
+  >,
+  TError = unknown,
+>(
+  id: string,
+  params: CapacitySnapshotsControllerGetAvailableSlotsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof capacitySnapshotsControllerGetAvailableSlots>
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getCapacitySnapshotsControllerGetAvailableSlotsQueryKey(id, params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof capacitySnapshotsControllerGetAvailableSlots>>
+  > = ({ signal }) =>
+    capacitySnapshotsControllerGetAvailableSlots(
+      id,
+      params,
+      requestOptions,
+      signal,
+    );
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof capacitySnapshotsControllerGetAvailableSlots>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type CapacitySnapshotsControllerGetAvailableSlotsQueryResult =
+  NonNullable<
+    Awaited<ReturnType<typeof capacitySnapshotsControllerGetAvailableSlots>>
+  >;
+export type CapacitySnapshotsControllerGetAvailableSlotsQueryError = unknown;
+
+export function useCapacitySnapshotsControllerGetAvailableSlots<
+  TData = Awaited<
+    ReturnType<typeof capacitySnapshotsControllerGetAvailableSlots>
+  >,
+  TError = unknown,
+>(
+  id: string,
+  params: CapacitySnapshotsControllerGetAvailableSlotsParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof capacitySnapshotsControllerGetAvailableSlots>
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof capacitySnapshotsControllerGetAvailableSlots>
+          >,
+          TError,
+          Awaited<
+            ReturnType<typeof capacitySnapshotsControllerGetAvailableSlots>
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useCapacitySnapshotsControllerGetAvailableSlots<
+  TData = Awaited<
+    ReturnType<typeof capacitySnapshotsControllerGetAvailableSlots>
+  >,
+  TError = unknown,
+>(
+  id: string,
+  params: CapacitySnapshotsControllerGetAvailableSlotsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof capacitySnapshotsControllerGetAvailableSlots>
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof capacitySnapshotsControllerGetAvailableSlots>
+          >,
+          TError,
+          Awaited<
+            ReturnType<typeof capacitySnapshotsControllerGetAvailableSlots>
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useCapacitySnapshotsControllerGetAvailableSlots<
+  TData = Awaited<
+    ReturnType<typeof capacitySnapshotsControllerGetAvailableSlots>
+  >,
+  TError = unknown,
+>(
+  id: string,
+  params: CapacitySnapshotsControllerGetAvailableSlotsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof capacitySnapshotsControllerGetAvailableSlots>
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: User - Get available slots for a service
+ */
+
+export function useCapacitySnapshotsControllerGetAvailableSlots<
+  TData = Awaited<
+    ReturnType<typeof capacitySnapshotsControllerGetAvailableSlots>
+  >,
+  TError = unknown,
+>(
+  id: string,
+  params: CapacitySnapshotsControllerGetAvailableSlotsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof capacitySnapshotsControllerGetAvailableSlots>
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getCapacitySnapshotsControllerGetAvailableSlotsQueryOptions(
+      id,
+      params,
+      options,
+    );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Check if a stay-based service has available rooms for given dates
+ * @summary Role: User - Get stay availability
+ */
+export const capacitySnapshotsControllerGetStayAvailability = (
+  id: string,
+  params: CapacitySnapshotsControllerGetStayAvailabilityParams,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    {
+      url: `/api/capacity-snapshots/services/${id}/stay-availability`,
+      method: "GET",
+      params,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getCapacitySnapshotsControllerGetStayAvailabilityQueryKey = (
+  id?: string,
+  params?: CapacitySnapshotsControllerGetStayAvailabilityParams,
+) => {
+  return [
+    `/api/capacity-snapshots/services/${id}/stay-availability`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getCapacitySnapshotsControllerGetStayAvailabilityQueryOptions = <
+  TData = Awaited<
+    ReturnType<typeof capacitySnapshotsControllerGetStayAvailability>
+  >,
+  TError = unknown,
+>(
+  id: string,
+  params: CapacitySnapshotsControllerGetStayAvailabilityParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof capacitySnapshotsControllerGetStayAvailability>
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getCapacitySnapshotsControllerGetStayAvailabilityQueryKey(id, params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof capacitySnapshotsControllerGetStayAvailability>>
+  > = ({ signal }) =>
+    capacitySnapshotsControllerGetStayAvailability(
+      id,
+      params,
+      requestOptions,
+      signal,
+    );
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof capacitySnapshotsControllerGetStayAvailability>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type CapacitySnapshotsControllerGetStayAvailabilityQueryResult =
+  NonNullable<
+    Awaited<ReturnType<typeof capacitySnapshotsControllerGetStayAvailability>>
+  >;
+export type CapacitySnapshotsControllerGetStayAvailabilityQueryError = unknown;
+
+export function useCapacitySnapshotsControllerGetStayAvailability<
+  TData = Awaited<
+    ReturnType<typeof capacitySnapshotsControllerGetStayAvailability>
+  >,
+  TError = unknown,
+>(
+  id: string,
+  params: CapacitySnapshotsControllerGetStayAvailabilityParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof capacitySnapshotsControllerGetStayAvailability>
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof capacitySnapshotsControllerGetStayAvailability>
+          >,
+          TError,
+          Awaited<
+            ReturnType<typeof capacitySnapshotsControllerGetStayAvailability>
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useCapacitySnapshotsControllerGetStayAvailability<
+  TData = Awaited<
+    ReturnType<typeof capacitySnapshotsControllerGetStayAvailability>
+  >,
+  TError = unknown,
+>(
+  id: string,
+  params: CapacitySnapshotsControllerGetStayAvailabilityParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof capacitySnapshotsControllerGetStayAvailability>
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof capacitySnapshotsControllerGetStayAvailability>
+          >,
+          TError,
+          Awaited<
+            ReturnType<typeof capacitySnapshotsControllerGetStayAvailability>
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useCapacitySnapshotsControllerGetStayAvailability<
+  TData = Awaited<
+    ReturnType<typeof capacitySnapshotsControllerGetStayAvailability>
+  >,
+  TError = unknown,
+>(
+  id: string,
+  params: CapacitySnapshotsControllerGetStayAvailabilityParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof capacitySnapshotsControllerGetStayAvailability>
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: User - Get stay availability
+ */
+
+export function useCapacitySnapshotsControllerGetStayAvailability<
+  TData = Awaited<
+    ReturnType<typeof capacitySnapshotsControllerGetStayAvailability>
+  >,
+  TError = unknown,
+>(
+  id: string,
+  params: CapacitySnapshotsControllerGetStayAvailabilityParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof capacitySnapshotsControllerGetStayAvailability>
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getCapacitySnapshotsControllerGetStayAvailabilityQueryOptions(
+      id,
+      params,
+      options,
+    );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Create a new product for the authenticated merchant. Product code is auto-generated (PRDxxxxx) if left blank. Upload 1 avatar image and up to 9 gallery photos (jpg/png, max 5MB each).
+ * @summary Role: Merchant - Create merchant product
+ */
+export const merchantProductControllerCreate = (
+  createMerchantProductDto: CreateMerchantProductDto,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  const formData = new FormData();
+  if (createMerchantProductDto.masterCategoryId !== undefined) {
+    formData.append(
+      `masterCategoryId`,
+      createMerchantProductDto.masterCategoryId,
+    );
+  }
+  formData.append(`name`, createMerchantProductDto.name);
+  if (
+    createMerchantProductDto.description !== undefined &&
+    createMerchantProductDto.description !== null
+  ) {
+    formData.append(`description`, createMerchantProductDto.description);
+  }
+  if (
+    createMerchantProductDto.code !== undefined &&
+    createMerchantProductDto.code !== null
+  ) {
+    formData.append(`code`, createMerchantProductDto.code);
+  }
+  if (createMerchantProductDto.price !== undefined) {
+    formData.append(`price`, createMerchantProductDto.price.toString());
+  }
+  if (createMerchantProductDto.stockQty !== undefined) {
+    formData.append(`stockQty`, createMerchantProductDto.stockQty.toString());
+  }
+  if (createMerchantProductDto.hasStockQty !== undefined) {
+    formData.append(
+      `hasStockQty`,
+      createMerchantProductDto.hasStockQty.toString(),
+    );
+  }
+  if (createMerchantProductDto.avatar !== undefined) {
+    formData.append(`avatar`, createMerchantProductDto.avatar);
+  }
+  if (createMerchantProductDto.photos !== undefined) {
+    createMerchantProductDto.photos.forEach((value) =>
+      formData.append(`photos`, value),
+    );
+  }
+
+  return orvalClient<MerchantProduct>(
+    {
+      url: `/api/merchant-products`,
+      method: "POST",
+      headers: { "Content-Type": "multipart/form-data" },
+      data: formData,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getMerchantProductControllerCreateMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof merchantProductControllerCreate>>,
+    TError,
+    { data: CreateMerchantProductDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof merchantProductControllerCreate>>,
+  TError,
+  { data: CreateMerchantProductDto },
+  TContext
+> => {
+  const mutationKey = ["merchantProductControllerCreate"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof merchantProductControllerCreate>>,
+    { data: CreateMerchantProductDto }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return merchantProductControllerCreate(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type MerchantProductControllerCreateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof merchantProductControllerCreate>>
+>;
+export type MerchantProductControllerCreateMutationBody =
+  CreateMerchantProductDto;
+export type MerchantProductControllerCreateMutationError = unknown;
+
+/**
+ * @summary Role: Merchant - Create merchant product
+ */
+export const useMerchantProductControllerCreate = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof merchantProductControllerCreate>>,
+      TError,
+      { data: CreateMerchantProductDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof merchantProductControllerCreate>>,
+  TError,
+  { data: CreateMerchantProductDto },
+  TContext
+> => {
+  const mutationOptions =
+    getMerchantProductControllerCreateMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Retrieve a paginated list of merchant products. Merchant uses its own merchantId from session; admin/user can filter by merchantId if provided.
+ * @summary Role: All - Get all merchant products
+ */
+export const merchantProductControllerGetAll = (
+  params?: MerchantProductControllerGetAllParams,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<GetManyMerchantProductDto>(
+    { url: `/api/merchant-products`, method: "GET", params, signal },
+    options,
+  );
+};
+
+export const getMerchantProductControllerGetAllInfiniteQueryKey = (
+  params?: MerchantProductControllerGetAllParams,
+) => {
+  return [
+    "infinate",
+    `/api/merchant-products`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getMerchantProductControllerGetAllQueryKey = (
+  params?: MerchantProductControllerGetAllParams,
+) => {
+  return [`/api/merchant-products`, ...(params ? [params] : [])] as const;
+};
+
+export const getMerchantProductControllerGetAllInfiniteQueryOptions = <
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof merchantProductControllerGetAll>>,
+    MerchantProductControllerGetAllParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: MerchantProductControllerGetAllParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof merchantProductControllerGetAll>>,
+        TError,
+        TData,
+        QueryKey,
+        MerchantProductControllerGetAllParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getMerchantProductControllerGetAllInfiniteQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof merchantProductControllerGetAll>>,
+    QueryKey,
+    MerchantProductControllerGetAllParams["page"]
+  > = ({ signal, pageParam }) =>
+    merchantProductControllerGetAll(
+      { ...params, page: pageParam || params?.["page"] },
+      requestOptions,
+      signal,
+    );
+
+  return { queryKey, queryFn, ...queryOptions } as UseInfiniteQueryOptions<
+    Awaited<ReturnType<typeof merchantProductControllerGetAll>>,
+    TError,
+    TData,
+    QueryKey,
+    MerchantProductControllerGetAllParams["page"]
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type MerchantProductControllerGetAllInfiniteQueryResult = NonNullable<
+  Awaited<ReturnType<typeof merchantProductControllerGetAll>>
+>;
+export type MerchantProductControllerGetAllInfiniteQueryError = unknown;
+
+export function useMerchantProductControllerGetAllInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof merchantProductControllerGetAll>>,
+    MerchantProductControllerGetAllParams["page"]
+  >,
+  TError = unknown,
+>(
+  params: undefined | MerchantProductControllerGetAllParams,
+  options: {
+    query: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof merchantProductControllerGetAll>>,
+        TError,
+        TData,
+        QueryKey,
+        MerchantProductControllerGetAllParams["page"]
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof merchantProductControllerGetAll>>,
+          TError,
+          Awaited<ReturnType<typeof merchantProductControllerGetAll>>,
+          QueryKey
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantProductControllerGetAllInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof merchantProductControllerGetAll>>,
+    MerchantProductControllerGetAllParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: MerchantProductControllerGetAllParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof merchantProductControllerGetAll>>,
+        TError,
+        TData,
+        QueryKey,
+        MerchantProductControllerGetAllParams["page"]
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof merchantProductControllerGetAll>>,
+          TError,
+          Awaited<ReturnType<typeof merchantProductControllerGetAll>>,
+          QueryKey
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantProductControllerGetAllInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof merchantProductControllerGetAll>>,
+    MerchantProductControllerGetAllParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: MerchantProductControllerGetAllParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof merchantProductControllerGetAll>>,
+        TError,
+        TData,
+        QueryKey,
+        MerchantProductControllerGetAllParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: All - Get all merchant products
+ */
+
+export function useMerchantProductControllerGetAllInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof merchantProductControllerGetAll>>,
+    MerchantProductControllerGetAllParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: MerchantProductControllerGetAllParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof merchantProductControllerGetAll>>,
+        TError,
+        TData,
+        QueryKey,
+        MerchantProductControllerGetAllParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getMerchantProductControllerGetAllInfiniteQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useInfiniteQuery(
+    queryOptions,
+    queryClient,
+  ) as UseInfiniteQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+export const getMerchantProductControllerGetAllQueryOptions = <
+  TData = Awaited<ReturnType<typeof merchantProductControllerGetAll>>,
+  TError = unknown,
+>(
+  params?: MerchantProductControllerGetAllParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantProductControllerGetAll>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getMerchantProductControllerGetAllQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof merchantProductControllerGetAll>>
+  > = ({ signal }) =>
+    merchantProductControllerGetAll(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof merchantProductControllerGetAll>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type MerchantProductControllerGetAllQueryResult = NonNullable<
+  Awaited<ReturnType<typeof merchantProductControllerGetAll>>
+>;
+export type MerchantProductControllerGetAllQueryError = unknown;
+
+export function useMerchantProductControllerGetAll<
+  TData = Awaited<ReturnType<typeof merchantProductControllerGetAll>>,
+  TError = unknown,
+>(
+  params: undefined | MerchantProductControllerGetAllParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantProductControllerGetAll>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof merchantProductControllerGetAll>>,
+          TError,
+          Awaited<ReturnType<typeof merchantProductControllerGetAll>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantProductControllerGetAll<
+  TData = Awaited<ReturnType<typeof merchantProductControllerGetAll>>,
+  TError = unknown,
+>(
+  params?: MerchantProductControllerGetAllParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantProductControllerGetAll>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof merchantProductControllerGetAll>>,
+          TError,
+          Awaited<ReturnType<typeof merchantProductControllerGetAll>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantProductControllerGetAll<
+  TData = Awaited<ReturnType<typeof merchantProductControllerGetAll>>,
+  TError = unknown,
+>(
+  params?: MerchantProductControllerGetAllParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantProductControllerGetAll>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: All - Get all merchant products
+ */
+
+export function useMerchantProductControllerGetAll<
+  TData = Awaited<ReturnType<typeof merchantProductControllerGetAll>>,
+  TError = unknown,
+>(
+  params?: MerchantProductControllerGetAllParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantProductControllerGetAll>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getMerchantProductControllerGetAllQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Retrieve a merchant product by its ID.
+ * @summary Role: All - Get merchant product by ID
+ */
+export const merchantProductControllerGetById = (
+  id: string,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<MerchantProduct>(
+    { url: `/api/merchant-products/${id}`, method: "GET", signal },
+    options,
+  );
+};
+
+export const getMerchantProductControllerGetByIdQueryKey = (id?: string) => {
+  return [`/api/merchant-products/${id}`] as const;
+};
+
+export const getMerchantProductControllerGetByIdQueryOptions = <
+  TData = Awaited<ReturnType<typeof merchantProductControllerGetById>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantProductControllerGetById>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getMerchantProductControllerGetByIdQueryKey(id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof merchantProductControllerGetById>>
+  > = ({ signal }) =>
+    merchantProductControllerGetById(id, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof merchantProductControllerGetById>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type MerchantProductControllerGetByIdQueryResult = NonNullable<
+  Awaited<ReturnType<typeof merchantProductControllerGetById>>
+>;
+export type MerchantProductControllerGetByIdQueryError = unknown;
+
+export function useMerchantProductControllerGetById<
+  TData = Awaited<ReturnType<typeof merchantProductControllerGetById>>,
+  TError = unknown,
+>(
+  id: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantProductControllerGetById>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof merchantProductControllerGetById>>,
+          TError,
+          Awaited<ReturnType<typeof merchantProductControllerGetById>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantProductControllerGetById<
+  TData = Awaited<ReturnType<typeof merchantProductControllerGetById>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantProductControllerGetById>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof merchantProductControllerGetById>>,
+          TError,
+          Awaited<ReturnType<typeof merchantProductControllerGetById>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantProductControllerGetById<
+  TData = Awaited<ReturnType<typeof merchantProductControllerGetById>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantProductControllerGetById>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: All - Get merchant product by ID
+ */
+
+export function useMerchantProductControllerGetById<
+  TData = Awaited<ReturnType<typeof merchantProductControllerGetById>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantProductControllerGetById>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getMerchantProductControllerGetByIdQueryOptions(
+    id,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Update an existing product for the authenticated merchant. Supports updating name, description, price, stock, and status. Upload a new avatar image to replace the current one, or set deleteAvatar=true to remove it. Upload new gallery photos (appended, max 9 total). Use deletePhotoIds to remove specific gallery photos.
+ * @summary Role: Merchant - Update merchant product
+ */
+export const merchantProductControllerUpdate = (
+  id: string,
+  updateMerchantProductDto: UpdateMerchantProductDto,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  const formData = new FormData();
+  if (updateMerchantProductDto.masterCategoryId !== undefined) {
+    formData.append(
+      `masterCategoryId`,
+      updateMerchantProductDto.masterCategoryId,
+    );
+  }
+  if (updateMerchantProductDto.name !== undefined) {
+    formData.append(`name`, updateMerchantProductDto.name);
+  }
+  if (
+    updateMerchantProductDto.description !== undefined &&
+    updateMerchantProductDto.description !== null
+  ) {
+    formData.append(`description`, updateMerchantProductDto.description);
+  }
+  if (
+    updateMerchantProductDto.code !== undefined &&
+    updateMerchantProductDto.code !== null
+  ) {
+    formData.append(`code`, updateMerchantProductDto.code);
+  }
+  if (updateMerchantProductDto.price !== undefined) {
+    formData.append(`price`, updateMerchantProductDto.price.toString());
+  }
+  if (updateMerchantProductDto.stockQty !== undefined) {
+    formData.append(`stockQty`, updateMerchantProductDto.stockQty.toString());
+  }
+  if (updateMerchantProductDto.hasStockQty !== undefined) {
+    formData.append(
+      `hasStockQty`,
+      updateMerchantProductDto.hasStockQty.toString(),
+    );
+  }
+  if (updateMerchantProductDto.avatar !== undefined) {
+    formData.append(`avatar`, updateMerchantProductDto.avatar);
+  }
+  if (updateMerchantProductDto.photos !== undefined) {
+    updateMerchantProductDto.photos.forEach((value) =>
+      formData.append(`photos`, value),
+    );
+  }
+  if (updateMerchantProductDto.deletePhotoIds !== undefined) {
+    updateMerchantProductDto.deletePhotoIds.forEach((value) =>
+      formData.append(`deletePhotoIds`, value),
+    );
+  }
+  if (updateMerchantProductDto.deleteAvatar !== undefined) {
+    formData.append(
+      `deleteAvatar`,
+      updateMerchantProductDto.deleteAvatar.toString(),
+    );
+  }
+  if (updateMerchantProductDto.status !== undefined) {
+    formData.append(`status`, updateMerchantProductDto.status);
+  }
+
+  return orvalClient<MerchantProduct>(
+    {
+      url: `/api/merchant-products/${id}`,
+      method: "PATCH",
+      headers: { "Content-Type": "multipart/form-data" },
+      data: formData,
+    },
+    options,
+  );
+};
+
+export const getMerchantProductControllerUpdateMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof merchantProductControllerUpdate>>,
+    TError,
+    { id: string; data: UpdateMerchantProductDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof merchantProductControllerUpdate>>,
+  TError,
+  { id: string; data: UpdateMerchantProductDto },
+  TContext
+> => {
+  const mutationKey = ["merchantProductControllerUpdate"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof merchantProductControllerUpdate>>,
+    { id: string; data: UpdateMerchantProductDto }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return merchantProductControllerUpdate(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type MerchantProductControllerUpdateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof merchantProductControllerUpdate>>
+>;
+export type MerchantProductControllerUpdateMutationBody =
+  UpdateMerchantProductDto;
+export type MerchantProductControllerUpdateMutationError = unknown;
+
+/**
+ * @summary Role: Merchant - Update merchant product
+ */
+export const useMerchantProductControllerUpdate = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof merchantProductControllerUpdate>>,
+      TError,
+      { id: string; data: UpdateMerchantProductDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof merchantProductControllerUpdate>>,
+  TError,
+  { id: string; data: UpdateMerchantProductDto },
+  TContext
+> => {
+  const mutationOptions =
+    getMerchantProductControllerUpdateMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Soft delete a merchant product by its ID.
+ * @summary Role: Merchant - Soft delete merchant product
+ */
+export const merchantProductControllerSoftDelete = (
+  id: string,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<MerchantProduct>(
+    { url: `/api/merchant-products/${id}/soft-delete`, method: "PATCH" },
+    options,
+  );
+};
+
+export const getMerchantProductControllerSoftDeleteMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof merchantProductControllerSoftDelete>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof merchantProductControllerSoftDelete>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["merchantProductControllerSoftDelete"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof merchantProductControllerSoftDelete>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return merchantProductControllerSoftDelete(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type MerchantProductControllerSoftDeleteMutationResult = NonNullable<
+  Awaited<ReturnType<typeof merchantProductControllerSoftDelete>>
+>;
+
+export type MerchantProductControllerSoftDeleteMutationError = unknown;
+
+/**
+ * @summary Role: Merchant - Soft delete merchant product
+ */
+export const useMerchantProductControllerSoftDelete = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof merchantProductControllerSoftDelete>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof merchantProductControllerSoftDelete>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationOptions =
+    getMerchantProductControllerSoftDeleteMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Restore a soft-deleted merchant product by its ID.
+ * @summary Role: Merchant - Restore merchant product
+ */
+export const merchantProductControllerRestore = (
+  id: string,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<MerchantProduct>(
+    { url: `/api/merchant-products/${id}/restore`, method: "PATCH" },
+    options,
+  );
+};
+
+export const getMerchantProductControllerRestoreMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof merchantProductControllerRestore>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof merchantProductControllerRestore>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["merchantProductControllerRestore"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof merchantProductControllerRestore>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return merchantProductControllerRestore(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type MerchantProductControllerRestoreMutationResult = NonNullable<
+  Awaited<ReturnType<typeof merchantProductControllerRestore>>
+>;
+
+export type MerchantProductControllerRestoreMutationError = unknown;
+
+/**
+ * @summary Role: Merchant - Restore merchant product
+ */
+export const useMerchantProductControllerRestore = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof merchantProductControllerRestore>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof merchantProductControllerRestore>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationOptions =
+    getMerchantProductControllerRestoreMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Retrieve featured products (best sellers) and products grouped by master category for the home page.
+ * @summary Role: USER - Get home page products
+ */
+export const petOwnerProductControllerGetHomeProducts = (
+  params?: PetOwnerProductControllerGetHomeProductsParams,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<HomePageProductsResponseDto>(
+    { url: `/api/products/home`, method: "GET", params, signal },
+    options,
+  );
+};
+
+export const getPetOwnerProductControllerGetHomeProductsQueryKey = (
+  params?: PetOwnerProductControllerGetHomeProductsParams,
+) => {
+  return [`/api/products/home`, ...(params ? [params] : [])] as const;
+};
+
+export const getPetOwnerProductControllerGetHomeProductsQueryOptions = <
+  TData = Awaited<ReturnType<typeof petOwnerProductControllerGetHomeProducts>>,
+  TError = unknown,
+>(
+  params?: PetOwnerProductControllerGetHomeProductsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petOwnerProductControllerGetHomeProducts>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getPetOwnerProductControllerGetHomeProductsQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof petOwnerProductControllerGetHomeProducts>>
+  > = ({ signal }) =>
+    petOwnerProductControllerGetHomeProducts(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof petOwnerProductControllerGetHomeProducts>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type PetOwnerProductControllerGetHomeProductsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof petOwnerProductControllerGetHomeProducts>>
+>;
+export type PetOwnerProductControllerGetHomeProductsQueryError = unknown;
+
+export function usePetOwnerProductControllerGetHomeProducts<
+  TData = Awaited<ReturnType<typeof petOwnerProductControllerGetHomeProducts>>,
+  TError = unknown,
+>(
+  params: undefined | PetOwnerProductControllerGetHomeProductsParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petOwnerProductControllerGetHomeProducts>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof petOwnerProductControllerGetHomeProducts>>,
+          TError,
+          Awaited<ReturnType<typeof petOwnerProductControllerGetHomeProducts>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function usePetOwnerProductControllerGetHomeProducts<
+  TData = Awaited<ReturnType<typeof petOwnerProductControllerGetHomeProducts>>,
+  TError = unknown,
+>(
+  params?: PetOwnerProductControllerGetHomeProductsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petOwnerProductControllerGetHomeProducts>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof petOwnerProductControllerGetHomeProducts>>,
+          TError,
+          Awaited<ReturnType<typeof petOwnerProductControllerGetHomeProducts>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function usePetOwnerProductControllerGetHomeProducts<
+  TData = Awaited<ReturnType<typeof petOwnerProductControllerGetHomeProducts>>,
+  TError = unknown,
+>(
+  params?: PetOwnerProductControllerGetHomeProductsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petOwnerProductControllerGetHomeProducts>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: USER - Get home page products
+ */
+
+export function usePetOwnerProductControllerGetHomeProducts<
+  TData = Awaited<ReturnType<typeof petOwnerProductControllerGetHomeProducts>>,
+  TError = unknown,
+>(
+  params?: PetOwnerProductControllerGetHomeProductsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petOwnerProductControllerGetHomeProducts>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getPetOwnerProductControllerGetHomeProductsQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Retrieve shop profile details and paginated catalog of merchant products
+ * @summary Role: USER - Get shop profile
+ */
+export const petOwnerProductControllerGetShopProfile = (
+  merchantId: string,
+  params?: PetOwnerProductControllerGetShopProfileParams,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<ShopProfileResponseDto>(
+    {
+      url: `/api/products/merchant/${merchantId}`,
+      method: "GET",
+      params,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getPetOwnerProductControllerGetShopProfileInfiniteQueryKey = (
+  merchantId?: string,
+  params?: PetOwnerProductControllerGetShopProfileParams,
+) => {
+  return [
+    "infinate",
+    `/api/products/merchant/${merchantId}`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getPetOwnerProductControllerGetShopProfileQueryKey = (
+  merchantId?: string,
+  params?: PetOwnerProductControllerGetShopProfileParams,
+) => {
+  return [
+    `/api/products/merchant/${merchantId}`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getPetOwnerProductControllerGetShopProfileInfiniteQueryOptions = <
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>,
+    PetOwnerProductControllerGetShopProfileParams["page"]
+  >,
+  TError = unknown,
+>(
+  merchantId: string,
+  params?: PetOwnerProductControllerGetShopProfileParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>,
+        TError,
+        TData,
+        QueryKey,
+        PetOwnerProductControllerGetShopProfileParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getPetOwnerProductControllerGetShopProfileInfiniteQueryKey(
+      merchantId,
+      params,
+    );
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>,
+    QueryKey,
+    PetOwnerProductControllerGetShopProfileParams["page"]
+  > = ({ signal, pageParam }) =>
+    petOwnerProductControllerGetShopProfile(
+      merchantId,
+      { ...params, page: pageParam || params?.["page"] },
+      requestOptions,
+      signal,
+    );
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!merchantId,
+    ...queryOptions,
+  } as UseInfiniteQueryOptions<
+    Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>,
+    TError,
+    TData,
+    QueryKey,
+    PetOwnerProductControllerGetShopProfileParams["page"]
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type PetOwnerProductControllerGetShopProfileInfiniteQueryResult =
+  NonNullable<
+    Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>
+  >;
+export type PetOwnerProductControllerGetShopProfileInfiniteQueryError = unknown;
+
+export function usePetOwnerProductControllerGetShopProfileInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>,
+    PetOwnerProductControllerGetShopProfileParams["page"]
+  >,
+  TError = unknown,
+>(
+  merchantId: string,
+  params: undefined | PetOwnerProductControllerGetShopProfileParams,
+  options: {
+    query: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>,
+        TError,
+        TData,
+        QueryKey,
+        PetOwnerProductControllerGetShopProfileParams["page"]
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>,
+          TError,
+          Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>,
+          QueryKey
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function usePetOwnerProductControllerGetShopProfileInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>,
+    PetOwnerProductControllerGetShopProfileParams["page"]
+  >,
+  TError = unknown,
+>(
+  merchantId: string,
+  params?: PetOwnerProductControllerGetShopProfileParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>,
+        TError,
+        TData,
+        QueryKey,
+        PetOwnerProductControllerGetShopProfileParams["page"]
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>,
+          TError,
+          Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>,
+          QueryKey
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function usePetOwnerProductControllerGetShopProfileInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>,
+    PetOwnerProductControllerGetShopProfileParams["page"]
+  >,
+  TError = unknown,
+>(
+  merchantId: string,
+  params?: PetOwnerProductControllerGetShopProfileParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>,
+        TError,
+        TData,
+        QueryKey,
+        PetOwnerProductControllerGetShopProfileParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: USER - Get shop profile
+ */
+
+export function usePetOwnerProductControllerGetShopProfileInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>,
+    PetOwnerProductControllerGetShopProfileParams["page"]
+  >,
+  TError = unknown,
+>(
+  merchantId: string,
+  params?: PetOwnerProductControllerGetShopProfileParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>,
+        TError,
+        TData,
+        QueryKey,
+        PetOwnerProductControllerGetShopProfileParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getPetOwnerProductControllerGetShopProfileInfiniteQueryOptions(
+      merchantId,
+      params,
+      options,
+    );
+
+  const query = useInfiniteQuery(
+    queryOptions,
+    queryClient,
+  ) as UseInfiniteQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+export const getPetOwnerProductControllerGetShopProfileQueryOptions = <
+  TData = Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>,
+  TError = unknown,
+>(
+  merchantId: string,
+  params?: PetOwnerProductControllerGetShopProfileParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getPetOwnerProductControllerGetShopProfileQueryKey(merchantId, params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>
+  > = ({ signal }) =>
+    petOwnerProductControllerGetShopProfile(
+      merchantId,
+      params,
+      requestOptions,
+      signal,
+    );
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!merchantId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type PetOwnerProductControllerGetShopProfileQueryResult = NonNullable<
+  Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>
+>;
+export type PetOwnerProductControllerGetShopProfileQueryError = unknown;
+
+export function usePetOwnerProductControllerGetShopProfile<
+  TData = Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>,
+  TError = unknown,
+>(
+  merchantId: string,
+  params: undefined | PetOwnerProductControllerGetShopProfileParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>,
+          TError,
+          Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function usePetOwnerProductControllerGetShopProfile<
+  TData = Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>,
+  TError = unknown,
+>(
+  merchantId: string,
+  params?: PetOwnerProductControllerGetShopProfileParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>,
+          TError,
+          Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function usePetOwnerProductControllerGetShopProfile<
+  TData = Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>,
+  TError = unknown,
+>(
+  merchantId: string,
+  params?: PetOwnerProductControllerGetShopProfileParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: USER - Get shop profile
+ */
+
+export function usePetOwnerProductControllerGetShopProfile<
+  TData = Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>,
+  TError = unknown,
+>(
+  merchantId: string,
+  params?: PetOwnerProductControllerGetShopProfileParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petOwnerProductControllerGetShopProfile>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getPetOwnerProductControllerGetShopProfileQueryOptions(
+    merchantId,
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Retrieve full details of a product plus 10 top selling related products from the same merchant
+ * @summary Role: USER - Get product detail
+ */
+export const petOwnerProductControllerGetProductDetail = (
+  id: string,
+  params?: PetOwnerProductControllerGetProductDetailParams,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<ProductDetailResponseDto>(
+    { url: `/api/products/${id}`, method: "GET", params, signal },
+    options,
+  );
+};
+
+export const getPetOwnerProductControllerGetProductDetailQueryKey = (
+  id?: string,
+  params?: PetOwnerProductControllerGetProductDetailParams,
+) => {
+  return [`/api/products/${id}`, ...(params ? [params] : [])] as const;
+};
+
+export const getPetOwnerProductControllerGetProductDetailQueryOptions = <
+  TData = Awaited<ReturnType<typeof petOwnerProductControllerGetProductDetail>>,
+  TError = unknown,
+>(
+  id: string,
+  params?: PetOwnerProductControllerGetProductDetailParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petOwnerProductControllerGetProductDetail>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getPetOwnerProductControllerGetProductDetailQueryKey(id, params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof petOwnerProductControllerGetProductDetail>>
+  > = ({ signal }) =>
+    petOwnerProductControllerGetProductDetail(
+      id,
+      params,
+      requestOptions,
+      signal,
+    );
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof petOwnerProductControllerGetProductDetail>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type PetOwnerProductControllerGetProductDetailQueryResult = NonNullable<
+  Awaited<ReturnType<typeof petOwnerProductControllerGetProductDetail>>
+>;
+export type PetOwnerProductControllerGetProductDetailQueryError = unknown;
+
+export function usePetOwnerProductControllerGetProductDetail<
+  TData = Awaited<ReturnType<typeof petOwnerProductControllerGetProductDetail>>,
+  TError = unknown,
+>(
+  id: string,
+  params: undefined | PetOwnerProductControllerGetProductDetailParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petOwnerProductControllerGetProductDetail>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof petOwnerProductControllerGetProductDetail>>,
+          TError,
+          Awaited<ReturnType<typeof petOwnerProductControllerGetProductDetail>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function usePetOwnerProductControllerGetProductDetail<
+  TData = Awaited<ReturnType<typeof petOwnerProductControllerGetProductDetail>>,
+  TError = unknown,
+>(
+  id: string,
+  params?: PetOwnerProductControllerGetProductDetailParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petOwnerProductControllerGetProductDetail>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof petOwnerProductControllerGetProductDetail>>,
+          TError,
+          Awaited<ReturnType<typeof petOwnerProductControllerGetProductDetail>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function usePetOwnerProductControllerGetProductDetail<
+  TData = Awaited<ReturnType<typeof petOwnerProductControllerGetProductDetail>>,
+  TError = unknown,
+>(
+  id: string,
+  params?: PetOwnerProductControllerGetProductDetailParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petOwnerProductControllerGetProductDetail>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: USER - Get product detail
+ */
+
+export function usePetOwnerProductControllerGetProductDetail<
+  TData = Awaited<ReturnType<typeof petOwnerProductControllerGetProductDetail>>,
+  TError = unknown,
+>(
+  id: string,
+  params?: PetOwnerProductControllerGetProductDetailParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petOwnerProductControllerGetProductDetail>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getPetOwnerProductControllerGetProductDetailQueryOptions(
+    id,
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Retrieve a paginated list of pet owner products. User can filter by merchantId if provided.
+ * @summary Role: All - Get all pet owner products
+ */
+export const petOwnerProductControllerGetAll = (
+  params?: PetOwnerProductControllerGetAllParams,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<GetManyMerchantProductDto>(
+    { url: `/api/products`, method: "GET", params, signal },
+    options,
+  );
+};
+
+export const getPetOwnerProductControllerGetAllInfiniteQueryKey = (
+  params?: PetOwnerProductControllerGetAllParams,
+) => {
+  return ["infinate", `/api/products`, ...(params ? [params] : [])] as const;
+};
+
+export const getPetOwnerProductControllerGetAllQueryKey = (
+  params?: PetOwnerProductControllerGetAllParams,
+) => {
+  return [`/api/products`, ...(params ? [params] : [])] as const;
+};
+
+export const getPetOwnerProductControllerGetAllInfiniteQueryOptions = <
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>,
+    PetOwnerProductControllerGetAllParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: PetOwnerProductControllerGetAllParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>,
+        TError,
+        TData,
+        QueryKey,
+        PetOwnerProductControllerGetAllParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getPetOwnerProductControllerGetAllInfiniteQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>,
+    QueryKey,
+    PetOwnerProductControllerGetAllParams["page"]
+  > = ({ signal, pageParam }) =>
+    petOwnerProductControllerGetAll(
+      { ...params, page: pageParam || params?.["page"] },
+      requestOptions,
+      signal,
+    );
+
+  return { queryKey, queryFn, ...queryOptions } as UseInfiniteQueryOptions<
+    Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>,
+    TError,
+    TData,
+    QueryKey,
+    PetOwnerProductControllerGetAllParams["page"]
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type PetOwnerProductControllerGetAllInfiniteQueryResult = NonNullable<
+  Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>
+>;
+export type PetOwnerProductControllerGetAllInfiniteQueryError = unknown;
+
+export function usePetOwnerProductControllerGetAllInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>,
+    PetOwnerProductControllerGetAllParams["page"]
+  >,
+  TError = unknown,
+>(
+  params: undefined | PetOwnerProductControllerGetAllParams,
+  options: {
+    query: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>,
+        TError,
+        TData,
+        QueryKey,
+        PetOwnerProductControllerGetAllParams["page"]
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>,
+          TError,
+          Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>,
+          QueryKey
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function usePetOwnerProductControllerGetAllInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>,
+    PetOwnerProductControllerGetAllParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: PetOwnerProductControllerGetAllParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>,
+        TError,
+        TData,
+        QueryKey,
+        PetOwnerProductControllerGetAllParams["page"]
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>,
+          TError,
+          Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>,
+          QueryKey
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function usePetOwnerProductControllerGetAllInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>,
+    PetOwnerProductControllerGetAllParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: PetOwnerProductControllerGetAllParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>,
+        TError,
+        TData,
+        QueryKey,
+        PetOwnerProductControllerGetAllParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: All - Get all pet owner products
+ */
+
+export function usePetOwnerProductControllerGetAllInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>,
+    PetOwnerProductControllerGetAllParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: PetOwnerProductControllerGetAllParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>,
+        TError,
+        TData,
+        QueryKey,
+        PetOwnerProductControllerGetAllParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getPetOwnerProductControllerGetAllInfiniteQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useInfiniteQuery(
+    queryOptions,
+    queryClient,
+  ) as UseInfiniteQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+export const getPetOwnerProductControllerGetAllQueryOptions = <
+  TData = Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>,
+  TError = unknown,
+>(
+  params?: PetOwnerProductControllerGetAllParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getPetOwnerProductControllerGetAllQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>
+  > = ({ signal }) =>
+    petOwnerProductControllerGetAll(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type PetOwnerProductControllerGetAllQueryResult = NonNullable<
+  Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>
+>;
+export type PetOwnerProductControllerGetAllQueryError = unknown;
+
+export function usePetOwnerProductControllerGetAll<
+  TData = Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>,
+  TError = unknown,
+>(
+  params: undefined | PetOwnerProductControllerGetAllParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>,
+          TError,
+          Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function usePetOwnerProductControllerGetAll<
+  TData = Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>,
+  TError = unknown,
+>(
+  params?: PetOwnerProductControllerGetAllParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>,
+          TError,
+          Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function usePetOwnerProductControllerGetAll<
+  TData = Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>,
+  TError = unknown,
+>(
+  params?: PetOwnerProductControllerGetAllParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: All - Get all pet owner products
+ */
+
+export function usePetOwnerProductControllerGetAll<
+  TData = Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>,
+  TError = unknown,
+>(
+  params?: PetOwnerProductControllerGetAllParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petOwnerProductControllerGetAll>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getPetOwnerProductControllerGetAllQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Paginated list of staff members with optional search and status filter
+ * @summary Role: Merchant - Get staff list
+ */
+export const merchantStaffsControllerGetStaffList = (
+  params?: MerchantStaffsControllerGetStaffListParams,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    { url: `/api/merchant-staffs`, method: "GET", params, signal },
+    options,
+  );
+};
+
+export const getMerchantStaffsControllerGetStaffListInfiniteQueryKey = (
+  params?: MerchantStaffsControllerGetStaffListParams,
+) => {
+  return [
+    "infinate",
+    `/api/merchant-staffs`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getMerchantStaffsControllerGetStaffListQueryKey = (
+  params?: MerchantStaffsControllerGetStaffListParams,
+) => {
+  return [`/api/merchant-staffs`, ...(params ? [params] : [])] as const;
+};
+
+export const getMerchantStaffsControllerGetStaffListInfiniteQueryOptions = <
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>,
+    MerchantStaffsControllerGetStaffListParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: MerchantStaffsControllerGetStaffListParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>,
+        TError,
+        TData,
+        QueryKey,
+        MerchantStaffsControllerGetStaffListParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getMerchantStaffsControllerGetStaffListInfiniteQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>,
+    QueryKey,
+    MerchantStaffsControllerGetStaffListParams["page"]
+  > = ({ signal, pageParam }) =>
+    merchantStaffsControllerGetStaffList(
+      { ...params, page: pageParam || params?.["page"] },
+      requestOptions,
+      signal,
+    );
+
+  return { queryKey, queryFn, ...queryOptions } as UseInfiniteQueryOptions<
+    Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>,
+    TError,
+    TData,
+    QueryKey,
+    MerchantStaffsControllerGetStaffListParams["page"]
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type MerchantStaffsControllerGetStaffListInfiniteQueryResult =
+  NonNullable<Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>>;
+export type MerchantStaffsControllerGetStaffListInfiniteQueryError = unknown;
+
+export function useMerchantStaffsControllerGetStaffListInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>,
+    MerchantStaffsControllerGetStaffListParams["page"]
+  >,
+  TError = unknown,
+>(
+  params: undefined | MerchantStaffsControllerGetStaffListParams,
+  options: {
+    query: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>,
+        TError,
+        TData,
+        QueryKey,
+        MerchantStaffsControllerGetStaffListParams["page"]
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>,
+          TError,
+          Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>,
+          QueryKey
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantStaffsControllerGetStaffListInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>,
+    MerchantStaffsControllerGetStaffListParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: MerchantStaffsControllerGetStaffListParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>,
+        TError,
+        TData,
+        QueryKey,
+        MerchantStaffsControllerGetStaffListParams["page"]
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>,
+          TError,
+          Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>,
+          QueryKey
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantStaffsControllerGetStaffListInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>,
+    MerchantStaffsControllerGetStaffListParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: MerchantStaffsControllerGetStaffListParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>,
+        TError,
+        TData,
+        QueryKey,
+        MerchantStaffsControllerGetStaffListParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: Merchant - Get staff list
+ */
+
+export function useMerchantStaffsControllerGetStaffListInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>,
+    MerchantStaffsControllerGetStaffListParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: MerchantStaffsControllerGetStaffListParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>,
+        TError,
+        TData,
+        QueryKey,
+        MerchantStaffsControllerGetStaffListParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getMerchantStaffsControllerGetStaffListInfiniteQueryOptions(
+      params,
+      options,
+    );
+
+  const query = useInfiniteQuery(
+    queryOptions,
+    queryClient,
+  ) as UseInfiniteQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+export const getMerchantStaffsControllerGetStaffListQueryOptions = <
+  TData = Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>,
+  TError = unknown,
+>(
+  params?: MerchantStaffsControllerGetStaffListParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getMerchantStaffsControllerGetStaffListQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>
+  > = ({ signal }) =>
+    merchantStaffsControllerGetStaffList(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type MerchantStaffsControllerGetStaffListQueryResult = NonNullable<
+  Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>
+>;
+export type MerchantStaffsControllerGetStaffListQueryError = unknown;
+
+export function useMerchantStaffsControllerGetStaffList<
+  TData = Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>,
+  TError = unknown,
+>(
+  params: undefined | MerchantStaffsControllerGetStaffListParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>,
+          TError,
+          Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantStaffsControllerGetStaffList<
+  TData = Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>,
+  TError = unknown,
+>(
+  params?: MerchantStaffsControllerGetStaffListParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>,
+          TError,
+          Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantStaffsControllerGetStaffList<
+  TData = Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>,
+  TError = unknown,
+>(
+  params?: MerchantStaffsControllerGetStaffListParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: Merchant - Get staff list
+ */
+
+export function useMerchantStaffsControllerGetStaffList<
+  TData = Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>,
+  TError = unknown,
+>(
+  params?: MerchantStaffsControllerGetStaffListParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantStaffsControllerGetStaffList>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getMerchantStaffsControllerGetStaffListQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Add a new staff member. Staff are internal assignment objects — no login or avatar needed.
+ * @summary Role: Merchant - Create a staff member
+ */
+export const merchantStaffsControllerCreateStaff = (
+  createMerchantStaffDto: CreateMerchantStaffDto,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    {
+      url: `/api/merchant-staffs`,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      data: createMerchantStaffDto,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getMerchantStaffsControllerCreateStaffMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof merchantStaffsControllerCreateStaff>>,
+    TError,
+    { data: CreateMerchantStaffDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof merchantStaffsControllerCreateStaff>>,
+  TError,
+  { data: CreateMerchantStaffDto },
+  TContext
+> => {
+  const mutationKey = ["merchantStaffsControllerCreateStaff"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof merchantStaffsControllerCreateStaff>>,
+    { data: CreateMerchantStaffDto }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return merchantStaffsControllerCreateStaff(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type MerchantStaffsControllerCreateStaffMutationResult = NonNullable<
+  Awaited<ReturnType<typeof merchantStaffsControllerCreateStaff>>
+>;
+export type MerchantStaffsControllerCreateStaffMutationBody =
+  CreateMerchantStaffDto;
+export type MerchantStaffsControllerCreateStaffMutationError = unknown;
+
+/**
+ * @summary Role: Merchant - Create a staff member
+ */
+export const useMerchantStaffsControllerCreateStaff = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof merchantStaffsControllerCreateStaff>>,
+      TError,
+      { data: CreateMerchantStaffDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof merchantStaffsControllerCreateStaff>>,
+  TError,
+  { data: CreateMerchantStaffDto },
+  TContext
+> => {
+  const mutationOptions =
+    getMerchantStaffsControllerCreateStaffMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Returns staffs, services, and matrix in a single response so the frontend can render the staff × service capability table
+ * @summary Role: Merchant - Get capability matrix
+ */
+export const merchantStaffsControllerGetCapabilityMatrix = (
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    { url: `/api/merchant-staffs/capability-matrix`, method: "GET", signal },
+    options,
+  );
+};
+
+export const getMerchantStaffsControllerGetCapabilityMatrixQueryKey = () => {
+  return [`/api/merchant-staffs/capability-matrix`] as const;
+};
+
+export const getMerchantStaffsControllerGetCapabilityMatrixQueryOptions = <
+  TData = Awaited<
+    ReturnType<typeof merchantStaffsControllerGetCapabilityMatrix>
+  >,
+  TError = unknown,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<
+      Awaited<ReturnType<typeof merchantStaffsControllerGetCapabilityMatrix>>,
+      TError,
+      TData
+    >
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getMerchantStaffsControllerGetCapabilityMatrixQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof merchantStaffsControllerGetCapabilityMatrix>>
+  > = ({ signal }) =>
+    merchantStaffsControllerGetCapabilityMatrix(requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof merchantStaffsControllerGetCapabilityMatrix>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type MerchantStaffsControllerGetCapabilityMatrixQueryResult =
+  NonNullable<
+    Awaited<ReturnType<typeof merchantStaffsControllerGetCapabilityMatrix>>
+  >;
+export type MerchantStaffsControllerGetCapabilityMatrixQueryError = unknown;
+
+export function useMerchantStaffsControllerGetCapabilityMatrix<
+  TData = Awaited<
+    ReturnType<typeof merchantStaffsControllerGetCapabilityMatrix>
+  >,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantStaffsControllerGetCapabilityMatrix>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof merchantStaffsControllerGetCapabilityMatrix>
+          >,
+          TError,
+          Awaited<
+            ReturnType<typeof merchantStaffsControllerGetCapabilityMatrix>
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantStaffsControllerGetCapabilityMatrix<
+  TData = Awaited<
+    ReturnType<typeof merchantStaffsControllerGetCapabilityMatrix>
+  >,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantStaffsControllerGetCapabilityMatrix>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof merchantStaffsControllerGetCapabilityMatrix>
+          >,
+          TError,
+          Awaited<
+            ReturnType<typeof merchantStaffsControllerGetCapabilityMatrix>
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantStaffsControllerGetCapabilityMatrix<
+  TData = Awaited<
+    ReturnType<typeof merchantStaffsControllerGetCapabilityMatrix>
+  >,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantStaffsControllerGetCapabilityMatrix>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: Merchant - Get capability matrix
+ */
+
+export function useMerchantStaffsControllerGetCapabilityMatrix<
+  TData = Awaited<
+    ReturnType<typeof merchantStaffsControllerGetCapabilityMatrix>
+  >,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantStaffsControllerGetCapabilityMatrix>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getMerchantStaffsControllerGetCapabilityMatrixQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Send an array of { staffId, serviceIds[] } rows to replace all capabilities. Only the merchant owner can call this.
+ * @summary Role: Merchant - Update capability matrix (bulk)
+ */
+export const merchantStaffsControllerUpdateCapabilityMatrix = (
+  updateCapabilityMatrixDto: UpdateCapabilityMatrixDto,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    {
+      url: `/api/merchant-staffs/capability-matrix`,
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      data: updateCapabilityMatrixDto,
+    },
+    options,
+  );
+};
+
+export const getMerchantStaffsControllerUpdateCapabilityMatrixMutationOptions =
+  <TError = unknown, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<
+      Awaited<
+        ReturnType<typeof merchantStaffsControllerUpdateCapabilityMatrix>
+      >,
+      TError,
+      { data: UpdateCapabilityMatrixDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  }): UseMutationOptions<
+    Awaited<ReturnType<typeof merchantStaffsControllerUpdateCapabilityMatrix>>,
+    TError,
+    { data: UpdateCapabilityMatrixDto },
+    TContext
+  > => {
+    const mutationKey = ["merchantStaffsControllerUpdateCapabilityMatrix"];
+    const { mutation: mutationOptions, request: requestOptions } = options
+      ? options.mutation &&
+        "mutationKey" in options.mutation &&
+        options.mutation.mutationKey
+        ? options
+        : { ...options, mutation: { ...options.mutation, mutationKey } }
+      : { mutation: { mutationKey }, request: undefined };
+
+    const mutationFn: MutationFunction<
+      Awaited<
+        ReturnType<typeof merchantStaffsControllerUpdateCapabilityMatrix>
+      >,
+      { data: UpdateCapabilityMatrixDto }
+    > = (props) => {
+      const { data } = props ?? {};
+
+      return merchantStaffsControllerUpdateCapabilityMatrix(
+        data,
+        requestOptions,
+      );
+    };
+
+    return { mutationFn, ...mutationOptions };
+  };
+
+export type MerchantStaffsControllerUpdateCapabilityMatrixMutationResult =
+  NonNullable<
+    Awaited<ReturnType<typeof merchantStaffsControllerUpdateCapabilityMatrix>>
+  >;
+export type MerchantStaffsControllerUpdateCapabilityMatrixMutationBody =
+  UpdateCapabilityMatrixDto;
+export type MerchantStaffsControllerUpdateCapabilityMatrixMutationError =
+  unknown;
+
+/**
+ * @summary Role: Merchant - Update capability matrix (bulk)
+ */
+export const useMerchantStaffsControllerUpdateCapabilityMatrix = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<
+        ReturnType<typeof merchantStaffsControllerUpdateCapabilityMatrix>
+      >,
+      TError,
+      { data: UpdateCapabilityMatrixDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof merchantStaffsControllerUpdateCapabilityMatrix>>,
+  TError,
+  { data: UpdateCapabilityMatrixDto },
+  TContext
+> => {
+  const mutationOptions =
+    getMerchantStaffsControllerUpdateCapabilityMatrixMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Returns staffs, merchant working hours and a matrix of blocked times (on/off status) for the frontend.
+ * @summary Role: Merchant - Get block times (matrix)
+ */
+export const merchantStaffsControllerGetStaffBlockTimes = (
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    { url: `/api/merchant-staffs/block-times`, method: "GET", signal },
+    options,
+  );
+};
+
+export const getMerchantStaffsControllerGetStaffBlockTimesQueryKey = () => {
+  return [`/api/merchant-staffs/block-times`] as const;
+};
+
+export const getMerchantStaffsControllerGetStaffBlockTimesQueryOptions = <
+  TData = Awaited<
+    ReturnType<typeof merchantStaffsControllerGetStaffBlockTimes>
+  >,
+  TError = unknown,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<
+      Awaited<ReturnType<typeof merchantStaffsControllerGetStaffBlockTimes>>,
+      TError,
+      TData
+    >
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getMerchantStaffsControllerGetStaffBlockTimesQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof merchantStaffsControllerGetStaffBlockTimes>>
+  > = ({ signal }) =>
+    merchantStaffsControllerGetStaffBlockTimes(requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof merchantStaffsControllerGetStaffBlockTimes>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type MerchantStaffsControllerGetStaffBlockTimesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof merchantStaffsControllerGetStaffBlockTimes>>
+>;
+export type MerchantStaffsControllerGetStaffBlockTimesQueryError = unknown;
+
+export function useMerchantStaffsControllerGetStaffBlockTimes<
+  TData = Awaited<
+    ReturnType<typeof merchantStaffsControllerGetStaffBlockTimes>
+  >,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantStaffsControllerGetStaffBlockTimes>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof merchantStaffsControllerGetStaffBlockTimes>
+          >,
+          TError,
+          Awaited<ReturnType<typeof merchantStaffsControllerGetStaffBlockTimes>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantStaffsControllerGetStaffBlockTimes<
+  TData = Awaited<
+    ReturnType<typeof merchantStaffsControllerGetStaffBlockTimes>
+  >,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantStaffsControllerGetStaffBlockTimes>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof merchantStaffsControllerGetStaffBlockTimes>
+          >,
+          TError,
+          Awaited<ReturnType<typeof merchantStaffsControllerGetStaffBlockTimes>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantStaffsControllerGetStaffBlockTimes<
+  TData = Awaited<
+    ReturnType<typeof merchantStaffsControllerGetStaffBlockTimes>
+  >,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantStaffsControllerGetStaffBlockTimes>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: Merchant - Get block times (matrix)
+ */
+
+export function useMerchantStaffsControllerGetStaffBlockTimes<
+  TData = Awaited<
+    ReturnType<typeof merchantStaffsControllerGetStaffBlockTimes>
+  >,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantStaffsControllerGetStaffBlockTimes>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getMerchantStaffsControllerGetStaffBlockTimesQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Replaces all block times for the staff member based on the merchant’s working hour slots. If no block record exists for a merchant slot, the staff is considered active.
+ * @summary Role: Merchant - Set block times for a staff member
+ */
+export const merchantStaffsControllerSetStaffBlockTimes = (
+  setStaffBlockTimesDto: SetStaffBlockTimesDto,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    {
+      url: `/api/merchant-staffs/block-times`,
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      data: setStaffBlockTimesDto,
+    },
+    options,
+  );
+};
+
+export const getMerchantStaffsControllerSetStaffBlockTimesMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof merchantStaffsControllerSetStaffBlockTimes>>,
+    TError,
+    { data: SetStaffBlockTimesDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof merchantStaffsControllerSetStaffBlockTimes>>,
+  TError,
+  { data: SetStaffBlockTimesDto },
+  TContext
+> => {
+  const mutationKey = ["merchantStaffsControllerSetStaffBlockTimes"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof merchantStaffsControllerSetStaffBlockTimes>>,
+    { data: SetStaffBlockTimesDto }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return merchantStaffsControllerSetStaffBlockTimes(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type MerchantStaffsControllerSetStaffBlockTimesMutationResult =
+  NonNullable<
+    Awaited<ReturnType<typeof merchantStaffsControllerSetStaffBlockTimes>>
+  >;
+export type MerchantStaffsControllerSetStaffBlockTimesMutationBody =
+  SetStaffBlockTimesDto;
+export type MerchantStaffsControllerSetStaffBlockTimesMutationError = unknown;
+
+/**
+ * @summary Role: Merchant - Set block times for a staff member
+ */
+export const useMerchantStaffsControllerSetStaffBlockTimes = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof merchantStaffsControllerSetStaffBlockTimes>>,
+      TError,
+      { data: SetStaffBlockTimesDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof merchantStaffsControllerSetStaffBlockTimes>>,
+  TError,
+  { data: SetStaffBlockTimesDto },
+  TContext
+> => {
+  const mutationOptions =
+    getMerchantStaffsControllerSetStaffBlockTimesMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary Role: Merchant - Delete a block time entry
+ */
+export const merchantStaffsControllerDeleteBlockTime = (
+  id: string,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    { url: `/api/merchant-staffs/block-times/${id}`, method: "DELETE" },
+    options,
+  );
+};
+
+export const getMerchantStaffsControllerDeleteBlockTimeMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof merchantStaffsControllerDeleteBlockTime>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof merchantStaffsControllerDeleteBlockTime>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["merchantStaffsControllerDeleteBlockTime"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof merchantStaffsControllerDeleteBlockTime>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return merchantStaffsControllerDeleteBlockTime(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type MerchantStaffsControllerDeleteBlockTimeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof merchantStaffsControllerDeleteBlockTime>>
+>;
+
+export type MerchantStaffsControllerDeleteBlockTimeMutationError = unknown;
+
+/**
+ * @summary Role: Merchant - Delete a block time entry
+ */
+export const useMerchantStaffsControllerDeleteBlockTime = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof merchantStaffsControllerDeleteBlockTime>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof merchantStaffsControllerDeleteBlockTime>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationOptions =
+    getMerchantStaffsControllerDeleteBlockTimeMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary Role: Merchant - Get staff by ID
+ */
+export const merchantStaffsControllerGetStaffById = (
+  id: string,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    { url: `/api/merchant-staffs/${id}`, method: "GET", signal },
+    options,
+  );
+};
+
+export const getMerchantStaffsControllerGetStaffByIdQueryKey = (
+  id?: string,
+) => {
+  return [`/api/merchant-staffs/${id}`] as const;
+};
+
+export const getMerchantStaffsControllerGetStaffByIdQueryOptions = <
+  TData = Awaited<ReturnType<typeof merchantStaffsControllerGetStaffById>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantStaffsControllerGetStaffById>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getMerchantStaffsControllerGetStaffByIdQueryKey(id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof merchantStaffsControllerGetStaffById>>
+  > = ({ signal }) =>
+    merchantStaffsControllerGetStaffById(id, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof merchantStaffsControllerGetStaffById>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type MerchantStaffsControllerGetStaffByIdQueryResult = NonNullable<
+  Awaited<ReturnType<typeof merchantStaffsControllerGetStaffById>>
+>;
+export type MerchantStaffsControllerGetStaffByIdQueryError = unknown;
+
+export function useMerchantStaffsControllerGetStaffById<
+  TData = Awaited<ReturnType<typeof merchantStaffsControllerGetStaffById>>,
+  TError = unknown,
+>(
+  id: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantStaffsControllerGetStaffById>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof merchantStaffsControllerGetStaffById>>,
+          TError,
+          Awaited<ReturnType<typeof merchantStaffsControllerGetStaffById>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantStaffsControllerGetStaffById<
+  TData = Awaited<ReturnType<typeof merchantStaffsControllerGetStaffById>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantStaffsControllerGetStaffById>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof merchantStaffsControllerGetStaffById>>,
+          TError,
+          Awaited<ReturnType<typeof merchantStaffsControllerGetStaffById>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantStaffsControllerGetStaffById<
+  TData = Awaited<ReturnType<typeof merchantStaffsControllerGetStaffById>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantStaffsControllerGetStaffById>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: Merchant - Get staff by ID
+ */
+
+export function useMerchantStaffsControllerGetStaffById<
+  TData = Awaited<ReturnType<typeof merchantStaffsControllerGetStaffById>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantStaffsControllerGetStaffById>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getMerchantStaffsControllerGetStaffByIdQueryOptions(
+    id,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary Role: Merchant - Update staff information
+ */
+export const merchantStaffsControllerUpdateStaff = (
+  id: string,
+  updateMerchantStaffDto: UpdateMerchantStaffDto,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    {
+      url: `/api/merchant-staffs/${id}`,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      data: updateMerchantStaffDto,
+    },
+    options,
+  );
+};
+
+export const getMerchantStaffsControllerUpdateStaffMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof merchantStaffsControllerUpdateStaff>>,
+    TError,
+    { id: string; data: UpdateMerchantStaffDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof merchantStaffsControllerUpdateStaff>>,
+  TError,
+  { id: string; data: UpdateMerchantStaffDto },
+  TContext
+> => {
+  const mutationKey = ["merchantStaffsControllerUpdateStaff"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof merchantStaffsControllerUpdateStaff>>,
+    { id: string; data: UpdateMerchantStaffDto }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return merchantStaffsControllerUpdateStaff(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type MerchantStaffsControllerUpdateStaffMutationResult = NonNullable<
+  Awaited<ReturnType<typeof merchantStaffsControllerUpdateStaff>>
+>;
+export type MerchantStaffsControllerUpdateStaffMutationBody =
+  UpdateMerchantStaffDto;
+export type MerchantStaffsControllerUpdateStaffMutationError = unknown;
+
+/**
+ * @summary Role: Merchant - Update staff information
+ */
+export const useMerchantStaffsControllerUpdateStaff = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof merchantStaffsControllerUpdateStaff>>,
+      TError,
+      { id: string; data: UpdateMerchantStaffDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof merchantStaffsControllerUpdateStaff>>,
+  TError,
+  { id: string; data: UpdateMerchantStaffDto },
+  TContext
+> => {
+  const mutationOptions =
+    getMerchantStaffsControllerUpdateStaffMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Soft delete a staff member. This will not delete the staff member from the database but will mark them as inactive.
+ * @summary Role: Merchant - Delete a staff member (soft delete)
+ */
+export const merchantStaffsControllerDeleteStaff = (
+  id: string,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    { url: `/api/merchant-staffs/${id}`, method: "DELETE" },
+    options,
+  );
+};
+
+export const getMerchantStaffsControllerDeleteStaffMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof merchantStaffsControllerDeleteStaff>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof merchantStaffsControllerDeleteStaff>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["merchantStaffsControllerDeleteStaff"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof merchantStaffsControllerDeleteStaff>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return merchantStaffsControllerDeleteStaff(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type MerchantStaffsControllerDeleteStaffMutationResult = NonNullable<
+  Awaited<ReturnType<typeof merchantStaffsControllerDeleteStaff>>
+>;
+
+export type MerchantStaffsControllerDeleteStaffMutationError = unknown;
+
+/**
+ * @summary Role: Merchant - Delete a staff member (soft delete)
+ */
+export const useMerchantStaffsControllerDeleteStaff = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof merchantStaffsControllerDeleteStaff>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof merchantStaffsControllerDeleteStaff>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationOptions =
+    getMerchantStaffsControllerDeleteStaffMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary Role: Merchant - Update staff status (active / inactive)
+ */
+export const merchantStaffsControllerUpdateStaffStatus = (
+  id: string,
+  updateStaffStatusDto: UpdateStaffStatusDto,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    {
+      url: `/api/merchant-staffs/${id}/status`,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      data: updateStaffStatusDto,
+    },
+    options,
+  );
+};
+
+export const getMerchantStaffsControllerUpdateStaffStatusMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof merchantStaffsControllerUpdateStaffStatus>>,
+    TError,
+    { id: string; data: UpdateStaffStatusDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof merchantStaffsControllerUpdateStaffStatus>>,
+  TError,
+  { id: string; data: UpdateStaffStatusDto },
+  TContext
+> => {
+  const mutationKey = ["merchantStaffsControllerUpdateStaffStatus"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof merchantStaffsControllerUpdateStaffStatus>>,
+    { id: string; data: UpdateStaffStatusDto }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return merchantStaffsControllerUpdateStaffStatus(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type MerchantStaffsControllerUpdateStaffStatusMutationResult =
+  NonNullable<
+    Awaited<ReturnType<typeof merchantStaffsControllerUpdateStaffStatus>>
+  >;
+export type MerchantStaffsControllerUpdateStaffStatusMutationBody =
+  UpdateStaffStatusDto;
+export type MerchantStaffsControllerUpdateStaffStatusMutationError = unknown;
+
+/**
+ * @summary Role: Merchant - Update staff status (active / inactive)
+ */
+export const useMerchantStaffsControllerUpdateStaffStatus = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof merchantStaffsControllerUpdateStaffStatus>>,
+      TError,
+      { id: string; data: UpdateStaffStatusDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof merchantStaffsControllerUpdateStaffStatus>>,
+  TError,
+  { id: string; data: UpdateStaffStatusDto },
+  TContext
+> => {
+  const mutationOptions =
+    getMerchantStaffsControllerUpdateStaffStatusMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Replace working hours config per day. Each slot will be saved as a separate record.
+ * @summary Role: Merchant - Bulk upsert working hours (multi-slots)
+ */
+export const merchantWorkingHoursControllerUpdateWorkingHours = (
+  updateMerchantWorkingHoursDto: UpdateMerchantWorkingHoursDto,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    {
+      url: `/api/merchant-working-hours/me`,
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      data: updateMerchantWorkingHoursDto,
+    },
+    options,
+  );
+};
+
+export const getMerchantWorkingHoursControllerUpdateWorkingHoursMutationOptions =
+  <TError = unknown, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<
+      Awaited<
+        ReturnType<typeof merchantWorkingHoursControllerUpdateWorkingHours>
+      >,
+      TError,
+      { data: UpdateMerchantWorkingHoursDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  }): UseMutationOptions<
+    Awaited<
+      ReturnType<typeof merchantWorkingHoursControllerUpdateWorkingHours>
+    >,
+    TError,
+    { data: UpdateMerchantWorkingHoursDto },
+    TContext
+  > => {
+    const mutationKey = ["merchantWorkingHoursControllerUpdateWorkingHours"];
+    const { mutation: mutationOptions, request: requestOptions } = options
+      ? options.mutation &&
+        "mutationKey" in options.mutation &&
+        options.mutation.mutationKey
+        ? options
+        : { ...options, mutation: { ...options.mutation, mutationKey } }
+      : { mutation: { mutationKey }, request: undefined };
+
+    const mutationFn: MutationFunction<
+      Awaited<
+        ReturnType<typeof merchantWorkingHoursControllerUpdateWorkingHours>
+      >,
+      { data: UpdateMerchantWorkingHoursDto }
+    > = (props) => {
+      const { data } = props ?? {};
+
+      return merchantWorkingHoursControllerUpdateWorkingHours(
+        data,
+        requestOptions,
+      );
+    };
+
+    return { mutationFn, ...mutationOptions };
+  };
+
+export type MerchantWorkingHoursControllerUpdateWorkingHoursMutationResult =
+  NonNullable<
+    Awaited<ReturnType<typeof merchantWorkingHoursControllerUpdateWorkingHours>>
+  >;
+export type MerchantWorkingHoursControllerUpdateWorkingHoursMutationBody =
+  UpdateMerchantWorkingHoursDto;
+export type MerchantWorkingHoursControllerUpdateWorkingHoursMutationError =
+  unknown;
+
+/**
+ * @summary Role: Merchant - Bulk upsert working hours (multi-slots)
+ */
+export const useMerchantWorkingHoursControllerUpdateWorkingHours = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<
+        ReturnType<typeof merchantWorkingHoursControllerUpdateWorkingHours>
+      >,
+      TError,
+      { data: UpdateMerchantWorkingHoursDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof merchantWorkingHoursControllerUpdateWorkingHours>>,
+  TError,
+  { data: UpdateMerchantWorkingHoursDto },
+  TContext
+> => {
+  const mutationOptions =
+    getMerchantWorkingHoursControllerUpdateWorkingHoursMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Get working hours for a merchant (formatted by day)
+ * @summary Role: Merchant - Get own working hours (multi-slots)
+ */
+export const merchantWorkingHoursControllerGetOwnWorkingHours = (
+  merchantId: string,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    { url: `/api/merchant-working-hours/${merchantId}`, method: "GET", signal },
+    options,
+  );
+};
+
+export const getMerchantWorkingHoursControllerGetOwnWorkingHoursQueryKey = (
+  merchantId?: string,
+) => {
+  return [`/api/merchant-working-hours/${merchantId}`] as const;
+};
+
+export const getMerchantWorkingHoursControllerGetOwnWorkingHoursQueryOptions = <
+  TData = Awaited<
+    ReturnType<typeof merchantWorkingHoursControllerGetOwnWorkingHours>
+  >,
+  TError = unknown,
+>(
+  merchantId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof merchantWorkingHoursControllerGetOwnWorkingHours>
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getMerchantWorkingHoursControllerGetOwnWorkingHoursQueryKey(merchantId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof merchantWorkingHoursControllerGetOwnWorkingHours>>
+  > = ({ signal }) =>
+    merchantWorkingHoursControllerGetOwnWorkingHours(
+      merchantId,
+      requestOptions,
+      signal,
+    );
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!merchantId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<
+      ReturnType<typeof merchantWorkingHoursControllerGetOwnWorkingHours>
+    >,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type MerchantWorkingHoursControllerGetOwnWorkingHoursQueryResult =
+  NonNullable<
+    Awaited<ReturnType<typeof merchantWorkingHoursControllerGetOwnWorkingHours>>
+  >;
+export type MerchantWorkingHoursControllerGetOwnWorkingHoursQueryError =
+  unknown;
+
+export function useMerchantWorkingHoursControllerGetOwnWorkingHours<
+  TData = Awaited<
+    ReturnType<typeof merchantWorkingHoursControllerGetOwnWorkingHours>
+  >,
+  TError = unknown,
+>(
+  merchantId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof merchantWorkingHoursControllerGetOwnWorkingHours>
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof merchantWorkingHoursControllerGetOwnWorkingHours>
+          >,
+          TError,
+          Awaited<
+            ReturnType<typeof merchantWorkingHoursControllerGetOwnWorkingHours>
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantWorkingHoursControllerGetOwnWorkingHours<
+  TData = Awaited<
+    ReturnType<typeof merchantWorkingHoursControllerGetOwnWorkingHours>
+  >,
+  TError = unknown,
+>(
+  merchantId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof merchantWorkingHoursControllerGetOwnWorkingHours>
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof merchantWorkingHoursControllerGetOwnWorkingHours>
+          >,
+          TError,
+          Awaited<
+            ReturnType<typeof merchantWorkingHoursControllerGetOwnWorkingHours>
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantWorkingHoursControllerGetOwnWorkingHours<
+  TData = Awaited<
+    ReturnType<typeof merchantWorkingHoursControllerGetOwnWorkingHours>
+  >,
+  TError = unknown,
+>(
+  merchantId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof merchantWorkingHoursControllerGetOwnWorkingHours>
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: Merchant - Get own working hours (multi-slots)
+ */
+
+export function useMerchantWorkingHoursControllerGetOwnWorkingHours<
+  TData = Awaited<
+    ReturnType<typeof merchantWorkingHoursControllerGetOwnWorkingHours>
+  >,
+  TError = unknown,
+>(
+  merchantId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof merchantWorkingHoursControllerGetOwnWorkingHours>
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getMerchantWorkingHoursControllerGetOwnWorkingHoursQueryOptions(
+      merchantId,
+      options,
+    );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Retrieve a list of all bookings for the authenticated pet owner. Supports filtering by status (Upcoming vs History) and pagination. Helps pet owners manage their pets' care schedules effectively.
+ * @summary Role: Pet Owner - Get my bookings list
+ */
+export const merchantBookingsControllerGetMyBookings = (
+  params?: MerchantBookingsControllerGetMyBookingsParams,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    {
+      url: `/api/merchant-bookings/my-bookings`,
+      method: "GET",
+      params,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getMerchantBookingsControllerGetMyBookingsInfiniteQueryKey = (
+  params?: MerchantBookingsControllerGetMyBookingsParams,
+) => {
+  return [
+    "infinate",
+    `/api/merchant-bookings/my-bookings`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getMerchantBookingsControllerGetMyBookingsQueryKey = (
+  params?: MerchantBookingsControllerGetMyBookingsParams,
+) => {
+  return [
+    `/api/merchant-bookings/my-bookings`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getMerchantBookingsControllerGetMyBookingsInfiniteQueryOptions = <
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>,
+    MerchantBookingsControllerGetMyBookingsParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: MerchantBookingsControllerGetMyBookingsParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>,
+        TError,
+        TData,
+        QueryKey,
+        MerchantBookingsControllerGetMyBookingsParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getMerchantBookingsControllerGetMyBookingsInfiniteQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>,
+    QueryKey,
+    MerchantBookingsControllerGetMyBookingsParams["page"]
+  > = ({ signal, pageParam }) =>
+    merchantBookingsControllerGetMyBookings(
+      { ...params, page: pageParam || params?.["page"] },
+      requestOptions,
+      signal,
+    );
+
+  return { queryKey, queryFn, ...queryOptions } as UseInfiniteQueryOptions<
+    Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>,
+    TError,
+    TData,
+    QueryKey,
+    MerchantBookingsControllerGetMyBookingsParams["page"]
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type MerchantBookingsControllerGetMyBookingsInfiniteQueryResult =
+  NonNullable<
+    Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>
+  >;
+export type MerchantBookingsControllerGetMyBookingsInfiniteQueryError = unknown;
+
+export function useMerchantBookingsControllerGetMyBookingsInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>,
+    MerchantBookingsControllerGetMyBookingsParams["page"]
+  >,
+  TError = unknown,
+>(
+  params: undefined | MerchantBookingsControllerGetMyBookingsParams,
+  options: {
+    query: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>,
+        TError,
+        TData,
+        QueryKey,
+        MerchantBookingsControllerGetMyBookingsParams["page"]
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>,
+          TError,
+          Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>,
+          QueryKey
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantBookingsControllerGetMyBookingsInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>,
+    MerchantBookingsControllerGetMyBookingsParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: MerchantBookingsControllerGetMyBookingsParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>,
+        TError,
+        TData,
+        QueryKey,
+        MerchantBookingsControllerGetMyBookingsParams["page"]
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>,
+          TError,
+          Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>,
+          QueryKey
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantBookingsControllerGetMyBookingsInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>,
+    MerchantBookingsControllerGetMyBookingsParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: MerchantBookingsControllerGetMyBookingsParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>,
+        TError,
+        TData,
+        QueryKey,
+        MerchantBookingsControllerGetMyBookingsParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: Pet Owner - Get my bookings list
+ */
+
+export function useMerchantBookingsControllerGetMyBookingsInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>,
+    MerchantBookingsControllerGetMyBookingsParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: MerchantBookingsControllerGetMyBookingsParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>,
+        TError,
+        TData,
+        QueryKey,
+        MerchantBookingsControllerGetMyBookingsParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getMerchantBookingsControllerGetMyBookingsInfiniteQueryOptions(
+      params,
+      options,
+    );
+
+  const query = useInfiniteQuery(
+    queryOptions,
+    queryClient,
+  ) as UseInfiniteQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+export const getMerchantBookingsControllerGetMyBookingsQueryOptions = <
+  TData = Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>,
+  TError = unknown,
+>(
+  params?: MerchantBookingsControllerGetMyBookingsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getMerchantBookingsControllerGetMyBookingsQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>
+  > = ({ signal }) =>
+    merchantBookingsControllerGetMyBookings(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type MerchantBookingsControllerGetMyBookingsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>
+>;
+export type MerchantBookingsControllerGetMyBookingsQueryError = unknown;
+
+export function useMerchantBookingsControllerGetMyBookings<
+  TData = Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>,
+  TError = unknown,
+>(
+  params: undefined | MerchantBookingsControllerGetMyBookingsParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>,
+          TError,
+          Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantBookingsControllerGetMyBookings<
+  TData = Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>,
+  TError = unknown,
+>(
+  params?: MerchantBookingsControllerGetMyBookingsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>,
+          TError,
+          Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantBookingsControllerGetMyBookings<
+  TData = Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>,
+  TError = unknown,
+>(
+  params?: MerchantBookingsControllerGetMyBookingsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: Pet Owner - Get my bookings list
+ */
+
+export function useMerchantBookingsControllerGetMyBookings<
+  TData = Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>,
+  TError = unknown,
+>(
+  params?: MerchantBookingsControllerGetMyBookingsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookings>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getMerchantBookingsControllerGetMyBookingsQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * View comprehensive details for a specific booking. Includes: Selected service, scheduled start time, merchant provider info, and the list of pets participating in this appointment.
+ * @summary Role: Pet Owner - Get booking detail
+ */
+export const merchantBookingsControllerGetMyBookingById = (
+  id: string,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    { url: `/api/merchant-bookings/my-bookings/${id}`, method: "GET", signal },
+    options,
+  );
+};
+
+export const getMerchantBookingsControllerGetMyBookingByIdQueryKey = (
+  id?: string,
+) => {
+  return [`/api/merchant-bookings/my-bookings/${id}`] as const;
+};
+
+export const getMerchantBookingsControllerGetMyBookingByIdQueryOptions = <
+  TData = Awaited<
+    ReturnType<typeof merchantBookingsControllerGetMyBookingById>
+  >,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookingById>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getMerchantBookingsControllerGetMyBookingByIdQueryKey(id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookingById>>
+  > = ({ signal }) =>
+    merchantBookingsControllerGetMyBookingById(id, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookingById>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type MerchantBookingsControllerGetMyBookingByIdQueryResult = NonNullable<
+  Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookingById>>
+>;
+export type MerchantBookingsControllerGetMyBookingByIdQueryError = unknown;
+
+export function useMerchantBookingsControllerGetMyBookingById<
+  TData = Awaited<
+    ReturnType<typeof merchantBookingsControllerGetMyBookingById>
+  >,
+  TError = unknown,
+>(
+  id: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookingById>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof merchantBookingsControllerGetMyBookingById>
+          >,
+          TError,
+          Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookingById>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantBookingsControllerGetMyBookingById<
+  TData = Awaited<
+    ReturnType<typeof merchantBookingsControllerGetMyBookingById>
+  >,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookingById>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof merchantBookingsControllerGetMyBookingById>
+          >,
+          TError,
+          Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookingById>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantBookingsControllerGetMyBookingById<
+  TData = Awaited<
+    ReturnType<typeof merchantBookingsControllerGetMyBookingById>
+  >,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookingById>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: Pet Owner - Get booking detail
+ */
+
+export function useMerchantBookingsControllerGetMyBookingById<
+  TData = Awaited<
+    ReturnType<typeof merchantBookingsControllerGetMyBookingById>
+  >,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantBookingsControllerGetMyBookingById>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getMerchantBookingsControllerGetMyBookingByIdQueryOptions(id, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Allows pet owners to proactively cancel their booking due to plan changes. Requires a cancellation reason and automatically releases capacity back to the system so other users can book the now-available slot.
+ * @summary Role: Pet Owner - Self-cancel booking
+ */
+export const merchantBookingsControllerCancelMyBooking = (
+  id: string,
+  cancelBookingDto: CancelBookingDto,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    {
+      url: `/api/merchant-bookings/my-bookings/${id}/cancel`,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      data: cancelBookingDto,
+    },
+    options,
+  );
+};
+
+export const getMerchantBookingsControllerCancelMyBookingMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof merchantBookingsControllerCancelMyBooking>>,
+    TError,
+    { id: string; data: CancelBookingDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof merchantBookingsControllerCancelMyBooking>>,
+  TError,
+  { id: string; data: CancelBookingDto },
+  TContext
+> => {
+  const mutationKey = ["merchantBookingsControllerCancelMyBooking"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof merchantBookingsControllerCancelMyBooking>>,
+    { id: string; data: CancelBookingDto }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return merchantBookingsControllerCancelMyBooking(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type MerchantBookingsControllerCancelMyBookingMutationResult =
+  NonNullable<
+    Awaited<ReturnType<typeof merchantBookingsControllerCancelMyBooking>>
+  >;
+export type MerchantBookingsControllerCancelMyBookingMutationBody =
+  CancelBookingDto;
+export type MerchantBookingsControllerCancelMyBookingMutationError = unknown;
+
+/**
+ * @summary Role: Pet Owner - Self-cancel booking
+ */
+export const useMerchantBookingsControllerCancelMyBooking = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof merchantBookingsControllerCancelMyBooking>>,
+      TError,
+      { id: string; data: CancelBookingDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof merchantBookingsControllerCancelMyBooking>>,
+  TError,
+  { id: string; data: CancelBookingDto },
+  TContext
+> => {
+  const mutationOptions =
+    getMerchantBookingsControllerCancelMyBookingMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Provides a high-level overview of the booking volume for the next 14 days. Shows aggregated counts per day, helping merchants forecast peak days and prepare staffing or supplies accordingly.
+ * @summary Role: Merchant - 14-day Dashboard summary
+ */
+export const merchantBookingsControllerGetDashboard = (
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    { url: `/api/merchant-bookings/dashboard`, method: "GET", signal },
+    options,
+  );
+};
+
+export const getMerchantBookingsControllerGetDashboardQueryKey = () => {
+  return [`/api/merchant-bookings/dashboard`] as const;
+};
+
+export const getMerchantBookingsControllerGetDashboardQueryOptions = <
+  TData = Awaited<ReturnType<typeof merchantBookingsControllerGetDashboard>>,
+  TError = unknown,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<
+      Awaited<ReturnType<typeof merchantBookingsControllerGetDashboard>>,
+      TError,
+      TData
+    >
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getMerchantBookingsControllerGetDashboardQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof merchantBookingsControllerGetDashboard>>
+  > = ({ signal }) =>
+    merchantBookingsControllerGetDashboard(requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof merchantBookingsControllerGetDashboard>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type MerchantBookingsControllerGetDashboardQueryResult = NonNullable<
+  Awaited<ReturnType<typeof merchantBookingsControllerGetDashboard>>
+>;
+export type MerchantBookingsControllerGetDashboardQueryError = unknown;
+
+export function useMerchantBookingsControllerGetDashboard<
+  TData = Awaited<ReturnType<typeof merchantBookingsControllerGetDashboard>>,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantBookingsControllerGetDashboard>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof merchantBookingsControllerGetDashboard>>,
+          TError,
+          Awaited<ReturnType<typeof merchantBookingsControllerGetDashboard>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantBookingsControllerGetDashboard<
+  TData = Awaited<ReturnType<typeof merchantBookingsControllerGetDashboard>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantBookingsControllerGetDashboard>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof merchantBookingsControllerGetDashboard>>,
+          TError,
+          Awaited<ReturnType<typeof merchantBookingsControllerGetDashboard>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantBookingsControllerGetDashboard<
+  TData = Awaited<ReturnType<typeof merchantBookingsControllerGetDashboard>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantBookingsControllerGetDashboard>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: Merchant - 14-day Dashboard summary
+ */
+
+export function useMerchantBookingsControllerGetDashboard<
+  TData = Awaited<ReturnType<typeof merchantBookingsControllerGetDashboard>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantBookingsControllerGetDashboard>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getMerchantBookingsControllerGetDashboardQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * The primary management interface for a specific date (defaults to today). Displays a detailed timeline of all bookings, grouped by service type. A vital tool for merchants to coordinate staff and monitor customer flow.
+ * @summary Role: Merchant - Manage daily bookings (Day View)
+ */
+export const merchantBookingsControllerGetDayView = (
+  params: MerchantBookingsControllerGetDayViewParams,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    { url: `/api/merchant-bookings/day-view`, method: "GET", params, signal },
+    options,
+  );
+};
+
+export const getMerchantBookingsControllerGetDayViewQueryKey = (
+  params?: MerchantBookingsControllerGetDayViewParams,
+) => {
+  return [
+    `/api/merchant-bookings/day-view`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getMerchantBookingsControllerGetDayViewQueryOptions = <
+  TData = Awaited<ReturnType<typeof merchantBookingsControllerGetDayView>>,
+  TError = unknown,
+>(
+  params: MerchantBookingsControllerGetDayViewParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantBookingsControllerGetDayView>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getMerchantBookingsControllerGetDayViewQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof merchantBookingsControllerGetDayView>>
+  > = ({ signal }) =>
+    merchantBookingsControllerGetDayView(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof merchantBookingsControllerGetDayView>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type MerchantBookingsControllerGetDayViewQueryResult = NonNullable<
+  Awaited<ReturnType<typeof merchantBookingsControllerGetDayView>>
+>;
+export type MerchantBookingsControllerGetDayViewQueryError = unknown;
+
+export function useMerchantBookingsControllerGetDayView<
+  TData = Awaited<ReturnType<typeof merchantBookingsControllerGetDayView>>,
+  TError = unknown,
+>(
+  params: MerchantBookingsControllerGetDayViewParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantBookingsControllerGetDayView>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof merchantBookingsControllerGetDayView>>,
+          TError,
+          Awaited<ReturnType<typeof merchantBookingsControllerGetDayView>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantBookingsControllerGetDayView<
+  TData = Awaited<ReturnType<typeof merchantBookingsControllerGetDayView>>,
+  TError = unknown,
+>(
+  params: MerchantBookingsControllerGetDayViewParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantBookingsControllerGetDayView>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof merchantBookingsControllerGetDayView>>,
+          TError,
+          Awaited<ReturnType<typeof merchantBookingsControllerGetDayView>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantBookingsControllerGetDayView<
+  TData = Awaited<ReturnType<typeof merchantBookingsControllerGetDayView>>,
+  TError = unknown,
+>(
+  params: MerchantBookingsControllerGetDayViewParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantBookingsControllerGetDayView>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: Merchant - Manage daily bookings (Day View)
+ */
+
+export function useMerchantBookingsControllerGetDayView<
+  TData = Awaited<ReturnType<typeof merchantBookingsControllerGetDayView>>,
+  TError = unknown,
+>(
+  params: MerchantBookingsControllerGetDayViewParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantBookingsControllerGetDayView>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getMerchantBookingsControllerGetDayViewQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Visualizes pet stay and hotel bookings over a 14-day horizon using a Gantt-style chart. Helps manage room/kennel utilization efficiently and prevents overbooking risks.
+ * @summary Role: Merchant - Stay Timeline (Gantt chart)
+ */
+export const merchantBookingsControllerGetStayTimeline = (
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    { url: `/api/merchant-bookings/stay-timeline`, method: "GET", signal },
+    options,
+  );
+};
+
+export const getMerchantBookingsControllerGetStayTimelineQueryKey = () => {
+  return [`/api/merchant-bookings/stay-timeline`] as const;
+};
+
+export const getMerchantBookingsControllerGetStayTimelineQueryOptions = <
+  TData = Awaited<ReturnType<typeof merchantBookingsControllerGetStayTimeline>>,
+  TError = unknown,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<
+      Awaited<ReturnType<typeof merchantBookingsControllerGetStayTimeline>>,
+      TError,
+      TData
+    >
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getMerchantBookingsControllerGetStayTimelineQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof merchantBookingsControllerGetStayTimeline>>
+  > = ({ signal }) =>
+    merchantBookingsControllerGetStayTimeline(requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof merchantBookingsControllerGetStayTimeline>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type MerchantBookingsControllerGetStayTimelineQueryResult = NonNullable<
+  Awaited<ReturnType<typeof merchantBookingsControllerGetStayTimeline>>
+>;
+export type MerchantBookingsControllerGetStayTimelineQueryError = unknown;
+
+export function useMerchantBookingsControllerGetStayTimeline<
+  TData = Awaited<ReturnType<typeof merchantBookingsControllerGetStayTimeline>>,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantBookingsControllerGetStayTimeline>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof merchantBookingsControllerGetStayTimeline>>,
+          TError,
+          Awaited<ReturnType<typeof merchantBookingsControllerGetStayTimeline>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantBookingsControllerGetStayTimeline<
+  TData = Awaited<ReturnType<typeof merchantBookingsControllerGetStayTimeline>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantBookingsControllerGetStayTimeline>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof merchantBookingsControllerGetStayTimeline>>,
+          TError,
+          Awaited<ReturnType<typeof merchantBookingsControllerGetStayTimeline>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantBookingsControllerGetStayTimeline<
+  TData = Awaited<ReturnType<typeof merchantBookingsControllerGetStayTimeline>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantBookingsControllerGetStayTimeline>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: Merchant - Stay Timeline (Gantt chart)
+ */
+
+export function useMerchantBookingsControllerGetStayTimeline<
+  TData = Awaited<ReturnType<typeof merchantBookingsControllerGetStayTimeline>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantBookingsControllerGetStayTimeline>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getMerchantBookingsControllerGetStayTimelineQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Shows actual room/kennel availability for each day across the next 2 weeks. Enables merchants to respond quickly to long-stay inquiries with accurate vacancy data.
+ * @summary Role: Merchant - Stay Inventory monitor
+ */
+export const merchantBookingsControllerGetStayInventory = (
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    { url: `/api/merchant-bookings/stay-inventory`, method: "GET", signal },
+    options,
+  );
+};
+
+export const getMerchantBookingsControllerGetStayInventoryQueryKey = () => {
+  return [`/api/merchant-bookings/stay-inventory`] as const;
+};
+
+export const getMerchantBookingsControllerGetStayInventoryQueryOptions = <
+  TData = Awaited<
+    ReturnType<typeof merchantBookingsControllerGetStayInventory>
+  >,
+  TError = unknown,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<
+      Awaited<ReturnType<typeof merchantBookingsControllerGetStayInventory>>,
+      TError,
+      TData
+    >
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getMerchantBookingsControllerGetStayInventoryQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof merchantBookingsControllerGetStayInventory>>
+  > = ({ signal }) =>
+    merchantBookingsControllerGetStayInventory(requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof merchantBookingsControllerGetStayInventory>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type MerchantBookingsControllerGetStayInventoryQueryResult = NonNullable<
+  Awaited<ReturnType<typeof merchantBookingsControllerGetStayInventory>>
+>;
+export type MerchantBookingsControllerGetStayInventoryQueryError = unknown;
+
+export function useMerchantBookingsControllerGetStayInventory<
+  TData = Awaited<
+    ReturnType<typeof merchantBookingsControllerGetStayInventory>
+  >,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantBookingsControllerGetStayInventory>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof merchantBookingsControllerGetStayInventory>
+          >,
+          TError,
+          Awaited<ReturnType<typeof merchantBookingsControllerGetStayInventory>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantBookingsControllerGetStayInventory<
+  TData = Awaited<
+    ReturnType<typeof merchantBookingsControllerGetStayInventory>
+  >,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantBookingsControllerGetStayInventory>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof merchantBookingsControllerGetStayInventory>
+          >,
+          TError,
+          Awaited<ReturnType<typeof merchantBookingsControllerGetStayInventory>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantBookingsControllerGetStayInventory<
+  TData = Awaited<
+    ReturnType<typeof merchantBookingsControllerGetStayInventory>
+  >,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantBookingsControllerGetStayInventory>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: Merchant - Stay Inventory monitor
+ */
+
+export function useMerchantBookingsControllerGetStayInventory<
+  TData = Awaited<
+    ReturnType<typeof merchantBookingsControllerGetStayInventory>
+  >,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantBookingsControllerGetStayInventory>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getMerchantBookingsControllerGetStayInventoryQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * A centralized administrative view of all store bookings. Features robust filtering by status (Pending, Done, Cancelled) and customer name search. Essential for tracking service history and customer CRM data.
+ * @summary Role: Merchant - Master booking management list
+ */
+export const merchantBookingsControllerGetMerchantBookings = (
+  params?: MerchantBookingsControllerGetMerchantBookingsParams,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    { url: `/api/merchant-bookings`, method: "GET", params, signal },
+    options,
+  );
+};
+
+export const getMerchantBookingsControllerGetMerchantBookingsInfiniteQueryKey =
+  (params?: MerchantBookingsControllerGetMerchantBookingsParams) => {
+    return [
+      "infinate",
+      `/api/merchant-bookings`,
+      ...(params ? [params] : []),
+    ] as const;
+  };
+
+export const getMerchantBookingsControllerGetMerchantBookingsQueryKey = (
+  params?: MerchantBookingsControllerGetMerchantBookingsParams,
+) => {
+  return [`/api/merchant-bookings`, ...(params ? [params] : [])] as const;
+};
+
+export const getMerchantBookingsControllerGetMerchantBookingsInfiniteQueryOptions =
+  <
+    TData = InfiniteData<
+      Awaited<ReturnType<typeof merchantBookingsControllerGetMerchantBookings>>,
+      MerchantBookingsControllerGetMerchantBookingsParams["page"]
+    >,
+    TError = unknown,
+  >(
+    params?: MerchantBookingsControllerGetMerchantBookingsParams,
+    options?: {
+      query?: Partial<
+        UseInfiniteQueryOptions<
+          Awaited<
+            ReturnType<typeof merchantBookingsControllerGetMerchantBookings>
+          >,
+          TError,
+          TData,
+          QueryKey,
+          MerchantBookingsControllerGetMerchantBookingsParams["page"]
+        >
+      >;
+      request?: SecondParameter<typeof orvalClient>;
+    },
+  ) => {
+    const { query: queryOptions, request: requestOptions } = options ?? {};
+
+    const queryKey =
+      queryOptions?.queryKey ??
+      getMerchantBookingsControllerGetMerchantBookingsInfiniteQueryKey(params);
+
+    const queryFn: QueryFunction<
+      Awaited<ReturnType<typeof merchantBookingsControllerGetMerchantBookings>>,
+      QueryKey,
+      MerchantBookingsControllerGetMerchantBookingsParams["page"]
+    > = ({ signal, pageParam }) =>
+      merchantBookingsControllerGetMerchantBookings(
+        { ...params, page: pageParam || params?.["page"] },
+        requestOptions,
+        signal,
+      );
+
+    return { queryKey, queryFn, ...queryOptions } as UseInfiniteQueryOptions<
+      Awaited<ReturnType<typeof merchantBookingsControllerGetMerchantBookings>>,
+      TError,
+      TData,
+      QueryKey,
+      MerchantBookingsControllerGetMerchantBookingsParams["page"]
+    > & { queryKey: DataTag<QueryKey, TData, TError> };
+  };
+
+export type MerchantBookingsControllerGetMerchantBookingsInfiniteQueryResult =
+  NonNullable<
+    Awaited<ReturnType<typeof merchantBookingsControllerGetMerchantBookings>>
+  >;
+export type MerchantBookingsControllerGetMerchantBookingsInfiniteQueryError =
+  unknown;
+
+export function useMerchantBookingsControllerGetMerchantBookingsInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof merchantBookingsControllerGetMerchantBookings>>,
+    MerchantBookingsControllerGetMerchantBookingsParams["page"]
+  >,
+  TError = unknown,
+>(
+  params: undefined | MerchantBookingsControllerGetMerchantBookingsParams,
+  options: {
+    query: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<
+          ReturnType<typeof merchantBookingsControllerGetMerchantBookings>
+        >,
+        TError,
+        TData,
+        QueryKey,
+        MerchantBookingsControllerGetMerchantBookingsParams["page"]
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof merchantBookingsControllerGetMerchantBookings>
+          >,
+          TError,
+          Awaited<
+            ReturnType<typeof merchantBookingsControllerGetMerchantBookings>
+          >,
+          QueryKey
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantBookingsControllerGetMerchantBookingsInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof merchantBookingsControllerGetMerchantBookings>>,
+    MerchantBookingsControllerGetMerchantBookingsParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: MerchantBookingsControllerGetMerchantBookingsParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<
+          ReturnType<typeof merchantBookingsControllerGetMerchantBookings>
+        >,
+        TError,
+        TData,
+        QueryKey,
+        MerchantBookingsControllerGetMerchantBookingsParams["page"]
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof merchantBookingsControllerGetMerchantBookings>
+          >,
+          TError,
+          Awaited<
+            ReturnType<typeof merchantBookingsControllerGetMerchantBookings>
+          >,
+          QueryKey
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantBookingsControllerGetMerchantBookingsInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof merchantBookingsControllerGetMerchantBookings>>,
+    MerchantBookingsControllerGetMerchantBookingsParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: MerchantBookingsControllerGetMerchantBookingsParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<
+          ReturnType<typeof merchantBookingsControllerGetMerchantBookings>
+        >,
+        TError,
+        TData,
+        QueryKey,
+        MerchantBookingsControllerGetMerchantBookingsParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: Merchant - Master booking management list
+ */
+
+export function useMerchantBookingsControllerGetMerchantBookingsInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof merchantBookingsControllerGetMerchantBookings>>,
+    MerchantBookingsControllerGetMerchantBookingsParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: MerchantBookingsControllerGetMerchantBookingsParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<
+          ReturnType<typeof merchantBookingsControllerGetMerchantBookings>
+        >,
+        TError,
+        TData,
+        QueryKey,
+        MerchantBookingsControllerGetMerchantBookingsParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getMerchantBookingsControllerGetMerchantBookingsInfiniteQueryOptions(
+      params,
+      options,
+    );
+
+  const query = useInfiniteQuery(
+    queryOptions,
+    queryClient,
+  ) as UseInfiniteQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+export const getMerchantBookingsControllerGetMerchantBookingsQueryOptions = <
+  TData = Awaited<
+    ReturnType<typeof merchantBookingsControllerGetMerchantBookings>
+  >,
+  TError = unknown,
+>(
+  params?: MerchantBookingsControllerGetMerchantBookingsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof merchantBookingsControllerGetMerchantBookings>
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getMerchantBookingsControllerGetMerchantBookingsQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof merchantBookingsControllerGetMerchantBookings>>
+  > = ({ signal }) =>
+    merchantBookingsControllerGetMerchantBookings(
+      params,
+      requestOptions,
+      signal,
+    );
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof merchantBookingsControllerGetMerchantBookings>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type MerchantBookingsControllerGetMerchantBookingsQueryResult =
+  NonNullable<
+    Awaited<ReturnType<typeof merchantBookingsControllerGetMerchantBookings>>
+  >;
+export type MerchantBookingsControllerGetMerchantBookingsQueryError = unknown;
+
+export function useMerchantBookingsControllerGetMerchantBookings<
+  TData = Awaited<
+    ReturnType<typeof merchantBookingsControllerGetMerchantBookings>
+  >,
+  TError = unknown,
+>(
+  params: undefined | MerchantBookingsControllerGetMerchantBookingsParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof merchantBookingsControllerGetMerchantBookings>
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof merchantBookingsControllerGetMerchantBookings>
+          >,
+          TError,
+          Awaited<
+            ReturnType<typeof merchantBookingsControllerGetMerchantBookings>
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantBookingsControllerGetMerchantBookings<
+  TData = Awaited<
+    ReturnType<typeof merchantBookingsControllerGetMerchantBookings>
+  >,
+  TError = unknown,
+>(
+  params?: MerchantBookingsControllerGetMerchantBookingsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof merchantBookingsControllerGetMerchantBookings>
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof merchantBookingsControllerGetMerchantBookings>
+          >,
+          TError,
+          Awaited<
+            ReturnType<typeof merchantBookingsControllerGetMerchantBookings>
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantBookingsControllerGetMerchantBookings<
+  TData = Awaited<
+    ReturnType<typeof merchantBookingsControllerGetMerchantBookings>
+  >,
+  TError = unknown,
+>(
+  params?: MerchantBookingsControllerGetMerchantBookingsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof merchantBookingsControllerGetMerchantBookings>
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: Merchant - Master booking management list
+ */
+
+export function useMerchantBookingsControllerGetMerchantBookings<
+  TData = Awaited<
+    ReturnType<typeof merchantBookingsControllerGetMerchantBookings>
+  >,
+  TError = unknown,
+>(
+  params?: MerchantBookingsControllerGetMerchantBookingsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof merchantBookingsControllerGetMerchantBookings>
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getMerchantBookingsControllerGetMerchantBookingsQueryOptions(
+      params,
+      options,
+    );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * The core entry point for pet owners to request a service. The system enforces strict capacity checks: if the required duration fits the remaining capacity at the requested time, the booking is secured immediately.
+ * @summary Role: Pet Owner - Create new booking
+ */
+export const merchantBookingsControllerCreateBooking = (
+  createMerchantBookingDto: CreateMerchantBookingDto,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    {
+      url: `/api/merchant-bookings`,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      data: createMerchantBookingDto,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getMerchantBookingsControllerCreateBookingMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof merchantBookingsControllerCreateBooking>>,
+    TError,
+    { data: CreateMerchantBookingDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof merchantBookingsControllerCreateBooking>>,
+  TError,
+  { data: CreateMerchantBookingDto },
+  TContext
+> => {
+  const mutationKey = ["merchantBookingsControllerCreateBooking"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof merchantBookingsControllerCreateBooking>>,
+    { data: CreateMerchantBookingDto }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return merchantBookingsControllerCreateBooking(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type MerchantBookingsControllerCreateBookingMutationResult = NonNullable<
+  Awaited<ReturnType<typeof merchantBookingsControllerCreateBooking>>
+>;
+export type MerchantBookingsControllerCreateBookingMutationBody =
+  CreateMerchantBookingDto;
+export type MerchantBookingsControllerCreateBookingMutationError = unknown;
+
+/**
+ * @summary Role: Pet Owner - Create new booking
+ */
+export const useMerchantBookingsControllerCreateBooking = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof merchantBookingsControllerCreateBooking>>,
+      TError,
+      { data: CreateMerchantBookingDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof merchantBookingsControllerCreateBooking>>,
+  TError,
+  { data: CreateMerchantBookingDto },
+  TContext
+> => {
+  const mutationOptions =
+    getMerchantBookingsControllerCreateBookingMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Provides a merchant-side view of a specific booking. Allows staff to review customer notes, special requests, and pet profiles to prepare the necessary tools and provide a personalized experience.
+ * @summary Role: Merchant - Detailed booking view
+ */
+export const merchantBookingsControllerGetMerchantBookingById = (
+  id: string,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    { url: `/api/merchant-bookings/${id}`, method: "GET", signal },
+    options,
+  );
+};
+
+export const getMerchantBookingsControllerGetMerchantBookingByIdQueryKey = (
+  id?: string,
+) => {
+  return [`/api/merchant-bookings/${id}`] as const;
+};
+
+export const getMerchantBookingsControllerGetMerchantBookingByIdQueryOptions = <
+  TData = Awaited<
+    ReturnType<typeof merchantBookingsControllerGetMerchantBookingById>
+  >,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof merchantBookingsControllerGetMerchantBookingById>
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getMerchantBookingsControllerGetMerchantBookingByIdQueryKey(id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof merchantBookingsControllerGetMerchantBookingById>>
+  > = ({ signal }) =>
+    merchantBookingsControllerGetMerchantBookingById(
+      id,
+      requestOptions,
+      signal,
+    );
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<
+      ReturnType<typeof merchantBookingsControllerGetMerchantBookingById>
+    >,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type MerchantBookingsControllerGetMerchantBookingByIdQueryResult =
+  NonNullable<
+    Awaited<ReturnType<typeof merchantBookingsControllerGetMerchantBookingById>>
+  >;
+export type MerchantBookingsControllerGetMerchantBookingByIdQueryError =
+  unknown;
+
+export function useMerchantBookingsControllerGetMerchantBookingById<
+  TData = Awaited<
+    ReturnType<typeof merchantBookingsControllerGetMerchantBookingById>
+  >,
+  TError = unknown,
+>(
+  id: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof merchantBookingsControllerGetMerchantBookingById>
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof merchantBookingsControllerGetMerchantBookingById>
+          >,
+          TError,
+          Awaited<
+            ReturnType<typeof merchantBookingsControllerGetMerchantBookingById>
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantBookingsControllerGetMerchantBookingById<
+  TData = Awaited<
+    ReturnType<typeof merchantBookingsControllerGetMerchantBookingById>
+  >,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof merchantBookingsControllerGetMerchantBookingById>
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof merchantBookingsControllerGetMerchantBookingById>
+          >,
+          TError,
+          Awaited<
+            ReturnType<typeof merchantBookingsControllerGetMerchantBookingById>
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantBookingsControllerGetMerchantBookingById<
+  TData = Awaited<
+    ReturnType<typeof merchantBookingsControllerGetMerchantBookingById>
+  >,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof merchantBookingsControllerGetMerchantBookingById>
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: Merchant - Detailed booking view
+ */
+
+export function useMerchantBookingsControllerGetMerchantBookingById<
+  TData = Awaited<
+    ReturnType<typeof merchantBookingsControllerGetMerchantBookingById>
+  >,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof merchantBookingsControllerGetMerchantBookingById>
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getMerchantBookingsControllerGetMerchantBookingByIdQueryOptions(
+      id,
+      options,
+    );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Merchant approval action for new requests. Moves a booking from "Pending" to "Confirmed". Notifies the customer that their appointment is accepted and the merchant is ready.
+ * @summary Role: Merchant - Confirm booking (Pending → Confirmed)
+ */
+export const merchantBookingsControllerConfirmBooking = (
+  id: string,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    { url: `/api/merchant-bookings/${id}/confirm`, method: "PATCH" },
+    options,
+  );
+};
+
+export const getMerchantBookingsControllerConfirmBookingMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof merchantBookingsControllerConfirmBooking>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof merchantBookingsControllerConfirmBooking>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["merchantBookingsControllerConfirmBooking"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof merchantBookingsControllerConfirmBooking>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return merchantBookingsControllerConfirmBooking(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type MerchantBookingsControllerConfirmBookingMutationResult =
+  NonNullable<
+    Awaited<ReturnType<typeof merchantBookingsControllerConfirmBooking>>
+  >;
+
+export type MerchantBookingsControllerConfirmBookingMutationError = unknown;
+
+/**
+ * @summary Role: Merchant - Confirm booking (Pending → Confirmed)
+ */
+export const useMerchantBookingsControllerConfirmBooking = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof merchantBookingsControllerConfirmBooking>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof merchantBookingsControllerConfirmBooking>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationOptions =
+    getMerchantBookingsControllerConfirmBookingMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Records the physical arrival of the pet and customer at the store. Transitions the booking status so the merchant can track which pets are currently on-site being serviced.
+ * @summary Role: Merchant - Check-in booking (Confirmed → Checked-in)
+ */
+export const merchantBookingsControllerCheckInBooking = (
+  id: string,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    { url: `/api/merchant-bookings/${id}/check-in`, method: "PATCH" },
+    options,
+  );
+};
+
+export const getMerchantBookingsControllerCheckInBookingMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof merchantBookingsControllerCheckInBooking>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof merchantBookingsControllerCheckInBooking>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["merchantBookingsControllerCheckInBooking"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof merchantBookingsControllerCheckInBooking>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return merchantBookingsControllerCheckInBooking(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type MerchantBookingsControllerCheckInBookingMutationResult =
+  NonNullable<
+    Awaited<ReturnType<typeof merchantBookingsControllerCheckInBooking>>
+  >;
+
+export type MerchantBookingsControllerCheckInBookingMutationError = unknown;
+
+/**
+ * @summary Role: Merchant - Check-in booking (Confirmed → Checked-in)
+ */
+export const useMerchantBookingsControllerCheckInBooking = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof merchantBookingsControllerCheckInBooking>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof merchantBookingsControllerCheckInBooking>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationOptions =
+    getMerchantBookingsControllerCheckInBookingMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Signals that the service has been successfully finished. The pet is ready to be picked up by the owner, closing the current service cycle.
+ * @summary Role: Merchant - Complete booking (Checked-in → Completed)
+ */
+export const merchantBookingsControllerCompleteBooking = (
+  id: string,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    { url: `/api/merchant-bookings/${id}/complete`, method: "PATCH" },
+    options,
+  );
+};
+
+export const getMerchantBookingsControllerCompleteBookingMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof merchantBookingsControllerCompleteBooking>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof merchantBookingsControllerCompleteBooking>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["merchantBookingsControllerCompleteBooking"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof merchantBookingsControllerCompleteBooking>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return merchantBookingsControllerCompleteBooking(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type MerchantBookingsControllerCompleteBookingMutationResult =
+  NonNullable<
+    Awaited<ReturnType<typeof merchantBookingsControllerCompleteBooking>>
+  >;
+
+export type MerchantBookingsControllerCompleteBookingMutationError = unknown;
+
+/**
+ * @summary Role: Merchant - Complete booking (Checked-in → Completed)
+ */
+export const useMerchantBookingsControllerCompleteBooking = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof merchantBookingsControllerCompleteBooking>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof merchantBookingsControllerCompleteBooking>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationOptions =
+    getMerchantBookingsControllerCompleteBookingMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Used when a merchant cannot serve a specific slot (e.g., equipment failure). Cancels the booking and automatically restores capacity to the system for others.
+ * @summary Role: Merchant - Merchant cancellation
+ */
+export const merchantBookingsControllerCancelBooking = (
+  id: string,
+  cancelBookingDto: CancelBookingDto,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    {
+      url: `/api/merchant-bookings/${id}/cancel`,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      data: cancelBookingDto,
+    },
+    options,
+  );
+};
+
+export const getMerchantBookingsControllerCancelBookingMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof merchantBookingsControllerCancelBooking>>,
+    TError,
+    { id: string; data: CancelBookingDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof merchantBookingsControllerCancelBooking>>,
+  TError,
+  { id: string; data: CancelBookingDto },
+  TContext
+> => {
+  const mutationKey = ["merchantBookingsControllerCancelBooking"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof merchantBookingsControllerCancelBooking>>,
+    { id: string; data: CancelBookingDto }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return merchantBookingsControllerCancelBooking(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type MerchantBookingsControllerCancelBookingMutationResult = NonNullable<
+  Awaited<ReturnType<typeof merchantBookingsControllerCancelBooking>>
+>;
+export type MerchantBookingsControllerCancelBookingMutationBody =
+  CancelBookingDto;
+export type MerchantBookingsControllerCancelBookingMutationError = unknown;
+
+/**
+ * @summary Role: Merchant - Merchant cancellation
+ */
+export const useMerchantBookingsControllerCancelBooking = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof merchantBookingsControllerCancelBooking>>,
+      TError,
+      { id: string; data: CancelBookingDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof merchantBookingsControllerCancelBooking>>,
+  TError,
+  { id: string; data: CancelBookingDto },
+  TContext
+> => {
+  const mutationOptions =
+    getMerchantBookingsControllerCancelBookingMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Records cases where a customer does not arrive at the scheduled time. Helps clean up the daily operations view and tracks customer reliability over time.
+ * @summary Role: Merchant - Mark as No-show
+ */
+export const merchantBookingsControllerNoShowBooking = (
+  id: string,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    { url: `/api/merchant-bookings/${id}/no-show`, method: "PATCH" },
+    options,
+  );
+};
+
+export const getMerchantBookingsControllerNoShowBookingMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof merchantBookingsControllerNoShowBooking>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof merchantBookingsControllerNoShowBooking>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["merchantBookingsControllerNoShowBooking"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof merchantBookingsControllerNoShowBooking>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return merchantBookingsControllerNoShowBooking(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type MerchantBookingsControllerNoShowBookingMutationResult = NonNullable<
+  Awaited<ReturnType<typeof merchantBookingsControllerNoShowBooking>>
+>;
+
+export type MerchantBookingsControllerNoShowBookingMutationError = unknown;
+
+/**
+ * @summary Role: Merchant - Mark as No-show
+ */
+export const useMerchantBookingsControllerNoShowBooking = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof merchantBookingsControllerNoShowBooking>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof merchantBookingsControllerNoShowBooking>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationOptions =
+    getMerchantBookingsControllerNoShowBookingMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
  * Retrieve a paginated list of breeds.
- * @summary Role: Admin - Get all breeds
+ * @summary Role: All - Get all breeds
  */
 export const breedsControllerGetAll = (
   params?: BreedsControllerGetAllParams,
@@ -6274,7 +15857,7 @@ export function useBreedsControllerGetAllInfinite<
   queryKey: DataTag<QueryKey, TData, TError>;
 };
 /**
- * @summary Role: Admin - Get all breeds
+ * @summary Role: All - Get all breeds
  */
 
 export function useBreedsControllerGetAllInfinite<
@@ -6429,7 +16012,7 @@ export function useBreedsControllerGetAll<
   queryKey: DataTag<QueryKey, TData, TError>;
 };
 /**
- * @summary Role: Admin - Get all breeds
+ * @summary Role: All - Get all breeds
  */
 
 export function useBreedsControllerGetAll<
@@ -7071,3 +16654,6981 @@ export const useBreedsControllerRestore = <
 
   return useMutation(mutationOptions, queryClient);
 };
+
+/**
+ * Retrieve a paginated list of pets. Admin/Clinic can see all pets, User sees only their pets.
+ * @summary Role: Admin, Clinic, User - Get pets
+ */
+export const petsControllerGetPets = (
+  params?: PetsControllerGetPetsParams,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<GetManyPetResponseDtoDto>(
+    { url: `/api/pets`, method: "GET", params, signal },
+    options,
+  );
+};
+
+export const getPetsControllerGetPetsInfiniteQueryKey = (
+  params?: PetsControllerGetPetsParams,
+) => {
+  return ["infinate", `/api/pets`, ...(params ? [params] : [])] as const;
+};
+
+export const getPetsControllerGetPetsQueryKey = (
+  params?: PetsControllerGetPetsParams,
+) => {
+  return [`/api/pets`, ...(params ? [params] : [])] as const;
+};
+
+export const getPetsControllerGetPetsInfiniteQueryOptions = <
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof petsControllerGetPets>>,
+    PetsControllerGetPetsParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: PetsControllerGetPetsParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof petsControllerGetPets>>,
+        TError,
+        TData,
+        QueryKey,
+        PetsControllerGetPetsParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getPetsControllerGetPetsInfiniteQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof petsControllerGetPets>>,
+    QueryKey,
+    PetsControllerGetPetsParams["page"]
+  > = ({ signal, pageParam }) =>
+    petsControllerGetPets(
+      { ...params, page: pageParam || params?.["page"] },
+      requestOptions,
+      signal,
+    );
+
+  return { queryKey, queryFn, ...queryOptions } as UseInfiniteQueryOptions<
+    Awaited<ReturnType<typeof petsControllerGetPets>>,
+    TError,
+    TData,
+    QueryKey,
+    PetsControllerGetPetsParams["page"]
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type PetsControllerGetPetsInfiniteQueryResult = NonNullable<
+  Awaited<ReturnType<typeof petsControllerGetPets>>
+>;
+export type PetsControllerGetPetsInfiniteQueryError = unknown;
+
+export function usePetsControllerGetPetsInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof petsControllerGetPets>>,
+    PetsControllerGetPetsParams["page"]
+  >,
+  TError = unknown,
+>(
+  params: undefined | PetsControllerGetPetsParams,
+  options: {
+    query: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof petsControllerGetPets>>,
+        TError,
+        TData,
+        QueryKey,
+        PetsControllerGetPetsParams["page"]
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof petsControllerGetPets>>,
+          TError,
+          Awaited<ReturnType<typeof petsControllerGetPets>>,
+          QueryKey
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function usePetsControllerGetPetsInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof petsControllerGetPets>>,
+    PetsControllerGetPetsParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: PetsControllerGetPetsParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof petsControllerGetPets>>,
+        TError,
+        TData,
+        QueryKey,
+        PetsControllerGetPetsParams["page"]
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof petsControllerGetPets>>,
+          TError,
+          Awaited<ReturnType<typeof petsControllerGetPets>>,
+          QueryKey
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function usePetsControllerGetPetsInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof petsControllerGetPets>>,
+    PetsControllerGetPetsParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: PetsControllerGetPetsParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof petsControllerGetPets>>,
+        TError,
+        TData,
+        QueryKey,
+        PetsControllerGetPetsParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: Admin, Clinic, User - Get pets
+ */
+
+export function usePetsControllerGetPetsInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof petsControllerGetPets>>,
+    PetsControllerGetPetsParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: PetsControllerGetPetsParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof petsControllerGetPets>>,
+        TError,
+        TData,
+        QueryKey,
+        PetsControllerGetPetsParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getPetsControllerGetPetsInfiniteQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useInfiniteQuery(
+    queryOptions,
+    queryClient,
+  ) as UseInfiniteQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+export const getPetsControllerGetPetsQueryOptions = <
+  TData = Awaited<ReturnType<typeof petsControllerGetPets>>,
+  TError = unknown,
+>(
+  params?: PetsControllerGetPetsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petsControllerGetPets>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getPetsControllerGetPetsQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof petsControllerGetPets>>
+  > = ({ signal }) => petsControllerGetPets(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof petsControllerGetPets>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type PetsControllerGetPetsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof petsControllerGetPets>>
+>;
+export type PetsControllerGetPetsQueryError = unknown;
+
+export function usePetsControllerGetPets<
+  TData = Awaited<ReturnType<typeof petsControllerGetPets>>,
+  TError = unknown,
+>(
+  params: undefined | PetsControllerGetPetsParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petsControllerGetPets>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof petsControllerGetPets>>,
+          TError,
+          Awaited<ReturnType<typeof petsControllerGetPets>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function usePetsControllerGetPets<
+  TData = Awaited<ReturnType<typeof petsControllerGetPets>>,
+  TError = unknown,
+>(
+  params?: PetsControllerGetPetsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petsControllerGetPets>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof petsControllerGetPets>>,
+          TError,
+          Awaited<ReturnType<typeof petsControllerGetPets>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function usePetsControllerGetPets<
+  TData = Awaited<ReturnType<typeof petsControllerGetPets>>,
+  TError = unknown,
+>(
+  params?: PetsControllerGetPetsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petsControllerGetPets>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: Admin, Clinic, User - Get pets
+ */
+
+export function usePetsControllerGetPets<
+  TData = Awaited<ReturnType<typeof petsControllerGetPets>>,
+  TError = unknown,
+>(
+  params?: PetsControllerGetPetsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petsControllerGetPets>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getPetsControllerGetPetsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Create a new pet profile with an optional avatar image and gallery. Use multipart/form-data to send pet data along with image files. Accepts .jpg, .png, .heic files up to 5MB (max 4 gallery images). Set confirmDuplicateName=true in the body to bypass the duplicate name warning.
+ * @summary Role: User - Create a new pet
+ */
+export const petsControllerCreate = (
+  createPetsDto: CreatePetsDto,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  const formData = new FormData();
+  formData.append(`name`, createPetsDto.name);
+  formData.append(`gender`, createPetsDto.gender);
+  formData.append(`yearOfBirth`, createPetsDto.yearOfBirth.toString());
+  if (createPetsDto.weight !== undefined) {
+    formData.append(`weight`, createPetsDto.weight.toString());
+  }
+  if (createPetsDto.allergyNote !== undefined) {
+    formData.append(`allergyNote`, createPetsDto.allergyNote);
+  }
+  if (createPetsDto.isNeutered !== undefined) {
+    formData.append(`isNeutered`, createPetsDto.isNeutered.toString());
+  }
+  if (createPetsDto.breedId !== undefined) {
+    formData.append(`breedId`, createPetsDto.breedId);
+  }
+  formData.append(`address`, JSON.stringify(createPetsDto.address));
+  if (createPetsDto.avatar !== undefined) {
+    formData.append(`avatar`, createPetsDto.avatar);
+  }
+  if (createPetsDto.gallery !== undefined) {
+    createPetsDto.gallery.forEach((value) => formData.append(`gallery`, value));
+  }
+  if (createPetsDto.confirmDuplicateName !== undefined) {
+    formData.append(
+      `confirmDuplicateName`,
+      createPetsDto.confirmDuplicateName.toString(),
+    );
+  }
+
+  return orvalClient<PetResponseDto>(
+    {
+      url: `/api/pets`,
+      method: "POST",
+      headers: { "Content-Type": "multipart/form-data" },
+      data: formData,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getPetsControllerCreateMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof petsControllerCreate>>,
+    TError,
+    { data: CreatePetsDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof petsControllerCreate>>,
+  TError,
+  { data: CreatePetsDto },
+  TContext
+> => {
+  const mutationKey = ["petsControllerCreate"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof petsControllerCreate>>,
+    { data: CreatePetsDto }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return petsControllerCreate(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PetsControllerCreateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof petsControllerCreate>>
+>;
+export type PetsControllerCreateMutationBody = CreatePetsDto;
+export type PetsControllerCreateMutationError = unknown;
+
+/**
+ * @summary Role: User - Create a new pet
+ */
+export const usePetsControllerCreate = <TError = unknown, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof petsControllerCreate>>,
+      TError,
+      { data: CreatePetsDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof petsControllerCreate>>,
+  TError,
+  { data: CreatePetsDto },
+  TContext
+> => {
+  const mutationOptions = getPetsControllerCreateMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Create a new pet chip for a pet. Accepts up to 4 gallery images (identification photos). Use multipart/form-data. Accepts .jpg, .png, .heic files up to 5MB.
+ * @summary Role: Clinic - Create a new pet chip
+ */
+export const petsControllerCreatePetChip = (
+  createPetChipDto: CreatePetChipDto,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  const formData = new FormData();
+  formData.append(`petId`, createPetChipDto.petId);
+  formData.append(`appointmentId`, createPetChipDto.appointmentId);
+  formData.append(`code`, createPetChipDto.code);
+  formData.append(`staffName`, createPetChipDto.staffName);
+  formData.append(`injectionTime`, createPetChipDto.injectionTime);
+  formData.append(`injectionDate`, createPetChipDto.injectionDate);
+  formData.append(`note`, createPetChipDto.note);
+  if (createPetChipDto.identifiedAt !== undefined) {
+    formData.append(`identifiedAt`, createPetChipDto.identifiedAt);
+  }
+  if (createPetChipDto.gallery !== undefined) {
+    createPetChipDto.gallery.forEach((value) =>
+      formData.append(`gallery`, value),
+    );
+  }
+
+  return orvalClient<PetResponseDto>(
+    {
+      url: `/api/pets/chip`,
+      method: "POST",
+      headers: { "Content-Type": "multipart/form-data" },
+      data: formData,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getPetsControllerCreatePetChipMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof petsControllerCreatePetChip>>,
+    TError,
+    { data: CreatePetChipDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof petsControllerCreatePetChip>>,
+  TError,
+  { data: CreatePetChipDto },
+  TContext
+> => {
+  const mutationKey = ["petsControllerCreatePetChip"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof petsControllerCreatePetChip>>,
+    { data: CreatePetChipDto }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return petsControllerCreatePetChip(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PetsControllerCreatePetChipMutationResult = NonNullable<
+  Awaited<ReturnType<typeof petsControllerCreatePetChip>>
+>;
+export type PetsControllerCreatePetChipMutationBody = CreatePetChipDto;
+export type PetsControllerCreatePetChipMutationError = unknown;
+
+/**
+ * @summary Role: Clinic - Create a new pet chip
+ */
+export const usePetsControllerCreatePetChip = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof petsControllerCreatePetChip>>,
+      TError,
+      { data: CreatePetChipDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof petsControllerCreatePetChip>>,
+  TError,
+  { data: CreatePetChipDto },
+  TContext
+> => {
+  const mutationOptions =
+    getPetsControllerCreatePetChipMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Retrieve a paginated list of pet chips.
+ * @summary Role: User, Clinic - Get all pet chips
+ */
+export const petsControllerFindAllPetChips = (
+  params?: PetsControllerFindAllPetChipsParams,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<GetManyPetResponseDtoDto>(
+    { url: `/api/pets/chip`, method: "GET", params, signal },
+    options,
+  );
+};
+
+export const getPetsControllerFindAllPetChipsInfiniteQueryKey = (
+  params?: PetsControllerFindAllPetChipsParams,
+) => {
+  return ["infinate", `/api/pets/chip`, ...(params ? [params] : [])] as const;
+};
+
+export const getPetsControllerFindAllPetChipsQueryKey = (
+  params?: PetsControllerFindAllPetChipsParams,
+) => {
+  return [`/api/pets/chip`, ...(params ? [params] : [])] as const;
+};
+
+export const getPetsControllerFindAllPetChipsInfiniteQueryOptions = <
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof petsControllerFindAllPetChips>>,
+    PetsControllerFindAllPetChipsParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: PetsControllerFindAllPetChipsParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof petsControllerFindAllPetChips>>,
+        TError,
+        TData,
+        QueryKey,
+        PetsControllerFindAllPetChipsParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getPetsControllerFindAllPetChipsInfiniteQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof petsControllerFindAllPetChips>>,
+    QueryKey,
+    PetsControllerFindAllPetChipsParams["page"]
+  > = ({ signal, pageParam }) =>
+    petsControllerFindAllPetChips(
+      { ...params, page: pageParam || params?.["page"] },
+      requestOptions,
+      signal,
+    );
+
+  return { queryKey, queryFn, ...queryOptions } as UseInfiniteQueryOptions<
+    Awaited<ReturnType<typeof petsControllerFindAllPetChips>>,
+    TError,
+    TData,
+    QueryKey,
+    PetsControllerFindAllPetChipsParams["page"]
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type PetsControllerFindAllPetChipsInfiniteQueryResult = NonNullable<
+  Awaited<ReturnType<typeof petsControllerFindAllPetChips>>
+>;
+export type PetsControllerFindAllPetChipsInfiniteQueryError = unknown;
+
+export function usePetsControllerFindAllPetChipsInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof petsControllerFindAllPetChips>>,
+    PetsControllerFindAllPetChipsParams["page"]
+  >,
+  TError = unknown,
+>(
+  params: undefined | PetsControllerFindAllPetChipsParams,
+  options: {
+    query: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof petsControllerFindAllPetChips>>,
+        TError,
+        TData,
+        QueryKey,
+        PetsControllerFindAllPetChipsParams["page"]
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof petsControllerFindAllPetChips>>,
+          TError,
+          Awaited<ReturnType<typeof petsControllerFindAllPetChips>>,
+          QueryKey
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function usePetsControllerFindAllPetChipsInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof petsControllerFindAllPetChips>>,
+    PetsControllerFindAllPetChipsParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: PetsControllerFindAllPetChipsParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof petsControllerFindAllPetChips>>,
+        TError,
+        TData,
+        QueryKey,
+        PetsControllerFindAllPetChipsParams["page"]
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof petsControllerFindAllPetChips>>,
+          TError,
+          Awaited<ReturnType<typeof petsControllerFindAllPetChips>>,
+          QueryKey
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function usePetsControllerFindAllPetChipsInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof petsControllerFindAllPetChips>>,
+    PetsControllerFindAllPetChipsParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: PetsControllerFindAllPetChipsParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof petsControllerFindAllPetChips>>,
+        TError,
+        TData,
+        QueryKey,
+        PetsControllerFindAllPetChipsParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: User, Clinic - Get all pet chips
+ */
+
+export function usePetsControllerFindAllPetChipsInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof petsControllerFindAllPetChips>>,
+    PetsControllerFindAllPetChipsParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: PetsControllerFindAllPetChipsParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof petsControllerFindAllPetChips>>,
+        TError,
+        TData,
+        QueryKey,
+        PetsControllerFindAllPetChipsParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getPetsControllerFindAllPetChipsInfiniteQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useInfiniteQuery(
+    queryOptions,
+    queryClient,
+  ) as UseInfiniteQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+export const getPetsControllerFindAllPetChipsQueryOptions = <
+  TData = Awaited<ReturnType<typeof petsControllerFindAllPetChips>>,
+  TError = unknown,
+>(
+  params?: PetsControllerFindAllPetChipsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petsControllerFindAllPetChips>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getPetsControllerFindAllPetChipsQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof petsControllerFindAllPetChips>>
+  > = ({ signal }) =>
+    petsControllerFindAllPetChips(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof petsControllerFindAllPetChips>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type PetsControllerFindAllPetChipsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof petsControllerFindAllPetChips>>
+>;
+export type PetsControllerFindAllPetChipsQueryError = unknown;
+
+export function usePetsControllerFindAllPetChips<
+  TData = Awaited<ReturnType<typeof petsControllerFindAllPetChips>>,
+  TError = unknown,
+>(
+  params: undefined | PetsControllerFindAllPetChipsParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petsControllerFindAllPetChips>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof petsControllerFindAllPetChips>>,
+          TError,
+          Awaited<ReturnType<typeof petsControllerFindAllPetChips>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function usePetsControllerFindAllPetChips<
+  TData = Awaited<ReturnType<typeof petsControllerFindAllPetChips>>,
+  TError = unknown,
+>(
+  params?: PetsControllerFindAllPetChipsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petsControllerFindAllPetChips>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof petsControllerFindAllPetChips>>,
+          TError,
+          Awaited<ReturnType<typeof petsControllerFindAllPetChips>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function usePetsControllerFindAllPetChips<
+  TData = Awaited<ReturnType<typeof petsControllerFindAllPetChips>>,
+  TError = unknown,
+>(
+  params?: PetsControllerFindAllPetChipsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petsControllerFindAllPetChips>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: User, Clinic - Get all pet chips
+ */
+
+export function usePetsControllerFindAllPetChips<
+  TData = Awaited<ReturnType<typeof petsControllerFindAllPetChips>>,
+  TError = unknown,
+>(
+  params?: PetsControllerFindAllPetChipsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petsControllerFindAllPetChips>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getPetsControllerFindAllPetChipsQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Retrieve a single pet chip by its code.
+ * @summary Role: User, Clinic - Get a pet chip by code
+ */
+export const petsControllerFindOne = (
+  code: string,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<PetResponseDto>(
+    { url: `/api/pets/chip/${code}`, method: "GET", signal },
+    options,
+  );
+};
+
+export const getPetsControllerFindOneQueryKey = (code?: string) => {
+  return [`/api/pets/chip/${code}`] as const;
+};
+
+export const getPetsControllerFindOneQueryOptions = <
+  TData = Awaited<ReturnType<typeof petsControllerFindOne>>,
+  TError = unknown,
+>(
+  code: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petsControllerFindOne>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getPetsControllerFindOneQueryKey(code);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof petsControllerFindOne>>
+  > = ({ signal }) => petsControllerFindOne(code, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!code,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof petsControllerFindOne>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type PetsControllerFindOneQueryResult = NonNullable<
+  Awaited<ReturnType<typeof petsControllerFindOne>>
+>;
+export type PetsControllerFindOneQueryError = unknown;
+
+export function usePetsControllerFindOne<
+  TData = Awaited<ReturnType<typeof petsControllerFindOne>>,
+  TError = unknown,
+>(
+  code: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petsControllerFindOne>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof petsControllerFindOne>>,
+          TError,
+          Awaited<ReturnType<typeof petsControllerFindOne>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function usePetsControllerFindOne<
+  TData = Awaited<ReturnType<typeof petsControllerFindOne>>,
+  TError = unknown,
+>(
+  code: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petsControllerFindOne>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof petsControllerFindOne>>,
+          TError,
+          Awaited<ReturnType<typeof petsControllerFindOne>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function usePetsControllerFindOne<
+  TData = Awaited<ReturnType<typeof petsControllerFindOne>>,
+  TError = unknown,
+>(
+  code: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petsControllerFindOne>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: User, Clinic - Get a pet chip by code
+ */
+
+export function usePetsControllerFindOne<
+  TData = Awaited<ReturnType<typeof petsControllerFindOne>>,
+  TError = unknown,
+>(
+  code: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petsControllerFindOne>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getPetsControllerFindOneQueryOptions(code, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Retrieve a single pet by its UUID.
+ * @summary Role: Admin, Clinic, User - Get pet by ID
+ */
+export const petsControllerGetById = (
+  id: string,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<PetResponseDto>(
+    { url: `/api/pets/${id}`, method: "GET", signal },
+    options,
+  );
+};
+
+export const getPetsControllerGetByIdQueryKey = (id?: string) => {
+  return [`/api/pets/${id}`] as const;
+};
+
+export const getPetsControllerGetByIdQueryOptions = <
+  TData = Awaited<ReturnType<typeof petsControllerGetById>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petsControllerGetById>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getPetsControllerGetByIdQueryKey(id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof petsControllerGetById>>
+  > = ({ signal }) => petsControllerGetById(id, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof petsControllerGetById>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type PetsControllerGetByIdQueryResult = NonNullable<
+  Awaited<ReturnType<typeof petsControllerGetById>>
+>;
+export type PetsControllerGetByIdQueryError = unknown;
+
+export function usePetsControllerGetById<
+  TData = Awaited<ReturnType<typeof petsControllerGetById>>,
+  TError = unknown,
+>(
+  id: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petsControllerGetById>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof petsControllerGetById>>,
+          TError,
+          Awaited<ReturnType<typeof petsControllerGetById>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function usePetsControllerGetById<
+  TData = Awaited<ReturnType<typeof petsControllerGetById>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petsControllerGetById>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof petsControllerGetById>>,
+          TError,
+          Awaited<ReturnType<typeof petsControllerGetById>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function usePetsControllerGetById<
+  TData = Awaited<ReturnType<typeof petsControllerGetById>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petsControllerGetById>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: Admin, Clinic, User - Get pet by ID
+ */
+
+export function usePetsControllerGetById<
+  TData = Awaited<ReturnType<typeof petsControllerGetById>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof petsControllerGetById>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getPetsControllerGetByIdQueryOptions(id, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Update the general information of a pet owned by the current user. Supports optional avatar and gallery uploads (max 4 total gallery images).
+ * @summary Role: User - Update pet profile
+ */
+export const petsControllerUpdate = (
+  id: string,
+  updatePetsDto: UpdatePetsDto,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  const formData = new FormData();
+  if (updatePetsDto.name !== undefined) {
+    formData.append(`name`, updatePetsDto.name);
+  }
+  if (updatePetsDto.gender !== undefined) {
+    formData.append(`gender`, updatePetsDto.gender);
+  }
+  if (updatePetsDto.yearOfBirth !== undefined) {
+    formData.append(`yearOfBirth`, updatePetsDto.yearOfBirth.toString());
+  }
+  if (updatePetsDto.weight !== undefined) {
+    formData.append(`weight`, updatePetsDto.weight.toString());
+  }
+  if (updatePetsDto.allergyNote !== undefined) {
+    formData.append(`allergyNote`, updatePetsDto.allergyNote);
+  }
+  if (updatePetsDto.isNeutered !== undefined) {
+    formData.append(`isNeutered`, updatePetsDto.isNeutered.toString());
+  }
+  if (updatePetsDto.breedId !== undefined) {
+    formData.append(`breedId`, updatePetsDto.breedId);
+  }
+  if (updatePetsDto.address !== undefined) {
+    formData.append(`address`, JSON.stringify(updatePetsDto.address));
+  }
+  if (updatePetsDto.avatar !== undefined) {
+    formData.append(`avatar`, updatePetsDto.avatar);
+  }
+  if (updatePetsDto.gallery !== undefined) {
+    updatePetsDto.gallery.forEach((value) => formData.append(`gallery`, value));
+  }
+  if (updatePetsDto.confirmDuplicateName !== undefined) {
+    formData.append(
+      `confirmDuplicateName`,
+      updatePetsDto.confirmDuplicateName.toString(),
+    );
+  }
+  if (updatePetsDto.deleteAvatar !== undefined) {
+    formData.append(`deleteAvatar`, updatePetsDto.deleteAvatar.toString());
+  }
+  if (updatePetsDto.deletePhotoIds !== undefined) {
+    updatePetsDto.deletePhotoIds.forEach((value) =>
+      formData.append(`deletePhotoIds`, value),
+    );
+  }
+
+  return orvalClient<PetResponseDto>(
+    {
+      url: `/api/pets/${id}`,
+      method: "PATCH",
+      headers: { "Content-Type": "multipart/form-data" },
+      data: formData,
+    },
+    options,
+  );
+};
+
+export const getPetsControllerUpdateMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof petsControllerUpdate>>,
+    TError,
+    { id: string; data: UpdatePetsDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof petsControllerUpdate>>,
+  TError,
+  { id: string; data: UpdatePetsDto },
+  TContext
+> => {
+  const mutationKey = ["petsControllerUpdate"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof petsControllerUpdate>>,
+    { id: string; data: UpdatePetsDto }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return petsControllerUpdate(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type PetsControllerUpdateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof petsControllerUpdate>>
+>;
+export type PetsControllerUpdateMutationBody = UpdatePetsDto;
+export type PetsControllerUpdateMutationError = unknown;
+
+/**
+ * @summary Role: User - Update pet profile
+ */
+export const usePetsControllerUpdate = <TError = unknown, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof petsControllerUpdate>>,
+      TError,
+      { id: string; data: UpdatePetsDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof petsControllerUpdate>>,
+  TError,
+  { id: string; data: UpdatePetsDto },
+  TContext
+> => {
+  const mutationOptions = getPetsControllerUpdateMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Create a new appointment identification QR for the authenticated user.
+ * @summary Role: User` - Create a new appointment identification QR
+ */
+export const appointmentIdentificationControllerCreate = (
+  createAppointmentIdentificationDto: CreateAppointmentIdentificationDto,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<AppointmentIdentificationResponseDto>(
+    {
+      url: `/api/appointment-identification`,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      data: createAppointmentIdentificationDto,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getAppointmentIdentificationControllerCreateMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof appointmentIdentificationControllerCreate>>,
+    TError,
+    { data: CreateAppointmentIdentificationDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof appointmentIdentificationControllerCreate>>,
+  TError,
+  { data: CreateAppointmentIdentificationDto },
+  TContext
+> => {
+  const mutationKey = ["appointmentIdentificationControllerCreate"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof appointmentIdentificationControllerCreate>>,
+    { data: CreateAppointmentIdentificationDto }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return appointmentIdentificationControllerCreate(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AppointmentIdentificationControllerCreateMutationResult =
+  NonNullable<
+    Awaited<ReturnType<typeof appointmentIdentificationControllerCreate>>
+  >;
+export type AppointmentIdentificationControllerCreateMutationBody =
+  CreateAppointmentIdentificationDto;
+export type AppointmentIdentificationControllerCreateMutationError = unknown;
+
+/**
+ * @summary Role: User` - Create a new appointment identification QR
+ */
+export const useAppointmentIdentificationControllerCreate = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof appointmentIdentificationControllerCreate>>,
+      TError,
+      { data: CreateAppointmentIdentificationDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof appointmentIdentificationControllerCreate>>,
+  TError,
+  { data: CreateAppointmentIdentificationDto },
+  TContext
+> => {
+  const mutationOptions =
+    getAppointmentIdentificationControllerCreateMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Get paginated appointments for the authenticated user.
+ * @summary Role: Admin, Clinic, User - Get paginated appointments
+ */
+export const appointmentIdentificationControllerGetAll = (
+  params?: AppointmentIdentificationControllerGetAllParams,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<AppointmentIdentificationResponseDto>(
+    { url: `/api/appointment-identification`, method: "GET", params, signal },
+    options,
+  );
+};
+
+export const getAppointmentIdentificationControllerGetAllInfiniteQueryKey = (
+  params?: AppointmentIdentificationControllerGetAllParams,
+) => {
+  return [
+    "infinate",
+    `/api/appointment-identification`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getAppointmentIdentificationControllerGetAllQueryKey = (
+  params?: AppointmentIdentificationControllerGetAllParams,
+) => {
+  return [
+    `/api/appointment-identification`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getAppointmentIdentificationControllerGetAllInfiniteQueryOptions =
+  <
+    TData = InfiniteData<
+      Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>,
+      AppointmentIdentificationControllerGetAllParams["page"]
+    >,
+    TError = unknown,
+  >(
+    params?: AppointmentIdentificationControllerGetAllParams,
+    options?: {
+      query?: Partial<
+        UseInfiniteQueryOptions<
+          Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>,
+          TError,
+          TData,
+          QueryKey,
+          AppointmentIdentificationControllerGetAllParams["page"]
+        >
+      >;
+      request?: SecondParameter<typeof orvalClient>;
+    },
+  ) => {
+    const { query: queryOptions, request: requestOptions } = options ?? {};
+
+    const queryKey =
+      queryOptions?.queryKey ??
+      getAppointmentIdentificationControllerGetAllInfiniteQueryKey(params);
+
+    const queryFn: QueryFunction<
+      Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>,
+      QueryKey,
+      AppointmentIdentificationControllerGetAllParams["page"]
+    > = ({ signal, pageParam }) =>
+      appointmentIdentificationControllerGetAll(
+        { ...params, page: pageParam || params?.["page"] },
+        requestOptions,
+        signal,
+      );
+
+    return { queryKey, queryFn, ...queryOptions } as UseInfiniteQueryOptions<
+      Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>,
+      TError,
+      TData,
+      QueryKey,
+      AppointmentIdentificationControllerGetAllParams["page"]
+    > & { queryKey: DataTag<QueryKey, TData, TError> };
+  };
+
+export type AppointmentIdentificationControllerGetAllInfiniteQueryResult =
+  NonNullable<
+    Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>
+  >;
+export type AppointmentIdentificationControllerGetAllInfiniteQueryError =
+  unknown;
+
+export function useAppointmentIdentificationControllerGetAllInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>,
+    AppointmentIdentificationControllerGetAllParams["page"]
+  >,
+  TError = unknown,
+>(
+  params: undefined | AppointmentIdentificationControllerGetAllParams,
+  options: {
+    query: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>,
+        TError,
+        TData,
+        QueryKey,
+        AppointmentIdentificationControllerGetAllParams["page"]
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>,
+          TError,
+          Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>,
+          QueryKey
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useAppointmentIdentificationControllerGetAllInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>,
+    AppointmentIdentificationControllerGetAllParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: AppointmentIdentificationControllerGetAllParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>,
+        TError,
+        TData,
+        QueryKey,
+        AppointmentIdentificationControllerGetAllParams["page"]
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>,
+          TError,
+          Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>,
+          QueryKey
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useAppointmentIdentificationControllerGetAllInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>,
+    AppointmentIdentificationControllerGetAllParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: AppointmentIdentificationControllerGetAllParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>,
+        TError,
+        TData,
+        QueryKey,
+        AppointmentIdentificationControllerGetAllParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: Admin, Clinic, User - Get paginated appointments
+ */
+
+export function useAppointmentIdentificationControllerGetAllInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>,
+    AppointmentIdentificationControllerGetAllParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: AppointmentIdentificationControllerGetAllParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>,
+        TError,
+        TData,
+        QueryKey,
+        AppointmentIdentificationControllerGetAllParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getAppointmentIdentificationControllerGetAllInfiniteQueryOptions(
+      params,
+      options,
+    );
+
+  const query = useInfiniteQuery(
+    queryOptions,
+    queryClient,
+  ) as UseInfiniteQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+export const getAppointmentIdentificationControllerGetAllQueryOptions = <
+  TData = Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>,
+  TError = unknown,
+>(
+  params?: AppointmentIdentificationControllerGetAllParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getAppointmentIdentificationControllerGetAllQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>
+  > = ({ signal }) =>
+    appointmentIdentificationControllerGetAll(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AppointmentIdentificationControllerGetAllQueryResult = NonNullable<
+  Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>
+>;
+export type AppointmentIdentificationControllerGetAllQueryError = unknown;
+
+export function useAppointmentIdentificationControllerGetAll<
+  TData = Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>,
+  TError = unknown,
+>(
+  params: undefined | AppointmentIdentificationControllerGetAllParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>,
+          TError,
+          Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useAppointmentIdentificationControllerGetAll<
+  TData = Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>,
+  TError = unknown,
+>(
+  params?: AppointmentIdentificationControllerGetAllParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>,
+          TError,
+          Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useAppointmentIdentificationControllerGetAll<
+  TData = Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>,
+  TError = unknown,
+>(
+  params?: AppointmentIdentificationControllerGetAllParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: Admin, Clinic, User - Get paginated appointments
+ */
+
+export function useAppointmentIdentificationControllerGetAll<
+  TData = Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>,
+  TError = unknown,
+>(
+  params?: AppointmentIdentificationControllerGetAllParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof appointmentIdentificationControllerGetAll>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getAppointmentIdentificationControllerGetAllQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Get a single appointment by its UUID.
+ * @summary Role: Admin, Clinic, User - Get an appointment by UUID
+ */
+export const appointmentIdentificationControllerGetById = (
+  id: string,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<AppointmentIdentificationResponseDto>(
+    { url: `/api/appointment-identification/${id}`, method: "GET", signal },
+    options,
+  );
+};
+
+export const getAppointmentIdentificationControllerGetByIdQueryKey = (
+  id?: string,
+) => {
+  return [`/api/appointment-identification/${id}`] as const;
+};
+
+export const getAppointmentIdentificationControllerGetByIdQueryOptions = <
+  TData = Awaited<
+    ReturnType<typeof appointmentIdentificationControllerGetById>
+  >,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof appointmentIdentificationControllerGetById>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getAppointmentIdentificationControllerGetByIdQueryKey(id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof appointmentIdentificationControllerGetById>>
+  > = ({ signal }) =>
+    appointmentIdentificationControllerGetById(id, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof appointmentIdentificationControllerGetById>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AppointmentIdentificationControllerGetByIdQueryResult = NonNullable<
+  Awaited<ReturnType<typeof appointmentIdentificationControllerGetById>>
+>;
+export type AppointmentIdentificationControllerGetByIdQueryError = unknown;
+
+export function useAppointmentIdentificationControllerGetById<
+  TData = Awaited<
+    ReturnType<typeof appointmentIdentificationControllerGetById>
+  >,
+  TError = unknown,
+>(
+  id: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof appointmentIdentificationControllerGetById>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof appointmentIdentificationControllerGetById>
+          >,
+          TError,
+          Awaited<ReturnType<typeof appointmentIdentificationControllerGetById>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useAppointmentIdentificationControllerGetById<
+  TData = Awaited<
+    ReturnType<typeof appointmentIdentificationControllerGetById>
+  >,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof appointmentIdentificationControllerGetById>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof appointmentIdentificationControllerGetById>
+          >,
+          TError,
+          Awaited<ReturnType<typeof appointmentIdentificationControllerGetById>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useAppointmentIdentificationControllerGetById<
+  TData = Awaited<
+    ReturnType<typeof appointmentIdentificationControllerGetById>
+  >,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof appointmentIdentificationControllerGetById>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: Admin, Clinic, User - Get an appointment by UUID
+ */
+
+export function useAppointmentIdentificationControllerGetById<
+  TData = Awaited<
+    ReturnType<typeof appointmentIdentificationControllerGetById>
+  >,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof appointmentIdentificationControllerGetById>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getAppointmentIdentificationControllerGetByIdQueryOptions(id, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Get a single appointment by its QR string.
+ * @summary Role: Admin, Clinic, User - Get an appointment by QR string
+ */
+export const appointmentIdentificationControllerGetByQr = (
+  qrString: string,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<AppointmentIdentificationResponseDto>(
+    {
+      url: `/api/appointment-identification/qr/${qrString}`,
+      method: "GET",
+      signal,
+    },
+    options,
+  );
+};
+
+export const getAppointmentIdentificationControllerGetByQrQueryKey = (
+  qrString?: string,
+) => {
+  return [`/api/appointment-identification/qr/${qrString}`] as const;
+};
+
+export const getAppointmentIdentificationControllerGetByQrQueryOptions = <
+  TData = Awaited<
+    ReturnType<typeof appointmentIdentificationControllerGetByQr>
+  >,
+  TError = unknown,
+>(
+  qrString: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof appointmentIdentificationControllerGetByQr>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getAppointmentIdentificationControllerGetByQrQueryKey(qrString);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof appointmentIdentificationControllerGetByQr>>
+  > = ({ signal }) =>
+    appointmentIdentificationControllerGetByQr(
+      qrString,
+      requestOptions,
+      signal,
+    );
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!qrString,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof appointmentIdentificationControllerGetByQr>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AppointmentIdentificationControllerGetByQrQueryResult = NonNullable<
+  Awaited<ReturnType<typeof appointmentIdentificationControllerGetByQr>>
+>;
+export type AppointmentIdentificationControllerGetByQrQueryError = unknown;
+
+export function useAppointmentIdentificationControllerGetByQr<
+  TData = Awaited<
+    ReturnType<typeof appointmentIdentificationControllerGetByQr>
+  >,
+  TError = unknown,
+>(
+  qrString: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof appointmentIdentificationControllerGetByQr>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof appointmentIdentificationControllerGetByQr>
+          >,
+          TError,
+          Awaited<ReturnType<typeof appointmentIdentificationControllerGetByQr>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useAppointmentIdentificationControllerGetByQr<
+  TData = Awaited<
+    ReturnType<typeof appointmentIdentificationControllerGetByQr>
+  >,
+  TError = unknown,
+>(
+  qrString: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof appointmentIdentificationControllerGetByQr>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof appointmentIdentificationControllerGetByQr>
+          >,
+          TError,
+          Awaited<ReturnType<typeof appointmentIdentificationControllerGetByQr>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useAppointmentIdentificationControllerGetByQr<
+  TData = Awaited<
+    ReturnType<typeof appointmentIdentificationControllerGetByQr>
+  >,
+  TError = unknown,
+>(
+  qrString: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof appointmentIdentificationControllerGetByQr>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: Admin, Clinic, User - Get an appointment by QR string
+ */
+
+export function useAppointmentIdentificationControllerGetByQr<
+  TData = Awaited<
+    ReturnType<typeof appointmentIdentificationControllerGetByQr>
+  >,
+  TError = unknown,
+>(
+  qrString: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof appointmentIdentificationControllerGetByQr>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getAppointmentIdentificationControllerGetByQrQueryOptions(
+      qrString,
+      options,
+    );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Verify an appointment via QR String for the authenticated user.
+ * @summary Role: Admin, Clinic - Verify an appointment via QR String
+ */
+export const appointmentIdentificationControllerVerify = (
+  qrString: string,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<AppointmentIdentificationResponseDto>(
+    {
+      url: `/api/appointment-identification/verify/${qrString}`,
+      method: "POST",
+      signal,
+    },
+    options,
+  );
+};
+
+export const getAppointmentIdentificationControllerVerifyMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof appointmentIdentificationControllerVerify>>,
+    TError,
+    { qrString: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof appointmentIdentificationControllerVerify>>,
+  TError,
+  { qrString: string },
+  TContext
+> => {
+  const mutationKey = ["appointmentIdentificationControllerVerify"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof appointmentIdentificationControllerVerify>>,
+    { qrString: string }
+  > = (props) => {
+    const { qrString } = props ?? {};
+
+    return appointmentIdentificationControllerVerify(qrString, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AppointmentIdentificationControllerVerifyMutationResult =
+  NonNullable<
+    Awaited<ReturnType<typeof appointmentIdentificationControllerVerify>>
+  >;
+
+export type AppointmentIdentificationControllerVerifyMutationError = unknown;
+
+/**
+ * @summary Role: Admin, Clinic - Verify an appointment via QR String
+ */
+export const useAppointmentIdentificationControllerVerify = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof appointmentIdentificationControllerVerify>>,
+      TError,
+      { qrString: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof appointmentIdentificationControllerVerify>>,
+  TError,
+  { qrString: string },
+  TContext
+> => {
+  const mutationOptions =
+    getAppointmentIdentificationControllerVerifyMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Cancel an appointment
+ * @summary Role: User - Cancel an appointment
+ */
+export const appointmentIdentificationControllerCancel = (
+  id: string,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<AppointmentIdentificationResponseDto>(
+    { url: `/api/appointment-identification/${id}/cancel`, method: "PATCH" },
+    options,
+  );
+};
+
+export const getAppointmentIdentificationControllerCancelMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof appointmentIdentificationControllerCancel>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof appointmentIdentificationControllerCancel>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["appointmentIdentificationControllerCancel"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof appointmentIdentificationControllerCancel>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return appointmentIdentificationControllerCancel(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AppointmentIdentificationControllerCancelMutationResult =
+  NonNullable<
+    Awaited<ReturnType<typeof appointmentIdentificationControllerCancel>>
+  >;
+
+export type AppointmentIdentificationControllerCancelMutationError = unknown;
+
+/**
+ * @summary Role: User - Cancel an appointment
+ */
+export const useAppointmentIdentificationControllerCancel = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof appointmentIdentificationControllerCancel>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof appointmentIdentificationControllerCancel>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationOptions =
+    getAppointmentIdentificationControllerCancelMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary Role: USER - Create new shipping address for User
+ */
+export const shippingAddressesControllerCreate = (
+  createShippingAddressDto: CreateShippingAddressDto,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<ShippingAddress>(
+    {
+      url: `/api/shipping-addresses`,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      data: createShippingAddressDto,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getShippingAddressesControllerCreateMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof shippingAddressesControllerCreate>>,
+    TError,
+    { data: CreateShippingAddressDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof shippingAddressesControllerCreate>>,
+  TError,
+  { data: CreateShippingAddressDto },
+  TContext
+> => {
+  const mutationKey = ["shippingAddressesControllerCreate"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof shippingAddressesControllerCreate>>,
+    { data: CreateShippingAddressDto }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return shippingAddressesControllerCreate(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ShippingAddressesControllerCreateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof shippingAddressesControllerCreate>>
+>;
+export type ShippingAddressesControllerCreateMutationBody =
+  CreateShippingAddressDto;
+export type ShippingAddressesControllerCreateMutationError = unknown;
+
+/**
+ * @summary Role: USER - Create new shipping address for User
+ */
+export const useShippingAddressesControllerCreate = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof shippingAddressesControllerCreate>>,
+      TError,
+      { data: CreateShippingAddressDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof shippingAddressesControllerCreate>>,
+  TError,
+  { data: CreateShippingAddressDto },
+  TContext
+> => {
+  const mutationOptions =
+    getShippingAddressesControllerCreateMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary Role: USER - Get user shipping address list
+ */
+export const shippingAddressesControllerFindAll = (
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<ShippingAddressesControllerFindAll200>(
+    { url: `/api/shipping-addresses/me`, method: "GET", signal },
+    options,
+  );
+};
+
+export const getShippingAddressesControllerFindAllQueryKey = () => {
+  return [`/api/shipping-addresses/me`] as const;
+};
+
+export const getShippingAddressesControllerFindAllQueryOptions = <
+  TData = Awaited<ReturnType<typeof shippingAddressesControllerFindAll>>,
+  TError = unknown,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<
+      Awaited<ReturnType<typeof shippingAddressesControllerFindAll>>,
+      TError,
+      TData
+    >
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getShippingAddressesControllerFindAllQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof shippingAddressesControllerFindAll>>
+  > = ({ signal }) =>
+    shippingAddressesControllerFindAll(requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof shippingAddressesControllerFindAll>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type ShippingAddressesControllerFindAllQueryResult = NonNullable<
+  Awaited<ReturnType<typeof shippingAddressesControllerFindAll>>
+>;
+export type ShippingAddressesControllerFindAllQueryError = unknown;
+
+export function useShippingAddressesControllerFindAll<
+  TData = Awaited<ReturnType<typeof shippingAddressesControllerFindAll>>,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof shippingAddressesControllerFindAll>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shippingAddressesControllerFindAll>>,
+          TError,
+          Awaited<ReturnType<typeof shippingAddressesControllerFindAll>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useShippingAddressesControllerFindAll<
+  TData = Awaited<ReturnType<typeof shippingAddressesControllerFindAll>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof shippingAddressesControllerFindAll>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof shippingAddressesControllerFindAll>>,
+          TError,
+          Awaited<ReturnType<typeof shippingAddressesControllerFindAll>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useShippingAddressesControllerFindAll<
+  TData = Awaited<ReturnType<typeof shippingAddressesControllerFindAll>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof shippingAddressesControllerFindAll>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: USER - Get user shipping address list
+ */
+
+export function useShippingAddressesControllerFindAll<
+  TData = Awaited<ReturnType<typeof shippingAddressesControllerFindAll>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof shippingAddressesControllerFindAll>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getShippingAddressesControllerFindAllQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary Role: USER - Update address information
+ */
+export const shippingAddressesControllerUpdate = (
+  id: string,
+  updateShippingAddressDto: UpdateShippingAddressDto,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<ShippingAddress>(
+    {
+      url: `/api/shipping-addresses/${id}`,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      data: updateShippingAddressDto,
+    },
+    options,
+  );
+};
+
+export const getShippingAddressesControllerUpdateMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof shippingAddressesControllerUpdate>>,
+    TError,
+    { id: string; data: UpdateShippingAddressDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof shippingAddressesControllerUpdate>>,
+  TError,
+  { id: string; data: UpdateShippingAddressDto },
+  TContext
+> => {
+  const mutationKey = ["shippingAddressesControllerUpdate"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof shippingAddressesControllerUpdate>>,
+    { id: string; data: UpdateShippingAddressDto }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return shippingAddressesControllerUpdate(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ShippingAddressesControllerUpdateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof shippingAddressesControllerUpdate>>
+>;
+export type ShippingAddressesControllerUpdateMutationBody =
+  UpdateShippingAddressDto;
+export type ShippingAddressesControllerUpdateMutationError = unknown;
+
+/**
+ * @summary Role: USER - Update address information
+ */
+export const useShippingAddressesControllerUpdate = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof shippingAddressesControllerUpdate>>,
+      TError,
+      { id: string; data: UpdateShippingAddressDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof shippingAddressesControllerUpdate>>,
+  TError,
+  { id: string; data: UpdateShippingAddressDto },
+  TContext
+> => {
+  const mutationOptions =
+    getShippingAddressesControllerUpdateMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary Role: USER - Delete a shipping address (Soft delete)
+ */
+export const shippingAddressesControllerRemove = (
+  id: string,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    { url: `/api/shipping-addresses/${id}`, method: "DELETE" },
+    options,
+  );
+};
+
+export const getShippingAddressesControllerRemoveMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof shippingAddressesControllerRemove>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof shippingAddressesControllerRemove>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["shippingAddressesControllerRemove"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof shippingAddressesControllerRemove>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return shippingAddressesControllerRemove(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ShippingAddressesControllerRemoveMutationResult = NonNullable<
+  Awaited<ReturnType<typeof shippingAddressesControllerRemove>>
+>;
+
+export type ShippingAddressesControllerRemoveMutationError = unknown;
+
+/**
+ * @summary Role: USER - Delete a shipping address (Soft delete)
+ */
+export const useShippingAddressesControllerRemove = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof shippingAddressesControllerRemove>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof shippingAddressesControllerRemove>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationOptions =
+    getShippingAddressesControllerRemoveMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary Role: USER - Get my cart information
+ */
+export const cartsControllerGetMyCart = (
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    { url: `/api/carts/me`, method: "GET", signal },
+    options,
+  );
+};
+
+export const getCartsControllerGetMyCartQueryKey = () => {
+  return [`/api/carts/me`] as const;
+};
+
+export const getCartsControllerGetMyCartQueryOptions = <
+  TData = Awaited<ReturnType<typeof cartsControllerGetMyCart>>,
+  TError = unknown,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<
+      Awaited<ReturnType<typeof cartsControllerGetMyCart>>,
+      TError,
+      TData
+    >
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getCartsControllerGetMyCartQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof cartsControllerGetMyCart>>
+  > = ({ signal }) => cartsControllerGetMyCart(requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof cartsControllerGetMyCart>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type CartsControllerGetMyCartQueryResult = NonNullable<
+  Awaited<ReturnType<typeof cartsControllerGetMyCart>>
+>;
+export type CartsControllerGetMyCartQueryError = unknown;
+
+export function useCartsControllerGetMyCart<
+  TData = Awaited<ReturnType<typeof cartsControllerGetMyCart>>,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof cartsControllerGetMyCart>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof cartsControllerGetMyCart>>,
+          TError,
+          Awaited<ReturnType<typeof cartsControllerGetMyCart>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useCartsControllerGetMyCart<
+  TData = Awaited<ReturnType<typeof cartsControllerGetMyCart>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof cartsControllerGetMyCart>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof cartsControllerGetMyCart>>,
+          TError,
+          Awaited<ReturnType<typeof cartsControllerGetMyCart>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useCartsControllerGetMyCart<
+  TData = Awaited<ReturnType<typeof cartsControllerGetMyCart>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof cartsControllerGetMyCart>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: USER - Get my cart information
+ */
+
+export function useCartsControllerGetMyCart<
+  TData = Awaited<ReturnType<typeof cartsControllerGetMyCart>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof cartsControllerGetMyCart>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getCartsControllerGetMyCartQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary Role: USER - Add product to cart
+ */
+export const cartsControllerAddToCart = (
+  addToCartDto: AddToCartDto,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    {
+      url: `/api/carts/items`,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      data: addToCartDto,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getCartsControllerAddToCartMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof cartsControllerAddToCart>>,
+    TError,
+    { data: AddToCartDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof cartsControllerAddToCart>>,
+  TError,
+  { data: AddToCartDto },
+  TContext
+> => {
+  const mutationKey = ["cartsControllerAddToCart"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof cartsControllerAddToCart>>,
+    { data: AddToCartDto }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return cartsControllerAddToCart(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CartsControllerAddToCartMutationResult = NonNullable<
+  Awaited<ReturnType<typeof cartsControllerAddToCart>>
+>;
+export type CartsControllerAddToCartMutationBody = AddToCartDto;
+export type CartsControllerAddToCartMutationError = unknown;
+
+/**
+ * @summary Role: USER - Add product to cart
+ */
+export const useCartsControllerAddToCart = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof cartsControllerAddToCart>>,
+      TError,
+      { data: AddToCartDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof cartsControllerAddToCart>>,
+  TError,
+  { data: AddToCartDto },
+  TContext
+> => {
+  const mutationOptions = getCartsControllerAddToCartMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary Role: USER - Update product quantity in cart
+ */
+export const cartsControllerUpdateItemQuantity = (
+  id: string,
+  updateCartItemDto: UpdateCartItemDto,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    {
+      url: `/api/carts/items/${id}`,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      data: updateCartItemDto,
+    },
+    options,
+  );
+};
+
+export const getCartsControllerUpdateItemQuantityMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof cartsControllerUpdateItemQuantity>>,
+    TError,
+    { id: string; data: UpdateCartItemDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof cartsControllerUpdateItemQuantity>>,
+  TError,
+  { id: string; data: UpdateCartItemDto },
+  TContext
+> => {
+  const mutationKey = ["cartsControllerUpdateItemQuantity"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof cartsControllerUpdateItemQuantity>>,
+    { id: string; data: UpdateCartItemDto }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return cartsControllerUpdateItemQuantity(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CartsControllerUpdateItemQuantityMutationResult = NonNullable<
+  Awaited<ReturnType<typeof cartsControllerUpdateItemQuantity>>
+>;
+export type CartsControllerUpdateItemQuantityMutationBody = UpdateCartItemDto;
+export type CartsControllerUpdateItemQuantityMutationError = unknown;
+
+/**
+ * @summary Role: USER - Update product quantity in cart
+ */
+export const useCartsControllerUpdateItemQuantity = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof cartsControllerUpdateItemQuantity>>,
+      TError,
+      { id: string; data: UpdateCartItemDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof cartsControllerUpdateItemQuantity>>,
+  TError,
+  { id: string; data: UpdateCartItemDto },
+  TContext
+> => {
+  const mutationOptions =
+    getCartsControllerUpdateItemQuantityMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary Role: USER - Remove a product from cart
+ */
+export const cartsControllerRemoveCartItem = (
+  id: string,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    { url: `/api/carts/items/${id}`, method: "DELETE" },
+    options,
+  );
+};
+
+export const getCartsControllerRemoveCartItemMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof cartsControllerRemoveCartItem>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof cartsControllerRemoveCartItem>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["cartsControllerRemoveCartItem"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof cartsControllerRemoveCartItem>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return cartsControllerRemoveCartItem(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CartsControllerRemoveCartItemMutationResult = NonNullable<
+  Awaited<ReturnType<typeof cartsControllerRemoveCartItem>>
+>;
+
+export type CartsControllerRemoveCartItemMutationError = unknown;
+
+/**
+ * @summary Role: USER - Remove a product from cart
+ */
+export const useCartsControllerRemoveCartItem = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof cartsControllerRemoveCartItem>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof cartsControllerRemoveCartItem>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationOptions =
+    getCartsControllerRemoveCartItemMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary Role: USER - Clear entire cart
+ */
+export const cartsControllerClearCart = (
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    { url: `/api/carts/me/clear`, method: "DELETE" },
+    options,
+  );
+};
+
+export const getCartsControllerClearCartMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof cartsControllerClearCart>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof cartsControllerClearCart>>,
+  TError,
+  void,
+  TContext
+> => {
+  const mutationKey = ["cartsControllerClearCart"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof cartsControllerClearCart>>,
+    void
+  > = () => {
+    return cartsControllerClearCart(requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CartsControllerClearCartMutationResult = NonNullable<
+  Awaited<ReturnType<typeof cartsControllerClearCart>>
+>;
+
+export type CartsControllerClearCartMutationError = unknown;
+
+/**
+ * @summary Role: USER - Clear entire cart
+ */
+export const useCartsControllerClearCart = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof cartsControllerClearCart>>,
+      TError,
+      void,
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof cartsControllerClearCart>>,
+  TError,
+  void,
+  TContext
+> => {
+  const mutationOptions = getCartsControllerClearCartMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary Role: USER - Preview order (Calculate price, shipping fee, confirm items)
+ */
+export const ordersControllerPreviewOrder = (
+  previewOrderDto: PreviewOrderDto,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    {
+      url: `/api/orders/preview`,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      data: previewOrderDto,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getOrdersControllerPreviewOrderMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof ordersControllerPreviewOrder>>,
+    TError,
+    { data: PreviewOrderDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof ordersControllerPreviewOrder>>,
+  TError,
+  { data: PreviewOrderDto },
+  TContext
+> => {
+  const mutationKey = ["ordersControllerPreviewOrder"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof ordersControllerPreviewOrder>>,
+    { data: PreviewOrderDto }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return ordersControllerPreviewOrder(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type OrdersControllerPreviewOrderMutationResult = NonNullable<
+  Awaited<ReturnType<typeof ordersControllerPreviewOrder>>
+>;
+export type OrdersControllerPreviewOrderMutationBody = PreviewOrderDto;
+export type OrdersControllerPreviewOrderMutationError = unknown;
+
+/**
+ * @summary Role: USER - Preview order (Calculate price, shipping fee, confirm items)
+ */
+export const useOrdersControllerPreviewOrder = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof ordersControllerPreviewOrder>>,
+      TError,
+      { data: PreviewOrderDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof ordersControllerPreviewOrder>>,
+  TError,
+  { data: PreviewOrderDto },
+  TContext
+> => {
+  const mutationOptions =
+    getOrdersControllerPreviewOrderMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary Role: USER - Proceed to checkout
+ */
+export const ordersControllerCheckout = (
+  checkoutOrderDto: CheckoutOrderDto,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    {
+      url: `/api/orders/checkout`,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      data: checkoutOrderDto,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getOrdersControllerCheckoutMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof ordersControllerCheckout>>,
+    TError,
+    { data: CheckoutOrderDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof ordersControllerCheckout>>,
+  TError,
+  { data: CheckoutOrderDto },
+  TContext
+> => {
+  const mutationKey = ["ordersControllerCheckout"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof ordersControllerCheckout>>,
+    { data: CheckoutOrderDto }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return ordersControllerCheckout(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type OrdersControllerCheckoutMutationResult = NonNullable<
+  Awaited<ReturnType<typeof ordersControllerCheckout>>
+>;
+export type OrdersControllerCheckoutMutationBody = CheckoutOrderDto;
+export type OrdersControllerCheckoutMutationError = unknown;
+
+/**
+ * @summary Role: USER - Proceed to checkout
+ */
+export const useOrdersControllerCheckout = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof ordersControllerCheckout>>,
+      TError,
+      { data: CheckoutOrderDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof ordersControllerCheckout>>,
+  TError,
+  { data: CheckoutOrderDto },
+  TContext
+> => {
+  const mutationOptions = getOrdersControllerCheckoutMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary Role: USER - My order history
+ */
+export const ordersControllerGetMyOrders = (
+  params?: OrdersControllerGetMyOrdersParams,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<GetManySubOrderDto>(
+    { url: `/api/orders/me`, method: "GET", params, signal },
+    options,
+  );
+};
+
+export const getOrdersControllerGetMyOrdersInfiniteQueryKey = (
+  params?: OrdersControllerGetMyOrdersParams,
+) => {
+  return ["infinate", `/api/orders/me`, ...(params ? [params] : [])] as const;
+};
+
+export const getOrdersControllerGetMyOrdersQueryKey = (
+  params?: OrdersControllerGetMyOrdersParams,
+) => {
+  return [`/api/orders/me`, ...(params ? [params] : [])] as const;
+};
+
+export const getOrdersControllerGetMyOrdersInfiniteQueryOptions = <
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof ordersControllerGetMyOrders>>,
+    OrdersControllerGetMyOrdersParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: OrdersControllerGetMyOrdersParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof ordersControllerGetMyOrders>>,
+        TError,
+        TData,
+        QueryKey,
+        OrdersControllerGetMyOrdersParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getOrdersControllerGetMyOrdersInfiniteQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof ordersControllerGetMyOrders>>,
+    QueryKey,
+    OrdersControllerGetMyOrdersParams["page"]
+  > = ({ signal, pageParam }) =>
+    ordersControllerGetMyOrders(
+      { ...params, page: pageParam || params?.["page"] },
+      requestOptions,
+      signal,
+    );
+
+  return { queryKey, queryFn, ...queryOptions } as UseInfiniteQueryOptions<
+    Awaited<ReturnType<typeof ordersControllerGetMyOrders>>,
+    TError,
+    TData,
+    QueryKey,
+    OrdersControllerGetMyOrdersParams["page"]
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type OrdersControllerGetMyOrdersInfiniteQueryResult = NonNullable<
+  Awaited<ReturnType<typeof ordersControllerGetMyOrders>>
+>;
+export type OrdersControllerGetMyOrdersInfiniteQueryError = unknown;
+
+export function useOrdersControllerGetMyOrdersInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof ordersControllerGetMyOrders>>,
+    OrdersControllerGetMyOrdersParams["page"]
+  >,
+  TError = unknown,
+>(
+  params: undefined | OrdersControllerGetMyOrdersParams,
+  options: {
+    query: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof ordersControllerGetMyOrders>>,
+        TError,
+        TData,
+        QueryKey,
+        OrdersControllerGetMyOrdersParams["page"]
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof ordersControllerGetMyOrders>>,
+          TError,
+          Awaited<ReturnType<typeof ordersControllerGetMyOrders>>,
+          QueryKey
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useOrdersControllerGetMyOrdersInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof ordersControllerGetMyOrders>>,
+    OrdersControllerGetMyOrdersParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: OrdersControllerGetMyOrdersParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof ordersControllerGetMyOrders>>,
+        TError,
+        TData,
+        QueryKey,
+        OrdersControllerGetMyOrdersParams["page"]
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof ordersControllerGetMyOrders>>,
+          TError,
+          Awaited<ReturnType<typeof ordersControllerGetMyOrders>>,
+          QueryKey
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useOrdersControllerGetMyOrdersInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof ordersControllerGetMyOrders>>,
+    OrdersControllerGetMyOrdersParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: OrdersControllerGetMyOrdersParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof ordersControllerGetMyOrders>>,
+        TError,
+        TData,
+        QueryKey,
+        OrdersControllerGetMyOrdersParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: USER - My order history
+ */
+
+export function useOrdersControllerGetMyOrdersInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof ordersControllerGetMyOrders>>,
+    OrdersControllerGetMyOrdersParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: OrdersControllerGetMyOrdersParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof ordersControllerGetMyOrders>>,
+        TError,
+        TData,
+        QueryKey,
+        OrdersControllerGetMyOrdersParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getOrdersControllerGetMyOrdersInfiniteQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useInfiniteQuery(
+    queryOptions,
+    queryClient,
+  ) as UseInfiniteQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+export const getOrdersControllerGetMyOrdersQueryOptions = <
+  TData = Awaited<ReturnType<typeof ordersControllerGetMyOrders>>,
+  TError = unknown,
+>(
+  params?: OrdersControllerGetMyOrdersParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof ordersControllerGetMyOrders>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getOrdersControllerGetMyOrdersQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof ordersControllerGetMyOrders>>
+  > = ({ signal }) =>
+    ordersControllerGetMyOrders(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof ordersControllerGetMyOrders>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type OrdersControllerGetMyOrdersQueryResult = NonNullable<
+  Awaited<ReturnType<typeof ordersControllerGetMyOrders>>
+>;
+export type OrdersControllerGetMyOrdersQueryError = unknown;
+
+export function useOrdersControllerGetMyOrders<
+  TData = Awaited<ReturnType<typeof ordersControllerGetMyOrders>>,
+  TError = unknown,
+>(
+  params: undefined | OrdersControllerGetMyOrdersParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof ordersControllerGetMyOrders>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof ordersControllerGetMyOrders>>,
+          TError,
+          Awaited<ReturnType<typeof ordersControllerGetMyOrders>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useOrdersControllerGetMyOrders<
+  TData = Awaited<ReturnType<typeof ordersControllerGetMyOrders>>,
+  TError = unknown,
+>(
+  params?: OrdersControllerGetMyOrdersParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof ordersControllerGetMyOrders>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof ordersControllerGetMyOrders>>,
+          TError,
+          Awaited<ReturnType<typeof ordersControllerGetMyOrders>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useOrdersControllerGetMyOrders<
+  TData = Awaited<ReturnType<typeof ordersControllerGetMyOrders>>,
+  TError = unknown,
+>(
+  params?: OrdersControllerGetMyOrdersParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof ordersControllerGetMyOrders>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: USER - My order history
+ */
+
+export function useOrdersControllerGetMyOrders<
+  TData = Awaited<ReturnType<typeof ordersControllerGetMyOrders>>,
+  TError = unknown,
+>(
+  params?: OrdersControllerGetMyOrdersParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof ordersControllerGetMyOrders>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getOrdersControllerGetMyOrdersQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary Role: USER - My order details
+ */
+export const ordersControllerGetMyOrderDetails = (
+  subOrderId: string,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    { url: `/api/orders/me/${subOrderId}`, method: "GET", signal },
+    options,
+  );
+};
+
+export const getOrdersControllerGetMyOrderDetailsQueryKey = (
+  subOrderId?: string,
+) => {
+  return [`/api/orders/me/${subOrderId}`] as const;
+};
+
+export const getOrdersControllerGetMyOrderDetailsQueryOptions = <
+  TData = Awaited<ReturnType<typeof ordersControllerGetMyOrderDetails>>,
+  TError = unknown,
+>(
+  subOrderId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof ordersControllerGetMyOrderDetails>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getOrdersControllerGetMyOrderDetailsQueryKey(subOrderId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof ordersControllerGetMyOrderDetails>>
+  > = ({ signal }) =>
+    ordersControllerGetMyOrderDetails(subOrderId, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!subOrderId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof ordersControllerGetMyOrderDetails>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type OrdersControllerGetMyOrderDetailsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof ordersControllerGetMyOrderDetails>>
+>;
+export type OrdersControllerGetMyOrderDetailsQueryError = unknown;
+
+export function useOrdersControllerGetMyOrderDetails<
+  TData = Awaited<ReturnType<typeof ordersControllerGetMyOrderDetails>>,
+  TError = unknown,
+>(
+  subOrderId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof ordersControllerGetMyOrderDetails>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof ordersControllerGetMyOrderDetails>>,
+          TError,
+          Awaited<ReturnType<typeof ordersControllerGetMyOrderDetails>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useOrdersControllerGetMyOrderDetails<
+  TData = Awaited<ReturnType<typeof ordersControllerGetMyOrderDetails>>,
+  TError = unknown,
+>(
+  subOrderId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof ordersControllerGetMyOrderDetails>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof ordersControllerGetMyOrderDetails>>,
+          TError,
+          Awaited<ReturnType<typeof ordersControllerGetMyOrderDetails>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useOrdersControllerGetMyOrderDetails<
+  TData = Awaited<ReturnType<typeof ordersControllerGetMyOrderDetails>>,
+  TError = unknown,
+>(
+  subOrderId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof ordersControllerGetMyOrderDetails>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: USER - My order details
+ */
+
+export function useOrdersControllerGetMyOrderDetails<
+  TData = Awaited<ReturnType<typeof ordersControllerGetMyOrderDetails>>,
+  TError = unknown,
+>(
+  subOrderId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof ordersControllerGetMyOrderDetails>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getOrdersControllerGetMyOrderDetailsQueryOptions(
+    subOrderId,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary Role: USER - Request order cancellation (Only when Pending)
+ */
+export const ordersControllerCancelMyOrder = (
+  subOrderId: string,
+  cancelOrderDto: CancelOrderDto,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    {
+      url: `/api/orders/me/${subOrderId}/cancel`,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      data: cancelOrderDto,
+    },
+    options,
+  );
+};
+
+export const getOrdersControllerCancelMyOrderMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof ordersControllerCancelMyOrder>>,
+    TError,
+    { subOrderId: string; data: CancelOrderDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof ordersControllerCancelMyOrder>>,
+  TError,
+  { subOrderId: string; data: CancelOrderDto },
+  TContext
+> => {
+  const mutationKey = ["ordersControllerCancelMyOrder"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof ordersControllerCancelMyOrder>>,
+    { subOrderId: string; data: CancelOrderDto }
+  > = (props) => {
+    const { subOrderId, data } = props ?? {};
+
+    return ordersControllerCancelMyOrder(subOrderId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type OrdersControllerCancelMyOrderMutationResult = NonNullable<
+  Awaited<ReturnType<typeof ordersControllerCancelMyOrder>>
+>;
+export type OrdersControllerCancelMyOrderMutationBody = CancelOrderDto;
+export type OrdersControllerCancelMyOrderMutationError = unknown;
+
+/**
+ * @summary Role: USER - Request order cancellation (Only when Pending)
+ */
+export const useOrdersControllerCancelMyOrder = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof ordersControllerCancelMyOrder>>,
+      TError,
+      { subOrderId: string; data: CancelOrderDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof ordersControllerCancelMyOrder>>,
+  TError,
+  { subOrderId: string; data: CancelOrderDto },
+  TContext
+> => {
+  const mutationOptions =
+    getOrdersControllerCancelMyOrderMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary Role: MERCHANT - Get orders assigned to the Shop
+ */
+export const merchantOrdersControllerGetOrders = (
+  params?: MerchantOrdersControllerGetOrdersParams,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<GetManySubOrderDto>(
+    { url: `/api/merchant-orders`, method: "GET", params, signal },
+    options,
+  );
+};
+
+export const getMerchantOrdersControllerGetOrdersInfiniteQueryKey = (
+  params?: MerchantOrdersControllerGetOrdersParams,
+) => {
+  return [
+    "infinate",
+    `/api/merchant-orders`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getMerchantOrdersControllerGetOrdersQueryKey = (
+  params?: MerchantOrdersControllerGetOrdersParams,
+) => {
+  return [`/api/merchant-orders`, ...(params ? [params] : [])] as const;
+};
+
+export const getMerchantOrdersControllerGetOrdersInfiniteQueryOptions = <
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>,
+    MerchantOrdersControllerGetOrdersParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: MerchantOrdersControllerGetOrdersParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>,
+        TError,
+        TData,
+        QueryKey,
+        MerchantOrdersControllerGetOrdersParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getMerchantOrdersControllerGetOrdersInfiniteQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>,
+    QueryKey,
+    MerchantOrdersControllerGetOrdersParams["page"]
+  > = ({ signal, pageParam }) =>
+    merchantOrdersControllerGetOrders(
+      { ...params, page: pageParam || params?.["page"] },
+      requestOptions,
+      signal,
+    );
+
+  return { queryKey, queryFn, ...queryOptions } as UseInfiniteQueryOptions<
+    Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>,
+    TError,
+    TData,
+    QueryKey,
+    MerchantOrdersControllerGetOrdersParams["page"]
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type MerchantOrdersControllerGetOrdersInfiniteQueryResult = NonNullable<
+  Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>
+>;
+export type MerchantOrdersControllerGetOrdersInfiniteQueryError = unknown;
+
+export function useMerchantOrdersControllerGetOrdersInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>,
+    MerchantOrdersControllerGetOrdersParams["page"]
+  >,
+  TError = unknown,
+>(
+  params: undefined | MerchantOrdersControllerGetOrdersParams,
+  options: {
+    query: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>,
+        TError,
+        TData,
+        QueryKey,
+        MerchantOrdersControllerGetOrdersParams["page"]
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>,
+          TError,
+          Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>,
+          QueryKey
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantOrdersControllerGetOrdersInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>,
+    MerchantOrdersControllerGetOrdersParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: MerchantOrdersControllerGetOrdersParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>,
+        TError,
+        TData,
+        QueryKey,
+        MerchantOrdersControllerGetOrdersParams["page"]
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>,
+          TError,
+          Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>,
+          QueryKey
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantOrdersControllerGetOrdersInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>,
+    MerchantOrdersControllerGetOrdersParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: MerchantOrdersControllerGetOrdersParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>,
+        TError,
+        TData,
+        QueryKey,
+        MerchantOrdersControllerGetOrdersParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: MERCHANT - Get orders assigned to the Shop
+ */
+
+export function useMerchantOrdersControllerGetOrdersInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>,
+    MerchantOrdersControllerGetOrdersParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: MerchantOrdersControllerGetOrdersParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>,
+        TError,
+        TData,
+        QueryKey,
+        MerchantOrdersControllerGetOrdersParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getMerchantOrdersControllerGetOrdersInfiniteQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useInfiniteQuery(
+    queryOptions,
+    queryClient,
+  ) as UseInfiniteQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+export const getMerchantOrdersControllerGetOrdersQueryOptions = <
+  TData = Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>,
+  TError = unknown,
+>(
+  params?: MerchantOrdersControllerGetOrdersParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getMerchantOrdersControllerGetOrdersQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>
+  > = ({ signal }) =>
+    merchantOrdersControllerGetOrders(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type MerchantOrdersControllerGetOrdersQueryResult = NonNullable<
+  Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>
+>;
+export type MerchantOrdersControllerGetOrdersQueryError = unknown;
+
+export function useMerchantOrdersControllerGetOrders<
+  TData = Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>,
+  TError = unknown,
+>(
+  params: undefined | MerchantOrdersControllerGetOrdersParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>,
+          TError,
+          Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantOrdersControllerGetOrders<
+  TData = Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>,
+  TError = unknown,
+>(
+  params?: MerchantOrdersControllerGetOrdersParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>,
+          TError,
+          Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantOrdersControllerGetOrders<
+  TData = Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>,
+  TError = unknown,
+>(
+  params?: MerchantOrdersControllerGetOrdersParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: MERCHANT - Get orders assigned to the Shop
+ */
+
+export function useMerchantOrdersControllerGetOrders<
+  TData = Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>,
+  TError = unknown,
+>(
+  params?: MerchantOrdersControllerGetOrdersParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantOrdersControllerGetOrders>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getMerchantOrdersControllerGetOrdersQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary Role: MERCHANT - Get single order details (SubOrder)
+ */
+export const merchantOrdersControllerGetOrderDetails = (
+  id: string,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    { url: `/api/merchant-orders/${id}`, method: "GET", signal },
+    options,
+  );
+};
+
+export const getMerchantOrdersControllerGetOrderDetailsQueryKey = (
+  id?: string,
+) => {
+  return [`/api/merchant-orders/${id}`] as const;
+};
+
+export const getMerchantOrdersControllerGetOrderDetailsQueryOptions = <
+  TData = Awaited<ReturnType<typeof merchantOrdersControllerGetOrderDetails>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantOrdersControllerGetOrderDetails>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getMerchantOrdersControllerGetOrderDetailsQueryKey(id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof merchantOrdersControllerGetOrderDetails>>
+  > = ({ signal }) =>
+    merchantOrdersControllerGetOrderDetails(id, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof merchantOrdersControllerGetOrderDetails>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type MerchantOrdersControllerGetOrderDetailsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof merchantOrdersControllerGetOrderDetails>>
+>;
+export type MerchantOrdersControllerGetOrderDetailsQueryError = unknown;
+
+export function useMerchantOrdersControllerGetOrderDetails<
+  TData = Awaited<ReturnType<typeof merchantOrdersControllerGetOrderDetails>>,
+  TError = unknown,
+>(
+  id: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantOrdersControllerGetOrderDetails>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof merchantOrdersControllerGetOrderDetails>>,
+          TError,
+          Awaited<ReturnType<typeof merchantOrdersControllerGetOrderDetails>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantOrdersControllerGetOrderDetails<
+  TData = Awaited<ReturnType<typeof merchantOrdersControllerGetOrderDetails>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantOrdersControllerGetOrderDetails>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof merchantOrdersControllerGetOrderDetails>>,
+          TError,
+          Awaited<ReturnType<typeof merchantOrdersControllerGetOrderDetails>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useMerchantOrdersControllerGetOrderDetails<
+  TData = Awaited<ReturnType<typeof merchantOrdersControllerGetOrderDetails>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantOrdersControllerGetOrderDetails>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: MERCHANT - Get single order details (SubOrder)
+ */
+
+export function useMerchantOrdersControllerGetOrderDetails<
+  TData = Awaited<ReturnType<typeof merchantOrdersControllerGetOrderDetails>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof merchantOrdersControllerGetOrderDetails>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getMerchantOrdersControllerGetOrderDetailsQueryOptions(
+    id,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary Role: MERCHANT - Confirm order
+ */
+export const merchantOrdersControllerConfirmOrder = (
+  id: string,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    { url: `/api/merchant-orders/${id}/confirm`, method: "PATCH" },
+    options,
+  );
+};
+
+export const getMerchantOrdersControllerConfirmOrderMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof merchantOrdersControllerConfirmOrder>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof merchantOrdersControllerConfirmOrder>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["merchantOrdersControllerConfirmOrder"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof merchantOrdersControllerConfirmOrder>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return merchantOrdersControllerConfirmOrder(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type MerchantOrdersControllerConfirmOrderMutationResult = NonNullable<
+  Awaited<ReturnType<typeof merchantOrdersControllerConfirmOrder>>
+>;
+
+export type MerchantOrdersControllerConfirmOrderMutationError = unknown;
+
+/**
+ * @summary Role: MERCHANT - Confirm order
+ */
+export const useMerchantOrdersControllerConfirmOrder = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof merchantOrdersControllerConfirmOrder>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof merchantOrdersControllerConfirmOrder>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationOptions =
+    getMerchantOrdersControllerConfirmOrderMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary Role: MERCHANT - Hand over to shipping unit (Dispatch)
+ */
+export const merchantOrdersControllerShipOrder = (
+  id: string,
+  shipOrderDto: ShipOrderDto,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    {
+      url: `/api/merchant-orders/${id}/ship`,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      data: shipOrderDto,
+    },
+    options,
+  );
+};
+
+export const getMerchantOrdersControllerShipOrderMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof merchantOrdersControllerShipOrder>>,
+    TError,
+    { id: string; data: ShipOrderDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof merchantOrdersControllerShipOrder>>,
+  TError,
+  { id: string; data: ShipOrderDto },
+  TContext
+> => {
+  const mutationKey = ["merchantOrdersControllerShipOrder"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof merchantOrdersControllerShipOrder>>,
+    { id: string; data: ShipOrderDto }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return merchantOrdersControllerShipOrder(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type MerchantOrdersControllerShipOrderMutationResult = NonNullable<
+  Awaited<ReturnType<typeof merchantOrdersControllerShipOrder>>
+>;
+export type MerchantOrdersControllerShipOrderMutationBody = ShipOrderDto;
+export type MerchantOrdersControllerShipOrderMutationError = unknown;
+
+/**
+ * @summary Role: MERCHANT - Hand over to shipping unit (Dispatch)
+ */
+export const useMerchantOrdersControllerShipOrder = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof merchantOrdersControllerShipOrder>>,
+      TError,
+      { id: string; data: ShipOrderDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof merchantOrdersControllerShipOrder>>,
+  TError,
+  { id: string; data: ShipOrderDto },
+  TContext
+> => {
+  const mutationOptions =
+    getMerchantOrdersControllerShipOrderMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary Role: MERCHANT - Reject / Cancel order
+ */
+export const merchantOrdersControllerCancelOrder = (
+  id: string,
+  cancelOrderDto: CancelOrderDto,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    {
+      url: `/api/merchant-orders/${id}/cancel`,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      data: cancelOrderDto,
+    },
+    options,
+  );
+};
+
+export const getMerchantOrdersControllerCancelOrderMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof merchantOrdersControllerCancelOrder>>,
+    TError,
+    { id: string; data: CancelOrderDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof merchantOrdersControllerCancelOrder>>,
+  TError,
+  { id: string; data: CancelOrderDto },
+  TContext
+> => {
+  const mutationKey = ["merchantOrdersControllerCancelOrder"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof merchantOrdersControllerCancelOrder>>,
+    { id: string; data: CancelOrderDto }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return merchantOrdersControllerCancelOrder(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type MerchantOrdersControllerCancelOrderMutationResult = NonNullable<
+  Awaited<ReturnType<typeof merchantOrdersControllerCancelOrder>>
+>;
+export type MerchantOrdersControllerCancelOrderMutationBody = CancelOrderDto;
+export type MerchantOrdersControllerCancelOrderMutationError = unknown;
+
+/**
+ * @summary Role: MERCHANT - Reject / Cancel order
+ */
+export const useMerchantOrdersControllerCancelOrder = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof merchantOrdersControllerCancelOrder>>,
+      TError,
+      { id: string; data: CancelOrderDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof merchantOrdersControllerCancelOrder>>,
+  TError,
+  { id: string; data: CancelOrderDto },
+  TContext
+> => {
+  const mutationOptions =
+    getMerchantOrdersControllerCancelOrderMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Register the current device FCM Token for the logged in user.
+ * @summary Role: All - Register or Update device FCM Token
+ */
+export const notificationControllerRegisterDevice = (
+  registerDeviceDto: RegisterDeviceDto,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    {
+      url: `/api/notifications/device`,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      data: registerDeviceDto,
+    },
+    options,
+  );
+};
+
+export const getNotificationControllerRegisterDeviceMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof notificationControllerRegisterDevice>>,
+    TError,
+    { data: RegisterDeviceDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof notificationControllerRegisterDevice>>,
+  TError,
+  { data: RegisterDeviceDto },
+  TContext
+> => {
+  const mutationKey = ["notificationControllerRegisterDevice"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof notificationControllerRegisterDevice>>,
+    { data: RegisterDeviceDto }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return notificationControllerRegisterDevice(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type NotificationControllerRegisterDeviceMutationResult = NonNullable<
+  Awaited<ReturnType<typeof notificationControllerRegisterDevice>>
+>;
+export type NotificationControllerRegisterDeviceMutationBody =
+  RegisterDeviceDto;
+export type NotificationControllerRegisterDeviceMutationError = unknown;
+
+/**
+ * @summary Role: All - Register or Update device FCM Token
+ */
+export const useNotificationControllerRegisterDevice = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof notificationControllerRegisterDevice>>,
+      TError,
+      { data: RegisterDeviceDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof notificationControllerRegisterDevice>>,
+  TError,
+  { data: RegisterDeviceDto },
+  TContext
+> => {
+  const mutationOptions =
+    getNotificationControllerRegisterDeviceMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Remove the device FCM Token when user logs out.
+ * @summary Role: All - Unregister device FCM Token
+ */
+export const notificationControllerUnregisterDevice = (
+  unregisterDeviceDto: UnregisterDeviceDto,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<AppResponseSerialization>(
+    {
+      url: `/api/notifications/device`,
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      data: unregisterDeviceDto,
+    },
+    options,
+  );
+};
+
+export const getNotificationControllerUnregisterDeviceMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof notificationControllerUnregisterDevice>>,
+    TError,
+    { data: UnregisterDeviceDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof notificationControllerUnregisterDevice>>,
+  TError,
+  { data: UnregisterDeviceDto },
+  TContext
+> => {
+  const mutationKey = ["notificationControllerUnregisterDevice"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof notificationControllerUnregisterDevice>>,
+    { data: UnregisterDeviceDto }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return notificationControllerUnregisterDevice(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type NotificationControllerUnregisterDeviceMutationResult = NonNullable<
+  Awaited<ReturnType<typeof notificationControllerUnregisterDevice>>
+>;
+export type NotificationControllerUnregisterDeviceMutationBody =
+  UnregisterDeviceDto;
+export type NotificationControllerUnregisterDeviceMutationError = unknown;
+
+/**
+ * @summary Role: All - Unregister device FCM Token
+ */
+export const useNotificationControllerUnregisterDevice = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof notificationControllerUnregisterDevice>>,
+      TError,
+      { data: UnregisterDeviceDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof notificationControllerUnregisterDevice>>,
+  TError,
+  { data: UnregisterDeviceDto },
+  TContext
+> => {
+  const mutationOptions =
+    getNotificationControllerUnregisterDeviceMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Initiates the merchant registration process using a referral code. The system validates the code and sends a verification email if valid.
+ * @summary Role: None - Initiate merchant registration by referral code
+ */
+export const referrersControllerRegisterMerchant = (
+  registerReferralDto: RegisterReferralDto,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<DefaultMessageResponseDto>(
+    {
+      url: `/api/referrers/register-mer`,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      data: registerReferralDto,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getReferrersControllerRegisterMerchantMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof referrersControllerRegisterMerchant>>,
+    TError,
+    { data: RegisterReferralDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof referrersControllerRegisterMerchant>>,
+  TError,
+  { data: RegisterReferralDto },
+  TContext
+> => {
+  const mutationKey = ["referrersControllerRegisterMerchant"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof referrersControllerRegisterMerchant>>,
+    { data: RegisterReferralDto }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return referrersControllerRegisterMerchant(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ReferrersControllerRegisterMerchantMutationResult = NonNullable<
+  Awaited<ReturnType<typeof referrersControllerRegisterMerchant>>
+>;
+export type ReferrersControllerRegisterMerchantMutationBody =
+  RegisterReferralDto;
+export type ReferrersControllerRegisterMerchantMutationError = unknown;
+
+/**
+ * @summary Role: None - Initiate merchant registration by referral code
+ */
+export const useReferrersControllerRegisterMerchant = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof referrersControllerRegisterMerchant>>,
+      TError,
+      { data: RegisterReferralDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof referrersControllerRegisterMerchant>>,
+  TError,
+  { data: RegisterReferralDto },
+  TContext
+> => {
+  const mutationOptions =
+    getReferrersControllerRegisterMerchantMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Validates the registration token from a merchant's email. Returns the registered email and business name if valid.
+ * @summary Role: None - Verify merchant registration token
+ */
+export const referrersControllerVerifyTokenMerchant = (
+  params: ReferrersControllerVerifyTokenMerchantParams,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<Object>(
+    { url: `/api/referrers/verify-token-mer`, method: "GET", params, signal },
+    options,
+  );
+};
+
+export const getReferrersControllerVerifyTokenMerchantQueryKey = (
+  params?: ReferrersControllerVerifyTokenMerchantParams,
+) => {
+  return [
+    `/api/referrers/verify-token-mer`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getReferrersControllerVerifyTokenMerchantQueryOptions = <
+  TData = Awaited<ReturnType<typeof referrersControllerVerifyTokenMerchant>>,
+  TError = unknown,
+>(
+  params: ReferrersControllerVerifyTokenMerchantParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof referrersControllerVerifyTokenMerchant>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getReferrersControllerVerifyTokenMerchantQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof referrersControllerVerifyTokenMerchant>>
+  > = ({ signal }) =>
+    referrersControllerVerifyTokenMerchant(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof referrersControllerVerifyTokenMerchant>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type ReferrersControllerVerifyTokenMerchantQueryResult = NonNullable<
+  Awaited<ReturnType<typeof referrersControllerVerifyTokenMerchant>>
+>;
+export type ReferrersControllerVerifyTokenMerchantQueryError = unknown;
+
+export function useReferrersControllerVerifyTokenMerchant<
+  TData = Awaited<ReturnType<typeof referrersControllerVerifyTokenMerchant>>,
+  TError = unknown,
+>(
+  params: ReferrersControllerVerifyTokenMerchantParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof referrersControllerVerifyTokenMerchant>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof referrersControllerVerifyTokenMerchant>>,
+          TError,
+          Awaited<ReturnType<typeof referrersControllerVerifyTokenMerchant>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useReferrersControllerVerifyTokenMerchant<
+  TData = Awaited<ReturnType<typeof referrersControllerVerifyTokenMerchant>>,
+  TError = unknown,
+>(
+  params: ReferrersControllerVerifyTokenMerchantParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof referrersControllerVerifyTokenMerchant>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof referrersControllerVerifyTokenMerchant>>,
+          TError,
+          Awaited<ReturnType<typeof referrersControllerVerifyTokenMerchant>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useReferrersControllerVerifyTokenMerchant<
+  TData = Awaited<ReturnType<typeof referrersControllerVerifyTokenMerchant>>,
+  TError = unknown,
+>(
+  params: ReferrersControllerVerifyTokenMerchantParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof referrersControllerVerifyTokenMerchant>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: None - Verify merchant registration token
+ */
+
+export function useReferrersControllerVerifyTokenMerchant<
+  TData = Awaited<ReturnType<typeof referrersControllerVerifyTokenMerchant>>,
+  TError = unknown,
+>(
+  params: ReferrersControllerVerifyTokenMerchantParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof referrersControllerVerifyTokenMerchant>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getReferrersControllerVerifyTokenMerchantQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Finalizes merchant registration: creates a user account, a merchant record, and logs the referral history.
+ * @summary Role: None - Complete merchant registration
+ */
+export const referrersControllerCompleteRegistrationMerchant = (
+  completeRegistrationDto: CompleteRegistrationDto,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<DefaultMessageResponseDto>(
+    {
+      url: `/api/referrers/complete-registration-mer`,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      data: completeRegistrationDto,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getReferrersControllerCompleteRegistrationMerchantMutationOptions =
+  <TError = unknown, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<
+      Awaited<
+        ReturnType<typeof referrersControllerCompleteRegistrationMerchant>
+      >,
+      TError,
+      { data: CompleteRegistrationDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  }): UseMutationOptions<
+    Awaited<ReturnType<typeof referrersControllerCompleteRegistrationMerchant>>,
+    TError,
+    { data: CompleteRegistrationDto },
+    TContext
+  > => {
+    const mutationKey = ["referrersControllerCompleteRegistrationMerchant"];
+    const { mutation: mutationOptions, request: requestOptions } = options
+      ? options.mutation &&
+        "mutationKey" in options.mutation &&
+        options.mutation.mutationKey
+        ? options
+        : { ...options, mutation: { ...options.mutation, mutationKey } }
+      : { mutation: { mutationKey }, request: undefined };
+
+    const mutationFn: MutationFunction<
+      Awaited<
+        ReturnType<typeof referrersControllerCompleteRegistrationMerchant>
+      >,
+      { data: CompleteRegistrationDto }
+    > = (props) => {
+      const { data } = props ?? {};
+
+      return referrersControllerCompleteRegistrationMerchant(
+        data,
+        requestOptions,
+      );
+    };
+
+    return { mutationFn, ...mutationOptions };
+  };
+
+export type ReferrersControllerCompleteRegistrationMerchantMutationResult =
+  NonNullable<
+    Awaited<ReturnType<typeof referrersControllerCompleteRegistrationMerchant>>
+  >;
+export type ReferrersControllerCompleteRegistrationMerchantMutationBody =
+  CompleteRegistrationDto;
+export type ReferrersControllerCompleteRegistrationMerchantMutationError =
+  unknown;
+
+/**
+ * @summary Role: None - Complete merchant registration
+ */
+export const useReferrersControllerCompleteRegistrationMerchant = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<
+        ReturnType<typeof referrersControllerCompleteRegistrationMerchant>
+      >,
+      TError,
+      { data: CompleteRegistrationDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof referrersControllerCompleteRegistrationMerchant>>,
+  TError,
+  { data: CompleteRegistrationDto },
+  TContext
+> => {
+  const mutationOptions =
+    getReferrersControllerCompleteRegistrationMerchantMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Initiates the clinic registration process using a referral code. The system validates the code and sends a verification email if valid.
+ * @summary Role: None - Initiate clinic registration by referral code
+ */
+export const referrersControllerRegisterClinic = (
+  registerReferralDto: RegisterReferralDto,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<DefaultMessageResponseDto>(
+    {
+      url: `/api/referrers/register-cli`,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      data: registerReferralDto,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getReferrersControllerRegisterClinicMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof referrersControllerRegisterClinic>>,
+    TError,
+    { data: RegisterReferralDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof referrersControllerRegisterClinic>>,
+  TError,
+  { data: RegisterReferralDto },
+  TContext
+> => {
+  const mutationKey = ["referrersControllerRegisterClinic"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof referrersControllerRegisterClinic>>,
+    { data: RegisterReferralDto }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return referrersControllerRegisterClinic(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ReferrersControllerRegisterClinicMutationResult = NonNullable<
+  Awaited<ReturnType<typeof referrersControllerRegisterClinic>>
+>;
+export type ReferrersControllerRegisterClinicMutationBody = RegisterReferralDto;
+export type ReferrersControllerRegisterClinicMutationError = unknown;
+
+/**
+ * @summary Role: None - Initiate clinic registration by referral code
+ */
+export const useReferrersControllerRegisterClinic = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof referrersControllerRegisterClinic>>,
+      TError,
+      { data: RegisterReferralDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof referrersControllerRegisterClinic>>,
+  TError,
+  { data: RegisterReferralDto },
+  TContext
+> => {
+  const mutationOptions =
+    getReferrersControllerRegisterClinicMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Validates the registration token from a clinic's email. Returns the registered email and business name if valid.
+ * @summary Role: None - Verify clinic registration token
+ */
+export const referrersControllerVerifyTokenClinic = (
+  params: ReferrersControllerVerifyTokenClinicParams,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<Object>(
+    { url: `/api/referrers/verify-token-cli`, method: "GET", params, signal },
+    options,
+  );
+};
+
+export const getReferrersControllerVerifyTokenClinicQueryKey = (
+  params?: ReferrersControllerVerifyTokenClinicParams,
+) => {
+  return [
+    `/api/referrers/verify-token-cli`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getReferrersControllerVerifyTokenClinicQueryOptions = <
+  TData = Awaited<ReturnType<typeof referrersControllerVerifyTokenClinic>>,
+  TError = unknown,
+>(
+  params: ReferrersControllerVerifyTokenClinicParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof referrersControllerVerifyTokenClinic>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getReferrersControllerVerifyTokenClinicQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof referrersControllerVerifyTokenClinic>>
+  > = ({ signal }) =>
+    referrersControllerVerifyTokenClinic(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof referrersControllerVerifyTokenClinic>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type ReferrersControllerVerifyTokenClinicQueryResult = NonNullable<
+  Awaited<ReturnType<typeof referrersControllerVerifyTokenClinic>>
+>;
+export type ReferrersControllerVerifyTokenClinicQueryError = unknown;
+
+export function useReferrersControllerVerifyTokenClinic<
+  TData = Awaited<ReturnType<typeof referrersControllerVerifyTokenClinic>>,
+  TError = unknown,
+>(
+  params: ReferrersControllerVerifyTokenClinicParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof referrersControllerVerifyTokenClinic>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof referrersControllerVerifyTokenClinic>>,
+          TError,
+          Awaited<ReturnType<typeof referrersControllerVerifyTokenClinic>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useReferrersControllerVerifyTokenClinic<
+  TData = Awaited<ReturnType<typeof referrersControllerVerifyTokenClinic>>,
+  TError = unknown,
+>(
+  params: ReferrersControllerVerifyTokenClinicParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof referrersControllerVerifyTokenClinic>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof referrersControllerVerifyTokenClinic>>,
+          TError,
+          Awaited<ReturnType<typeof referrersControllerVerifyTokenClinic>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useReferrersControllerVerifyTokenClinic<
+  TData = Awaited<ReturnType<typeof referrersControllerVerifyTokenClinic>>,
+  TError = unknown,
+>(
+  params: ReferrersControllerVerifyTokenClinicParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof referrersControllerVerifyTokenClinic>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: None - Verify clinic registration token
+ */
+
+export function useReferrersControllerVerifyTokenClinic<
+  TData = Awaited<ReturnType<typeof referrersControllerVerifyTokenClinic>>,
+  TError = unknown,
+>(
+  params: ReferrersControllerVerifyTokenClinicParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof referrersControllerVerifyTokenClinic>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getReferrersControllerVerifyTokenClinicQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Finalizes clinic registration: creates a user account, a clinic record, and logs the referral history.
+ * @summary Role: None - Complete clinic registration
+ */
+export const referrersControllerCompleteRegistrationClinic = (
+  completeRegistrationDto: CompleteRegistrationDto,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<DefaultMessageResponseDto>(
+    {
+      url: `/api/referrers/complete-registration-cli`,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      data: completeRegistrationDto,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getReferrersControllerCompleteRegistrationClinicMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof referrersControllerCompleteRegistrationClinic>>,
+    TError,
+    { data: CompleteRegistrationDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof referrersControllerCompleteRegistrationClinic>>,
+  TError,
+  { data: CompleteRegistrationDto },
+  TContext
+> => {
+  const mutationKey = ["referrersControllerCompleteRegistrationClinic"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof referrersControllerCompleteRegistrationClinic>>,
+    { data: CompleteRegistrationDto }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return referrersControllerCompleteRegistrationClinic(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ReferrersControllerCompleteRegistrationClinicMutationResult =
+  NonNullable<
+    Awaited<ReturnType<typeof referrersControllerCompleteRegistrationClinic>>
+  >;
+export type ReferrersControllerCompleteRegistrationClinicMutationBody =
+  CompleteRegistrationDto;
+export type ReferrersControllerCompleteRegistrationClinicMutationError =
+  unknown;
+
+/**
+ * @summary Role: None - Complete clinic registration
+ */
+export const useReferrersControllerCompleteRegistrationClinic = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof referrersControllerCompleteRegistrationClinic>>,
+      TError,
+      { data: CompleteRegistrationDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof referrersControllerCompleteRegistrationClinic>>,
+  TError,
+  { data: CompleteRegistrationDto },
+  TContext
+> => {
+  const mutationOptions =
+    getReferrersControllerCompleteRegistrationClinicMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Retrieves a list of all partners (referrers) in the system with search and filter options.
+ * @summary Role: Admin - Get all referrers
+ */
+export const referrersControllerGetAll = (
+  params?: ReferrersControllerGetAllParams,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<GetManyReferrerDto>(
+    { url: `/api/referrers`, method: "GET", params, signal },
+    options,
+  );
+};
+
+export const getReferrersControllerGetAllInfiniteQueryKey = (
+  params?: ReferrersControllerGetAllParams,
+) => {
+  return ["infinate", `/api/referrers`, ...(params ? [params] : [])] as const;
+};
+
+export const getReferrersControllerGetAllQueryKey = (
+  params?: ReferrersControllerGetAllParams,
+) => {
+  return [`/api/referrers`, ...(params ? [params] : [])] as const;
+};
+
+export const getReferrersControllerGetAllInfiniteQueryOptions = <
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof referrersControllerGetAll>>,
+    ReferrersControllerGetAllParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: ReferrersControllerGetAllParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof referrersControllerGetAll>>,
+        TError,
+        TData,
+        QueryKey,
+        ReferrersControllerGetAllParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getReferrersControllerGetAllInfiniteQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof referrersControllerGetAll>>,
+    QueryKey,
+    ReferrersControllerGetAllParams["page"]
+  > = ({ signal, pageParam }) =>
+    referrersControllerGetAll(
+      { ...params, page: pageParam || params?.["page"] },
+      requestOptions,
+      signal,
+    );
+
+  return { queryKey, queryFn, ...queryOptions } as UseInfiniteQueryOptions<
+    Awaited<ReturnType<typeof referrersControllerGetAll>>,
+    TError,
+    TData,
+    QueryKey,
+    ReferrersControllerGetAllParams["page"]
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type ReferrersControllerGetAllInfiniteQueryResult = NonNullable<
+  Awaited<ReturnType<typeof referrersControllerGetAll>>
+>;
+export type ReferrersControllerGetAllInfiniteQueryError = unknown;
+
+export function useReferrersControllerGetAllInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof referrersControllerGetAll>>,
+    ReferrersControllerGetAllParams["page"]
+  >,
+  TError = unknown,
+>(
+  params: undefined | ReferrersControllerGetAllParams,
+  options: {
+    query: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof referrersControllerGetAll>>,
+        TError,
+        TData,
+        QueryKey,
+        ReferrersControllerGetAllParams["page"]
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof referrersControllerGetAll>>,
+          TError,
+          Awaited<ReturnType<typeof referrersControllerGetAll>>,
+          QueryKey
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useReferrersControllerGetAllInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof referrersControllerGetAll>>,
+    ReferrersControllerGetAllParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: ReferrersControllerGetAllParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof referrersControllerGetAll>>,
+        TError,
+        TData,
+        QueryKey,
+        ReferrersControllerGetAllParams["page"]
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof referrersControllerGetAll>>,
+          TError,
+          Awaited<ReturnType<typeof referrersControllerGetAll>>,
+          QueryKey
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useReferrersControllerGetAllInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof referrersControllerGetAll>>,
+    ReferrersControllerGetAllParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: ReferrersControllerGetAllParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof referrersControllerGetAll>>,
+        TError,
+        TData,
+        QueryKey,
+        ReferrersControllerGetAllParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: Admin - Get all referrers
+ */
+
+export function useReferrersControllerGetAllInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof referrersControllerGetAll>>,
+    ReferrersControllerGetAllParams["page"]
+  >,
+  TError = unknown,
+>(
+  params?: ReferrersControllerGetAllParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof referrersControllerGetAll>>,
+        TError,
+        TData,
+        QueryKey,
+        ReferrersControllerGetAllParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getReferrersControllerGetAllInfiniteQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useInfiniteQuery(
+    queryOptions,
+    queryClient,
+  ) as UseInfiniteQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+export const getReferrersControllerGetAllQueryOptions = <
+  TData = Awaited<ReturnType<typeof referrersControllerGetAll>>,
+  TError = unknown,
+>(
+  params?: ReferrersControllerGetAllParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof referrersControllerGetAll>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getReferrersControllerGetAllQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof referrersControllerGetAll>>
+  > = ({ signal }) => referrersControllerGetAll(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof referrersControllerGetAll>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type ReferrersControllerGetAllQueryResult = NonNullable<
+  Awaited<ReturnType<typeof referrersControllerGetAll>>
+>;
+export type ReferrersControllerGetAllQueryError = unknown;
+
+export function useReferrersControllerGetAll<
+  TData = Awaited<ReturnType<typeof referrersControllerGetAll>>,
+  TError = unknown,
+>(
+  params: undefined | ReferrersControllerGetAllParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof referrersControllerGetAll>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof referrersControllerGetAll>>,
+          TError,
+          Awaited<ReturnType<typeof referrersControllerGetAll>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useReferrersControllerGetAll<
+  TData = Awaited<ReturnType<typeof referrersControllerGetAll>>,
+  TError = unknown,
+>(
+  params?: ReferrersControllerGetAllParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof referrersControllerGetAll>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof referrersControllerGetAll>>,
+          TError,
+          Awaited<ReturnType<typeof referrersControllerGetAll>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useReferrersControllerGetAll<
+  TData = Awaited<ReturnType<typeof referrersControllerGetAll>>,
+  TError = unknown,
+>(
+  params?: ReferrersControllerGetAllParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof referrersControllerGetAll>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: Admin - Get all referrers
+ */
+
+export function useReferrersControllerGetAll<
+  TData = Awaited<ReturnType<typeof referrersControllerGetAll>>,
+  TError = unknown,
+>(
+  params?: ReferrersControllerGetAllParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof referrersControllerGetAll>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getReferrersControllerGetAllQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Creates a new partner to manage and issue unique referral codes.
+ * @summary Role: Admin - Create a new referrer
+ */
+export const referrersControllerCreate = (
+  createReferrerDto: CreateReferrerDto,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<Referrer>(
+    {
+      url: `/api/referrers`,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      data: createReferrerDto,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getReferrersControllerCreateMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof referrersControllerCreate>>,
+    TError,
+    { data: CreateReferrerDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof referrersControllerCreate>>,
+  TError,
+  { data: CreateReferrerDto },
+  TContext
+> => {
+  const mutationKey = ["referrersControllerCreate"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof referrersControllerCreate>>,
+    { data: CreateReferrerDto }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return referrersControllerCreate(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ReferrersControllerCreateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof referrersControllerCreate>>
+>;
+export type ReferrersControllerCreateMutationBody = CreateReferrerDto;
+export type ReferrersControllerCreateMutationError = unknown;
+
+/**
+ * @summary Role: Admin - Create a new referrer
+ */
+export const useReferrersControllerCreate = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof referrersControllerCreate>>,
+      TError,
+      { data: CreateReferrerDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof referrersControllerCreate>>,
+  TError,
+  { data: CreateReferrerDto },
+  TContext
+> => {
+  const mutationOptions = getReferrersControllerCreateMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Updates information for an existing partner.
+ * @summary Role: Admin - Update a referrer
+ */
+export const referrersControllerUpdate = (
+  id: string,
+  createReferrerDto: CreateReferrerDto,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<Referrer>(
+    {
+      url: `/api/referrers/${id}`,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      data: createReferrerDto,
+    },
+    options,
+  );
+};
+
+export const getReferrersControllerUpdateMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof referrersControllerUpdate>>,
+    TError,
+    { id: string; data: CreateReferrerDto },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof referrersControllerUpdate>>,
+  TError,
+  { id: string; data: CreateReferrerDto },
+  TContext
+> => {
+  const mutationKey = ["referrersControllerUpdate"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof referrersControllerUpdate>>,
+    { id: string; data: CreateReferrerDto }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return referrersControllerUpdate(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ReferrersControllerUpdateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof referrersControllerUpdate>>
+>;
+export type ReferrersControllerUpdateMutationBody = CreateReferrerDto;
+export type ReferrersControllerUpdateMutationError = unknown;
+
+/**
+ * @summary Role: Admin - Update a referrer
+ */
+export const useReferrersControllerUpdate = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof referrersControllerUpdate>>,
+      TError,
+      { id: string; data: CreateReferrerDto },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof referrersControllerUpdate>>,
+  TError,
+  { id: string; data: CreateReferrerDto },
+  TContext
+> => {
+  const mutationOptions = getReferrersControllerUpdateMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Deletes a partner from the system using soft delete.
+ * @summary Role: Admin - Delete a referrer
+ */
+export const referrersControllerDelete = (
+  id: string,
+  options?: SecondParameter<typeof orvalClient>,
+) => {
+  return orvalClient<DefaultMessageResponseDto>(
+    { url: `/api/referrers/${id}`, method: "DELETE" },
+    options,
+  );
+};
+
+export const getReferrersControllerDeleteMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof referrersControllerDelete>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof referrersControllerDelete>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["referrersControllerDelete"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof referrersControllerDelete>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return referrersControllerDelete(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ReferrersControllerDeleteMutationResult = NonNullable<
+  Awaited<ReturnType<typeof referrersControllerDelete>>
+>;
+
+export type ReferrersControllerDeleteMutationError = unknown;
+
+/**
+ * @summary Role: Admin - Delete a referrer
+ */
+export const useReferrersControllerDelete = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof referrersControllerDelete>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof referrersControllerDelete>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationOptions = getReferrersControllerDeleteMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Retrieves detailed referral history for a partner, showing successfully registered merchants or clinics.
+ * @summary Role: Admin - Get referral history for a referrer
+ */
+export const referrersControllerGetHistory = (
+  id: string,
+  params?: ReferrersControllerGetHistoryParams,
+  options?: SecondParameter<typeof orvalClient>,
+  signal?: AbortSignal,
+) => {
+  return orvalClient<GetManyReferralHistoryDto>(
+    { url: `/api/referrers/${id}/history`, method: "GET", params, signal },
+    options,
+  );
+};
+
+export const getReferrersControllerGetHistoryInfiniteQueryKey = (
+  id?: string,
+  params?: ReferrersControllerGetHistoryParams,
+) => {
+  return [
+    "infinate",
+    `/api/referrers/${id}/history`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getReferrersControllerGetHistoryQueryKey = (
+  id?: string,
+  params?: ReferrersControllerGetHistoryParams,
+) => {
+  return [`/api/referrers/${id}/history`, ...(params ? [params] : [])] as const;
+};
+
+export const getReferrersControllerGetHistoryInfiniteQueryOptions = <
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof referrersControllerGetHistory>>,
+    ReferrersControllerGetHistoryParams["page"]
+  >,
+  TError = unknown,
+>(
+  id: string,
+  params?: ReferrersControllerGetHistoryParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof referrersControllerGetHistory>>,
+        TError,
+        TData,
+        QueryKey,
+        ReferrersControllerGetHistoryParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getReferrersControllerGetHistoryInfiniteQueryKey(id, params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof referrersControllerGetHistory>>,
+    QueryKey,
+    ReferrersControllerGetHistoryParams["page"]
+  > = ({ signal, pageParam }) =>
+    referrersControllerGetHistory(
+      id,
+      { ...params, page: pageParam || params?.["page"] },
+      requestOptions,
+      signal,
+    );
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseInfiniteQueryOptions<
+    Awaited<ReturnType<typeof referrersControllerGetHistory>>,
+    TError,
+    TData,
+    QueryKey,
+    ReferrersControllerGetHistoryParams["page"]
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type ReferrersControllerGetHistoryInfiniteQueryResult = NonNullable<
+  Awaited<ReturnType<typeof referrersControllerGetHistory>>
+>;
+export type ReferrersControllerGetHistoryInfiniteQueryError = unknown;
+
+export function useReferrersControllerGetHistoryInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof referrersControllerGetHistory>>,
+    ReferrersControllerGetHistoryParams["page"]
+  >,
+  TError = unknown,
+>(
+  id: string,
+  params: undefined | ReferrersControllerGetHistoryParams,
+  options: {
+    query: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof referrersControllerGetHistory>>,
+        TError,
+        TData,
+        QueryKey,
+        ReferrersControllerGetHistoryParams["page"]
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof referrersControllerGetHistory>>,
+          TError,
+          Awaited<ReturnType<typeof referrersControllerGetHistory>>,
+          QueryKey
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useReferrersControllerGetHistoryInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof referrersControllerGetHistory>>,
+    ReferrersControllerGetHistoryParams["page"]
+  >,
+  TError = unknown,
+>(
+  id: string,
+  params?: ReferrersControllerGetHistoryParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof referrersControllerGetHistory>>,
+        TError,
+        TData,
+        QueryKey,
+        ReferrersControllerGetHistoryParams["page"]
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof referrersControllerGetHistory>>,
+          TError,
+          Awaited<ReturnType<typeof referrersControllerGetHistory>>,
+          QueryKey
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useReferrersControllerGetHistoryInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof referrersControllerGetHistory>>,
+    ReferrersControllerGetHistoryParams["page"]
+  >,
+  TError = unknown,
+>(
+  id: string,
+  params?: ReferrersControllerGetHistoryParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof referrersControllerGetHistory>>,
+        TError,
+        TData,
+        QueryKey,
+        ReferrersControllerGetHistoryParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: Admin - Get referral history for a referrer
+ */
+
+export function useReferrersControllerGetHistoryInfinite<
+  TData = InfiniteData<
+    Awaited<ReturnType<typeof referrersControllerGetHistory>>,
+    ReferrersControllerGetHistoryParams["page"]
+  >,
+  TError = unknown,
+>(
+  id: string,
+  params?: ReferrersControllerGetHistoryParams,
+  options?: {
+    query?: Partial<
+      UseInfiniteQueryOptions<
+        Awaited<ReturnType<typeof referrersControllerGetHistory>>,
+        TError,
+        TData,
+        QueryKey,
+        ReferrersControllerGetHistoryParams["page"]
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseInfiniteQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getReferrersControllerGetHistoryInfiniteQueryOptions(
+    id,
+    params,
+    options,
+  );
+
+  const query = useInfiniteQuery(
+    queryOptions,
+    queryClient,
+  ) as UseInfiniteQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+export const getReferrersControllerGetHistoryQueryOptions = <
+  TData = Awaited<ReturnType<typeof referrersControllerGetHistory>>,
+  TError = unknown,
+>(
+  id: string,
+  params?: ReferrersControllerGetHistoryParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof referrersControllerGetHistory>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getReferrersControllerGetHistoryQueryKey(id, params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof referrersControllerGetHistory>>
+  > = ({ signal }) =>
+    referrersControllerGetHistory(id, params, requestOptions, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof referrersControllerGetHistory>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type ReferrersControllerGetHistoryQueryResult = NonNullable<
+  Awaited<ReturnType<typeof referrersControllerGetHistory>>
+>;
+export type ReferrersControllerGetHistoryQueryError = unknown;
+
+export function useReferrersControllerGetHistory<
+  TData = Awaited<ReturnType<typeof referrersControllerGetHistory>>,
+  TError = unknown,
+>(
+  id: string,
+  params: undefined | ReferrersControllerGetHistoryParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof referrersControllerGetHistory>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof referrersControllerGetHistory>>,
+          TError,
+          Awaited<ReturnType<typeof referrersControllerGetHistory>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useReferrersControllerGetHistory<
+  TData = Awaited<ReturnType<typeof referrersControllerGetHistory>>,
+  TError = unknown,
+>(
+  id: string,
+  params?: ReferrersControllerGetHistoryParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof referrersControllerGetHistory>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof referrersControllerGetHistory>>,
+          TError,
+          Awaited<ReturnType<typeof referrersControllerGetHistory>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useReferrersControllerGetHistory<
+  TData = Awaited<ReturnType<typeof referrersControllerGetHistory>>,
+  TError = unknown,
+>(
+  id: string,
+  params?: ReferrersControllerGetHistoryParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof referrersControllerGetHistory>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Role: Admin - Get referral history for a referrer
+ */
+
+export function useReferrersControllerGetHistory<
+  TData = Awaited<ReturnType<typeof referrersControllerGetHistory>>,
+  TError = unknown,
+>(
+  id: string,
+  params?: ReferrersControllerGetHistoryParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof referrersControllerGetHistory>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof orvalClient>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getReferrersControllerGetHistoryQueryOptions(
+    id,
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}

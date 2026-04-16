@@ -8,9 +8,10 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "gen:api": "npx orval -c orval.config.ts"
+    "gen:api": "npx orval -c orval.config.ts && node scripts/orval-patch.mjs"
   },
   "dependencies": {
+    "@better-fetch/fetch": "^1.1.21",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-collapsible": "^1.1.12",
     "@radix-ui/react-dialog": "^1.1.15",
@@ -27,7 +28,7 @@
     "@tanstack/react-query-persist-client": "^5.90.23",
     "@types/qs": "^6.14.0",
     "axios": "^1.13.4",
-    "better-auth": "1.4.21",
+    "better-auth": "^1.6.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv": "^17.2.3",

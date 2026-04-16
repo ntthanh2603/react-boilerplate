@@ -76,7 +76,21 @@ export function LoginForm({
         return;
       }
 
-      const res = await authClient.signIn.email({ email, password });
+      // Check if the input is an email or phone number
+      const isEmail = email.includes("@");
+
+      let res;
+      if (isEmail) {
+        res = await authClient.signIn.email({ email, password });
+      } else {
+        // Use phoneNumber plugin's sign in method with password
+        // better-auth v1.6.5 supports password for phoneNumber
+        res = await authClient.signIn.phoneNumber({
+          phoneNumber: email,
+          password,
+        });
+      }
+
       if (res.error) {
         if (
           res.error.status === 403 &&
@@ -84,15 +98,21 @@ export function LoginForm({
         ) {
           setTwoFactorStep(true);
         } else {
-          setError(res.error.message || "Invalid email or password.");
+          setError(
+            res.error.message ||
+              `Invalid ${isEmail ? "email" : "phone"} or password.`,
+          );
         }
       } else {
         const params = new URLSearchParams(window.location.search);
         const redirect = getSafeRedirectUrl(params.get("redirect"));
         window.location.href = redirect;
       }
-    } catch {
-      setError("Something went wrong. Please try again.");
+    } catch (err: unknown) {
+      setError(
+        (err as { message?: string }).message ||
+          "Something went wrong. Please try again.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -139,7 +159,7 @@ export function LoginForm({
                         : "text-muted-foreground/70",
                     )}
                   >
-                    Email Address
+                    Email or Phone
                   </Label>
                   <div className="relative">
                     <div
@@ -154,8 +174,8 @@ export function LoginForm({
                     </div>
                     <Input
                       id="email"
-                      type="email"
-                      placeholder="name@example.com"
+                      type="text"
+                      placeholder="Enter your email or phone number"
                       className={cn(
                         "h-12 pl-10 pr-4 bg-white/50 dark:bg-white/5 border-border/50 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary transition-all duration-300 rounded-xl",
                         focusedField === "email" &&
